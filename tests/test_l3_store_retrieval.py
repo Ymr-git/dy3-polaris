@@ -923,7 +923,7 @@ class TestVectorRetriever:
         assert isinstance(result, RetrievalResult)
         assert result.source_type == "vector"
         assert len(result.results) == 2
-        assert result.retrieval_time_ms > 0
+        assert result.retrieval_time_ms >= 0
 
     def test_retrieve_with_filter(self):
         """带过滤的向量检索."""

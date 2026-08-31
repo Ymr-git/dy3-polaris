@@ -244,6 +244,18 @@ class GroundednessVerifier:
         for idx, chunk in enumerate(chunks):
             chunk_lower = chunk.lower()
 
+            claim_normalized = re.sub(r"\s+", " ", claim_lower).strip()
+            chunk_normalized = re.sub(r"\s+", " ", chunk_lower).strip()
+
+            # A verbatim claim inside a larger retrieved passage is direct
+            # grounding.  Whole-string SequenceMatcher ratios are length
+            # sensitive and previously marked such claims as weak simply
+            # because the evidence chunk contained surrounding paragraphs.
+            if claim_normalized and claim_normalized in chunk_normalized:
+                best_score = 1.0
+                best_chunk_idx = idx
+                break
+
             # 序列匹配比率
             ratio = SequenceMatcher(None, claim_lower, chunk_lower).ratio()
 

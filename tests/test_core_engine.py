@@ -126,8 +126,15 @@ class TestKPA:
             layer=LayerTag.L5_AGENT_RUNTIME,
         )
         h2 = kpa2.compute_hash()
-        # 时间戳不同，所以 hash 不同（正确行为）
-        assert h1 != h2
+        # 时间戳不同，所以 hash 不同 (正确行为); 同毫秒创建时可能相同, 显式 sleep 保证
+        import time as _t
+        _t.sleep(0.002)
+        kpa3 = KPA(
+            event_type=KPAEventType.TOOL_INVOKED,
+            actor="A1",
+            layer=LayerTag.L5_AGENT_RUNTIME,
+        )
+        assert h1 != kpa3.compute_hash()
 
     def test_kpa_chain_hash(self):
         kpa1 = KPA(event_type=KPAEventType.TOOL_INVOKED, actor="A1", layer=LayerTag.L5_AGENT_RUNTIME)

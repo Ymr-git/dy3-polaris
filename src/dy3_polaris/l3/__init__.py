@@ -219,6 +219,8 @@ from .reranker import (
     RecencyBoostReranker,
     RerankStrategy,
 )
+from .llm_config import LLMConfig, available_providers, load_llm_config
+from .llm_synthesizer import LLMSynthesizer
 from .retrieval import (
     BaseRetriever,
     GraphRetriever,
@@ -639,6 +641,11 @@ __all__ = [
     "RecencyBoostReranker",
     "GraphCentralityReranker",
     "CompositeReranker",
+    # LLM 接入 (可插拔)
+    "LLMConfig",
+    "LLMSynthesizer",
+    "load_llm_config",
+    "available_providers",
     # 意图路由 (7 个)
     "IntentType",
     "ExtractedEntity",

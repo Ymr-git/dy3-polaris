@@ -21,6 +21,8 @@ from __future__ import annotations
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from starlette.routing import Mount
+from starlette.applications import Starlette
 
 # ============================================================
 # 导入被测模块
@@ -29,6 +31,7 @@ from httpx import AsyncClient, ASGITransport
 from dy3_polaris.l0.governance.policy_store import PolicyStore
 from dy3_polaris.l0.governance.evaluator import PolicyEvaluator
 from dy3_polaris.l0.cc1.pipeline import AntiHallucinationPipeline
+from dy3_polaris.l0.cc1.review_pipeline import ReviewPipeline
 from dy3_polaris.l0.cc2.engine import CollaborationEngine
 from dy3_polaris.l0.governance.audit_engine import AuditEngine
 from dy3_polaris.l0.governance.metrics_engine import MetricsEngine
@@ -58,6 +61,7 @@ async def client():
     audit = AuditEngine()
     metrics = MetricsEngine()
     compliance = ComplianceReporter()
+    review_pipeline = ReviewPipeline()
     subsys = GovernanceSubsystems(
         policy_store=store,
         policy_evaluator=evaluator,
@@ -66,10 +70,13 @@ async def client():
         audit_engine=audit,
         metrics_engine=metrics,
         compliance_reporter=compliance,
+        review_pipeline=review_pipeline,
     )
     router = GovernanceRouter(subsys)
+    # 与 UnifiedApp 一致的挂载方式: /governance 前缀 + 内部 /v1
     app = router.create_app()
-    transport = ASGITransport(app=app)
+    wrapped = Starlette(routes=[Mount("/governance", app=app)])
+    transport = ASGITransport(app=wrapped)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
@@ -80,7 +87,8 @@ async def empty_client():
     subsys = GovernanceSubsystems()
     router = GovernanceRouter(subsys)
     app = router.create_app()
-    transport = ASGITransport(app=app)
+    wrapped = Starlette(routes=[Mount("/governance", app=app)])
+    transport = ASGITransport(app=wrapped)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
@@ -202,12 +210,13 @@ class TestGovernanceSubsystems:
         assert all(not v for v in hm.values())
 
     def test_health_map_keys(self):
-        """health_map 包含所有七个子系统键."""
+        """health_map 包含所有八个子系统键."""
         subsys = GovernanceSubsystems()
         hm = subsys.health_map()
         expected_keys = {
             "policy_store", "policy_evaluator", "anti_hallucination",
             "collaboration", "audit", "metrics", "compliance",
+            "review_pipeline",
         }
         assert set(hm.keys()) == expected_keys
 
@@ -221,6 +230,7 @@ class TestGovernanceSubsystems:
             audit_engine=AuditEngine(),
             metrics_engine=MetricsEngine(),
             compliance_reporter=ComplianceReporter(),
+            review_pipeline=ReviewPipeline(),
         )
         hm = subsys.health_map()
         assert all(v for v in hm.values())
@@ -253,11 +263,11 @@ class TestRoutesDiscovery:
 
     @pytest.mark.asyncio
     async def test_routes_summary_count(self, client: AsyncClient):
-        """路由总数为 54."""
+        """路由总数为 61."""
         resp = await client.get("/governance/v1/routes")
         assert resp.status_code == 200
         routes = resp.json()["data"]
-        assert len(routes) == 54
+        assert len(routes) == 61
 
     @pytest.mark.asyncio
     async def test_routes_summary_has_health(self, client: AsyncClient):
@@ -351,7 +361,7 @@ class TestRoutesDiscovery:
         subsys = GovernanceSubsystems()
         router = GovernanceRouter(subsys)
         summary = router.get_routes_summary()
-        assert len(summary) == 54
+        assert len(summary) == 61
 
     @pytest.mark.asyncio
     async def test_routes_health_deep_present(self, client: AsyncClient):
@@ -424,6 +434,7 @@ class TestHealthCheck:
         expected = {
             "policy_store", "policy_evaluator", "anti_hallucination",
             "collaboration", "audit", "metrics", "compliance",
+            "review_pipeline",
         }
         assert set(subsys.keys()) == expected
 

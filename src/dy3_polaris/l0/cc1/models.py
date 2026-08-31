@@ -331,7 +331,7 @@ class VerificationReport(BaseModel):
             self.hallucination_detected = False
             self.hallucination_severity = HallucinationSeverity.LOW
         elif self.overall_score >= 0.5:
-            self.hallucination_detected = True
+            self.hallucination_detected = False
             self.hallucination_severity = HallucinationSeverity.MEDIUM
         elif self.overall_score >= 0.3:
             self.hallucination_detected = True

@@ -1470,11 +1470,20 @@ class KnowledgeStore:
         entity: KnowledgeEntity,
         *,
         check_duplicate: bool = True,
+        track_version: bool = True,
     ) -> KnowledgeEntity:
-        """添加实体并创建初始版本."""
+        """添加实体并创建初始版本.
+
+        Args:
+            entity: 实体对象
+            check_duplicate: 是否检查标识符重复
+            track_version: 是否创建初始版本快照 (批量导入场景可关闭以省内存)
+        """
         entity = self.entity_store.add_entity(entity, check_duplicate=check_duplicate)
 
         # 创建初始版本
+        if not track_version:
+            return entity
         version = KnowledgeVersion(
             entity_id=entity.entity_id,
             revision_number=1,
@@ -1528,7 +1537,6 @@ class KnowledgeStore:
         """
         # 记录旧快照 (用于变更集)
         old_entity = self.entity_store.get_entity_or_raise(entity_id)
-        old_snapshot = old_entity.model_dump(mode="json")
 
         # 执行更新
         updated = self.entity_store.update_entity(
@@ -1537,6 +1545,8 @@ class KnowledgeStore:
 
         # 记录版本
         if track_version:
+            # 旧快照序列化仅在需要版本追踪时执行 (避免高频更新下的内存/CPU 开销)
+            old_snapshot = old_entity.model_dump(mode="json")
             changeset: list[ChangeRecord] = []
             new_snapshot = updated.model_dump(mode="json")
 
@@ -1682,6 +1692,37 @@ class KnowledgeStore:
     ) -> list[tuple[DocumentChunk, float]]:
         """全文检索."""
         return self.chunk_store.search_text(query, top_k=top_k, document_id=document_id)
+
+    def find_chunks_by_metadata(
+        self,
+        key: str,
+        values: set[str] | frozenset[str] | tuple[str, ...] | list[str],
+    ) -> list[DocumentChunk]:
+        """Return chunks whose metadata value intersects ``values``.
+
+        Stable Concept IDs already bind reviewed evidence to scientific
+        Concepts.  Looking up that explicit mapping avoids losing evidence
+        merely because a source uses a synonym which differs from the
+        canonical display name.  No relationship is inferred here.
+        """
+
+        expected = frozenset(str(value) for value in values if str(value))
+        if not key or not expected:
+            return []
+        matches: list[DocumentChunk] = []
+        for chunk in self.chunk_store._chunks.values():
+            metadata = chunk.metadata if isinstance(chunk.metadata, dict) else {}
+            raw = metadata.get(key)
+            actual = (
+                frozenset(str(value) for value in raw if str(value))
+                if isinstance(raw, (list, tuple, set, frozenset))
+                else frozenset((str(raw),))
+                if raw not in (None, "")
+                else frozenset()
+            )
+            if expected.intersection(actual):
+                matches.append(chunk)
+        return matches
 
     def search_vector(
         self, query_vector: list[float], *, top_k: int = 10, filter_fn: Any = None

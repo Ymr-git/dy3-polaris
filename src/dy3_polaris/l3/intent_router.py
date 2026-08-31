@@ -342,13 +342,25 @@ class IntentClassifier:
         # 概念意图规则
         self._concept_rules: list[tuple[str, re.Pattern[str]]] = [
             ("definition_kw", re.compile(
-                r"(?:是什么|什么是|定义|概念|含义|解释|说明|"
-                r"what is|define|definition|concept|meaning|explain)",
+                r"(?:是什么|什么是|是啥|为何物|指的是|何种|定义|概念|含义|解释|说明|"
+                r"what is|what's|define|definition|concept|meaning|explain)",
                 re.IGNORECASE,
             )),
             ("mechanism_kw", re.compile(
                 r"(?:机理|机制|原理|过程|途径|"
                 r"mechanism|process|pathway|principle)",
+                re.IGNORECASE,
+            )),
+            # 方法/过程意图 ("怎么制备" / "如何合成" 等, 此前归入 fallback 导致误判)
+            ("method_kw", re.compile(
+                r"(?:怎么|如何|怎样|怎么弄|制备|合成|方法|步骤|工艺|流程|做法|"
+                r"how|method|synthesize|synthesis|fabricate|procedure|steps)",
+                re.IGNORECASE,
+            )),
+            # 原因/机理意图 ("为什么发光" / "为何猝灭" 等)
+            ("reason_kw", re.compile(
+                r"(?:为什么|为何|为啥|原因|因为|由于|"
+                r"why|reason|because|cause)",
                 re.IGNORECASE,
             )),
         ]
@@ -556,11 +568,45 @@ class IntentClassifier:
                     break
 
     def _llm_classify(self, query: str) -> IntentType | None:
-        """LLM 兜底分类 (预留接口, 实际由外部 LLM 实现).
+        """LLM 兜底分类: 规则覆盖不了时用 flash 模型判意图 (None 表示无意图/不可用).
 
-        子类可覆盖此方法接入实际 LLM 服务。
+        借鉴 Cohere intent classification + Self-RAG 反思: 规则 <10ms, LLM <1s,
+        仅规则 fallback 时才走 LLM (省 token). 返回 None 的语义是「无明确意图」,
+        由调用方据此决定是否澄清。
         """
-        return None
+        try:
+            from dy3_polaris.l3.llm_config import chat_completion
+        except Exception:  # noqa: BLE001
+            return None
+        prompt = (
+            "判断下面这个提问属于哪类意图，只回复一个词：\n"
+            "- definition: 在问某个对象是什么/定义/含义 (含口语化表达, 如「是啥」「是干嘛的」「何方神圣」)\n"
+            "- method: 问怎么做/制备/方法步骤\n"
+            "- reason: 问为什么/原因/机理\n"
+            "- numeric: 问数值/参数/多少\n"
+            "- relational: 问关系/影响/联系\n"
+            "- comparison: 问比较/区别/差异\n"
+            "- none: 信息不足/纯寒暄/与发光材料无关\n"
+            f"提问：{query}"
+        )
+        try:
+            raw = chat_completion(
+                [{"role": "user", "content": prompt}],
+                temperature=0.0, max_tokens=16, disable_thinking=True,
+            )
+        except Exception:  # noqa: BLE001
+            return None
+        raw = (raw or "").strip().lower()
+        if not raw or "none" in raw:
+            return None
+        if "compar" in raw or "比较" in raw or "区别" in raw:
+            return IntentType.COMPOSITE
+        if "numeric" in raw or "数值" in raw or "多少" in raw:
+            return IntentType.NUMERIC
+        if "relation" in raw or "关系" in raw or "影响" in raw:
+            return IntentType.RELATIONAL
+        # definition / method / reason / concept 等 → CONCEPT (有明确意图)
+        return IntentType.CONCEPT
 
 
 # ============================================================
@@ -1125,12 +1171,16 @@ class IntentRouter:
         query = results[0].query if results else ""
         total_time = sum(r.retrieval_time_ms for r in results)
 
+        # 请求级 trace_id 接通 (contextvars, 见 l5/tracing.py)
+        from dy3_polaris.l5.tracing import get_trace_id
+
         return RetrievalResult(
             query=query,
             results=fused_results,
             scores=fused_scores,
             total=len(fused_results),
             retrieval_time_ms=total_time,
+            trace_id=get_trace_id(),
         )
 
 

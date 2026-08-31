@@ -417,13 +417,21 @@ class TestEnums:
             (EntityType.DOCUMENT_CHUNK, "document_chunk"),
             (EntityType.COURSE, "course"),
             (EntityType.EXPERIMENT, "experiment"),
+            (EntityType.TOPIC, "topic"),
+            (EntityType.KNOWLEDGE_POINT, "knowledge_point"),
+            (EntityType.FACT, "fact"),
+            (EntityType.ROLE, "role"),
+            (EntityType.QUESTION, "question"),
+            (EntityType.ION, "ion"),
+            (EntityType.ENERGY_LEVEL, "energy_level"),
+            (EntityType.PARAMETER, "parameter"),
         ],
     )
     def test_entity_type_枚举值(self, member, expected) -> None:
         assert member.value == expected
 
     def test_entity_type_成员数量(self) -> None:
-        assert len(EntityType) == 12
+        assert len(EntityType) == 20
 
     def test_entity_type_str继承(self) -> None:
         assert issubclass(EntityType, str)
@@ -448,13 +456,23 @@ class TestEnums:
             (RelationType.INSTANTIATES, "instantiates"),
             (RelationType.SUPERSEDES, "supersedes"),
             (RelationType.REFERENCES, "references"),
+            (RelationType.PREREQUISITE_OF, "prerequisite_of"),
+            (RelationType.DEEPENS, "deepens"),
+            (RelationType.ANALOGOUS_TO, "analogous_to"),
+            (RelationType.AFFECTS, "affects"),
+            (RelationType.CHARACTERIZED_BY, "characterized_by"),
+            (RelationType.SUBCONCEPT_OF, "subconcept_of"),
+            (RelationType.APPLIES_TO, "applies_to"),
+            (RelationType.MENTIONS, "mentions"),
+            (RelationType.MEASURED_BY, "measured_by"),
+            (RelationType.DOPED_WITH, "doped_with"),
         ],
     )
     def test_relation_type_枚举值(self, member, expected) -> None:
         assert member.value == expected
 
     def test_relation_type_成员数量(self) -> None:
-        assert len(RelationType) == 14
+        assert len(RelationType) == 24
 
     def test_relation_type_str继承(self) -> None:
         assert issubclass(RelationType, str)

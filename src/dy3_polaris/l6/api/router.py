@@ -89,17 +89,8 @@ _logger = logging.getLogger("dy3_polaris.l6.api.router")
 # 统一响应
 # ============================================================
 
-def _ok(data: Any = None, message: str = "") -> dict[str, Any]:
-    """构造成功响应."""
-    return {"code": 0, "data": data, "message": message}
-
-
-def _err(code: int, message: str, detail: str = "") -> dict[str, Any]:
-    """构造错误响应."""
-    resp: dict[str, Any] = {"code": code, "message": message}
-    if detail:
-        resp["detail"] = detail
-    return resp
+# 响应信封单点 (SSOT: shared/contract.py)
+from dy3_polaris.shared.contract import err as _err, ok as _ok
 
 
 def _l6_error_to_dict(err: L6Error) -> dict[str, Any]:

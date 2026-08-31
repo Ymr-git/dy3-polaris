@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识点关系图谱 · 镝-绿色健康照明发光材料</title>
+<style>
+  body { font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif; margin: 24px; background: #f6f7f9; color: #1f2328; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 16px; }
+  .legend { font-size: 13px; margin-bottom: 14px; line-height: 1.8; }
+  .legend .lbl { display: inline-block; margin-right: 18px; }
+  .legend .line { display: inline-block; width: 28px; height: 2px; margin-right: 6px; vertical-align: middle; }
+  .legend .line.solid { background: #333; }
+  .legend .line.dash { background: repeating-linear-gradient(90deg,#e67e22 0 6px,transparent 6px 9px); }
+  .legend .line.thick { height: 4px; background: #16a085; }
+  .legend .line.char { background: #8e44ad; }
+  .legend .line.app { background: #00a8a8; }
+  .legend .line.sub { background: #2b8cbe; }
+  #graph { background: #fff; border: 1px solid #e1e4e8; border-radius: 10px; padding: 20px; overflow: auto; }
+  .error { color: #c0392b; padding: 20px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>知识点关系图谱</h1>
+<div class="sub">镝（Dy）绿色健康照明发光材料 · 48 个知识点（6 章 · 17 节）· 教学关系边（含规则边与 LLM 补边，点击下方节点可拖动/缩放）</div>
+<div class="legend">
+  <span class="lbl"><span class="line solid"></span>前提 prerequisite_of（学箭头端前先懂起点）</span>
+  <span class="lbl"><span class="line dash"></span>类比 analogous_to</span>
+  <span class="lbl"><span class="line thick"></span>影响 affects</span>
+  <span class="lbl"><span class="line char"></span>表征 characterized_by</span>
+  <span class="lbl"><span class="line sub"></span>上下位 subconcept_of</span>
+  <span class="lbl"><span class="line app"></span>应用 applies_to</span>
+</div>
+<div id="graph">加载中…</div>
+
+<script src="/static/assets/mermaid.min.js"></script>
+<script>
+(function () {
+  var REL = {
+    prerequisite_of: '前提', analogous_to: '类比', affects: '影响',
+    characterized_by: '表征', subconcept_of: '上下位', applies_to: '应用'
+  };
+
+  function esc(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  // 知识点 ID → 安全 mermaid 节点名 (去掉非字母数字, 前缀 kp 避免纯数字)
+  function kpId(kp) { return 'kp' + String(kp).replace(/[^a-zA-Z0-9]/g, ''); }
+
+  mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose', flowchart: { useMaxWidth: true, htmlLabels: true } });
+
+  fetch('/l3/graph/kp-relations').then(function (r) { return r.json(); }).then(function (resp) {
+    var data = resp.data || resp;
+    var nodes = data.nodes || [], edges = data.edges || [];
+    if (!nodes.length) { document.getElementById('graph').innerHTML = '<div class="error">无知识点数据</div>'; return; }
+
+    var lines = ['graph TD'];
+    // 按章 subgraph 分组 (章代码 1~6, 标题取 chapter_label)
+    var chapters = {};
+    nodes.forEach(function (n) {
+      var c = n.chapter || '-';
+      (chapters[c] = chapters[c] || []).push(n);
+    });
+    Object.keys(chapters).sort().forEach(function (c) {
+      var label = (chapters[c][0] && chapters[c][0].chapter_label) || ('第' + c + '章');
+      lines.push('  subgraph ch' + c + '["' + esc(label) + '"]');
+      chapters[c].forEach(function (n) {
+        lines.push('    ' + kpId(n.kp_id) + '["' + esc(n.kp_id) + ' ' + esc(n.label) + '"]');
+      });
+      lines.push('  end');
+    });
+
+    // 关系边（按类型区分线型）
+    edges.forEach(function (e) {
+      var s = kpId((e.source || '').split(':')[1]);
+      var t = kpId((e.target || '').split(':')[1]);
+      var lbl = REL[e.label] || e.label || '';
+      var arrow;
+      if (e.label === 'analogous_to') arrow = '-.->';
+      else if (e.label === 'affects') arrow = '==>';
+      else if (e.label === 'characterized_by') arrow = '-- ' + esc(lbl) + ' -->';
+      else if (e.label === 'applies_to') arrow = '-. ' + esc(lbl) + ' .->';
+      else if (e.label === 'subconcept_of') arrow = '-- ' + esc(lbl) + ' -->';
+      else arrow = '-->';
+      var labelPart = (e.label === 'characterized_by' || e.label === 'applies_to' || e.label === 'subconcept_of') ? '' : '|' + esc(lbl) + '|';
+      lines.push('  ' + s + ' ' + arrow + labelPart + ' ' + t);
+    });
+
+    var code = lines.join('\n');
+    mermaid.render('kpGraphSvg', code).then(function (result) {
+      document.getElementById('graph').innerHTML = result.svg;
+    }).catch(function (err) {
+      document.getElementById('graph').innerHTML = '<div class="error">图谱渲染失败: ' + esc(err && err.message) + '</div>';
+    });
+  }).catch(function (err) {
+    document.getElementById('graph').innerHTML = '<div class="error">数据加载失败: ' + esc(err && err.message) + '</div>';
+  });
+})();
+</script>
+</body>
+</html>

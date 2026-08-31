@@ -85,17 +85,8 @@ _logger = logging.getLogger("dy3_polaris.l3.api.router")
 # 统一响应
 # ============================================================
 
-def _ok(data: Any = None, message: str = "") -> dict[str, Any]:
-    """构造成功响应."""
-    return {"code": 0, "data": data, "message": message}
-
-
-def _err(code: int, message: str, detail: str = "") -> dict[str, Any]:
-    """构造错误响应."""
-    resp: dict[str, Any] = {"code": code, "message": message}
-    if detail:
-        resp["detail"] = detail
-    return resp
+# 响应信封单点 (SSOT: shared/contract.py)
+from dy3_polaris.shared.contract import err as _err, ok as _ok
 
 
 def _l3_error_to_dict(err: L3Error) -> dict[str, Any]:
@@ -157,6 +148,7 @@ class _RouteHandlers:
         graph_reasoner: GraphReasoner | None = None,
         ontology_registry: OntologyRegistry | None = None,
         persistence_manager: PersistenceManager | None = None,
+        embedding_manager: Any | None = None,
     ) -> None:
         self._store = store
         self._retrieval = retrieval_engine or RetrievalEngine(store)
@@ -169,6 +161,8 @@ class _RouteHandlers:
         self._persistence = persistence_manager or PersistenceManager(
             store, base_path="/tmp/dy3_polaris_l3_snapshots",
         )
+        # 嵌入管理器 (可选): 提供后检索端点自动生成 query_vector, 启用语义检索
+        self._embedding = embedding_manager
 
     # ---- 健康检查 ----
 
@@ -250,22 +244,34 @@ class _RouteHandlers:
             elif domain:
                 entities = self._store.entity_store.find_by_domain(domain)
             else:
-                entities = self._store.entity_store.list_entities(
-                    limit=limit + 1,
-                    offset=offset,
-                )
+                # 无过滤: 全部实体, 按"有价值类型优先"排序
+                # (chemical_compound > material > method > paper > 其他 > concept),
+                # 让知识库列表优先展示化学式/材料等核心实体, 而非 concept 碎片.
+                all_entities = list(self._store.entity_store._entities.values())
+                type_rank = {
+                    "chemical_compound": 0,
+                    "material": 1,
+                    "method": 2,
+                    "paper": 3,
+                    "textbook": 4,
+                    "experiment": 5,
+                    "concept": 6,
+                }
+                all_entities.sort(key=lambda e: (type_rank.get(e.entity_type.value, 7), e.name or ""))
+                entities = all_entities
 
             # 若按类型/领域过滤了, 手动分页
             if et or domain:
                 has_more = len(entities) > offset + limit
                 items = entities[offset : offset + limit]
             else:
-                has_more = len(entities) > limit
-                items = entities[:limit]
+                has_more = len(entities) > offset + limit
+                items = entities[offset : offset + limit]
 
             return JSONResponse(_ok({
                 "items": [_safe_model_dump(e) for e in items],
-                "total": self._store.entity_count(),
+                # total 应为过滤后的实体数 (而非全库总数), 让前端分页正确
+                "total": len(entities),
                 "limit": limit,
                 "offset": offset,
                 "has_more": has_more,
@@ -492,7 +498,16 @@ class _RouteHandlers:
             return JSONResponse(_err(-32700, "query 不能为空"), status_code=400)
 
         top_k = min(int(body.get("top_k", 10)), 100)
-        routed = self._intent_router.route(query, top_k=top_k)
+        # 语义检索: 若有嵌入管理器则自动生成 query_vector (未配置时降级关键词/图检索)
+        query_vector = None
+        if self._embedding is not None:
+            try:
+                query_vector = self._embedding.embed(query).vector
+            except Exception as exc:  # noqa: BLE001 (模型未就绪等, 降级检索)
+                _logger.warning("query 向量生成失败, 降级检索: %s", exc)
+        routed = self._intent_router.route(
+            query, top_k=top_k, query_vector=query_vector
+        )
 
         return JSONResponse(_ok({
             "intent": _safe_model_dump(routed.intent),
@@ -803,6 +818,59 @@ class _RouteHandlers:
         )
         return JSONResponse(_ok(log))
 
+    # ---- 溯源链验证 (M-F7 缺口补齐) ----
+
+    async def quality_provenance_chain(self, request: Request) -> JSONResponse:
+        """GET /l3/quality/provenance/{id}/chain — 溯源链追踪 + 完整性验证.
+
+        返回:
+            {entity_id, verified, chain: [{activity_type, agent_id, integrity_hash, timestamp, description}]}
+
+        语义:
+            - 实体不存在 → 404 (查询对象错误)
+            - 实体存在但无溯源记录 → 200 + unverifiable (合法状态, 前端据此显示"未验证")
+        """
+        eid = request.path_params["id"]
+        # 实体不存在 → 404, 区别于「实体存在但无溯源」的合法 unverifiable 状态
+        if self._store.get_entity(eid) is None:
+            return JSONResponse(_err(-32601, f"实体未找到: {eid}"), status_code=404)
+
+        prov = self._quality_mgr.get_provenance(eid)
+        if prov is None:
+            # 无溯源记录是合法状态 (非错误): 返回 200 + unverifiable, 前端据此显示"未验证"。
+            # 避免返回 404 被浏览器记为资源加载失败, 产生控制台错误刷屏。
+            return JSONResponse(_ok({
+                "entity_id": eid,
+                "verified": "unverifiable",
+                "chain": [],
+            }))
+
+        chain = self._quality_mgr.trace_provenance_chain(eid, max_depth=10)
+        try:
+            verified = self._quality_mgr.verify_provenance_chain(eid)
+        except Exception:
+            verified = "unverified"
+
+        chain_payload = []
+        for item in chain:
+            try:
+                d = _safe_model_dump(item)
+            except Exception:
+                d = item.to_dict() if hasattr(item, "to_dict") else dict(item)
+            chain_payload.append({
+                "entity_id": d.get("entity_id"),
+                "activity_type": d.get("activity_type"),
+                "agent_id": d.get("agent_id") or d.get("generated_by_agent"),
+                "integrity_hash": d.get("integrity_hash", ""),
+                "timestamp": d.get("timestamp", d.get("generated_at", d.get("ts"))),
+                "description": d.get("description", d.get("activity_description", "")),
+            })
+        return JSONResponse(_ok({
+            "entity_id": eid,
+            "verified": verified.value if hasattr(verified, 'value') else str(verified),
+            "chain": chain_payload,
+        }))
+
     # ---- 图推理 ----
 
     async def graph_reason(self, request: Request) -> JSONResponse:
@@ -838,6 +906,337 @@ class _RouteHandlers:
         """GET /l3/graph/stats — 图统计."""
         stats = self._graph_reasoner.get_stats()
         return JSONResponse(_ok(stats))
+
+    async def graph_subgraph(self, request: Request) -> JSONResponse:
+        """GET /l3/graph/subgraph — 图谱子图 (节点+边, 供前端力导向图可视化).
+
+        返回核心实体 (chemical_compound/material) 及其关系边, 聚焦 Dy 相关实体,
+        避免返回全部 9668 实体导致前端卡顿. 查询参数:
+            limit: 最大节点数 (默认 80)
+            focus: 聚焦关键词 (默认 Dy, 返回含该词的实体子图)
+        """
+        qp = request.query_params
+        limit = min(int(qp.get("limit", 80)), 200)
+        focus = qp.get("focus", "Dy").strip() or "Dy"
+
+        store = self._store
+        # 1. 聚焦实体: chemical_compound/material 类型且名称含 focus
+        focus_entities = [
+            e for e in store.entity_store._entities.values()
+            if e.entity_type.value in ("chemical_compound", "material")
+            and focus.lower() in (e.name or "").lower()
+        ]
+        # 若 focus 命中太少, 放宽到全部 chemical_compound/material
+        if len(focus_entities) < 5:
+            focus_entities = [
+                e for e in store.entity_store._entities.values()
+                if e.entity_type.value in ("chemical_compound", "material")
+            ]
+
+        # 限制初始节点数
+        focus_entities = focus_entities[:limit]
+
+        # 2. 收集焦点节点 ID + 找相邻节点 (与焦点有边的实体)
+        focus_ids = {e.entity_id for e in focus_entities}
+        all_entity = {e.entity_id: e for e in store.entity_store._entities.values()}
+
+        # 遍历三元组, 收集与焦点相连的邻居节点
+        neighbor_ids: set[str] = set()
+        relevant_edges: list[Any] = []
+        for t in store.triple_store._triples.values():
+            if t.object_is_literal:
+                continue
+            s_in = t.subject_id in focus_ids
+            o_in = t.object_id in focus_ids
+            if s_in or o_in:
+                relevant_edges.append(t)
+                if s_in and t.object_id in all_entity:
+                    neighbor_ids.add(t.object_id)
+                if o_in and t.subject_id in all_entity:
+                    neighbor_ids.add(t.subject_id)
+
+        # 3. 构建节点 (焦点 + 邻居)
+        nodes: list[dict[str, Any]] = []
+        entity_id_to_name: dict[str, str] = {}
+        seen_nodes: set[str] = set()
+        for e in focus_entities:
+            if e.entity_id not in seen_nodes:
+                seen_nodes.add(e.entity_id)
+                nodes.append({"id": e.entity_id, "label": e.name or e.entity_id,
+                              "type": e.entity_type.value, "domain": e.domain, "degree": 0})
+                entity_id_to_name[e.entity_id] = e.name or e.entity_id
+        for nid in neighbor_ids:
+            if nid in seen_nodes:
+                continue
+            e = all_entity.get(nid)
+            if e is None:
+                continue
+            seen_nodes.add(nid)
+            nodes.append({"id": nid, "label": e.name or nid,
+                          "type": e.entity_type.value, "domain": e.domain, "degree": 0})
+            entity_id_to_name[nid] = e.name or nid
+            if len(nodes) >= limit * 2:
+                break
+
+        # 4. 构建边 (只保留两端都在 nodes 里)
+        node_ids = set(entity_id_to_name.keys())
+        edges: list[dict[str, Any]] = []
+        seen_edges: set[tuple[str, str, str]] = set()
+        for t in relevant_edges:
+            if t.subject_id in node_ids and t.object_id in node_ids:
+                key = (t.subject_id, t.predicate, t.object_id)
+                if key in seen_edges:
+                    continue
+                seen_edges.add(key)
+                edges.append({
+                    "source": t.subject_id,
+                    "target": t.object_id,
+                    "label": t.predicate,
+                })
+                for n in nodes:
+                    if n["id"] == t.subject_id or n["id"] == t.object_id:
+                        n["degree"] += 1
+
+        return JSONResponse(_ok({
+            "nodes": nodes,
+            "edges": edges,
+            "focus": focus,
+            "total_nodes": store.entity_count(),
+            "total_edges": store.triple_count(),
+        }))
+
+    async def graph_hierarchy(self, request: Request) -> JSONResponse:
+        """GET /l3/graph/hierarchy — 分层知识图谱 (L1-L4 层级实体 + 关系边).
+
+        直接返回 domain 命中层级前缀的实体 (绕过 list_entities 的 type_rank 排序,
+        否则 concept 层级实体排最后, 前端 offset 分页拉不到), 供前端分层径向图可视化.
+        """
+        store = self._store
+        prefixes = ("L1", "L2:", "L3:", "L4:", "activator", "property", "application")
+        nodes: list[dict[str, Any]] = []
+        node_ids: set[str] = set()
+        for e in store.entity_store._entities.values():
+            d = e.domain or ""
+            if not any(d == p or d.startswith(p) for p in prefixes):
+                continue
+            node_ids.add(e.entity_id)
+            nodes.append({
+                "id": e.entity_id,
+                "label": e.name or e.entity_id,
+                "type": e.entity_type.value,
+                "domain": d,
+                "desc": e.description or "",
+                "degree": 0,
+            })
+
+        degree: dict[str, int] = {}
+        edges: list[dict[str, Any]] = []
+        for t in store.triple_store._triples.values():
+            if t.subject_id in node_ids and t.object_id in node_ids:
+                edges.append({
+                    "source": t.subject_id,
+                    "target": t.object_id,
+                    "label": t.predicate,
+                })
+                degree[t.subject_id] = degree.get(t.subject_id, 0) + 1
+                degree[t.object_id] = degree.get(t.object_id, 0) + 1
+        for n in nodes:
+            n["degree"] = degree.get(n["id"], 0)
+
+        return JSONResponse(_ok({
+            "nodes": nodes,
+            "edges": edges,
+            "total": len(nodes),
+        }))
+
+    async def graph_kp_relations(self, request: Request) -> JSONResponse:
+        """GET /l3/graph/kp-relations — 知识点关系图 (48 KP, 迁移后章.节.序号 + 教学关系边).
+
+        从已播种的知识图谱 (self._store) 读取 48 个知识点 (42 重编号 + 6 第 6 章新增),
+        按新 ID (章.节.序号) 输出, 附章/节归属; 边覆盖全部教学关系 (前提/类比/因果/
+        表征/上下位/应用), 并带来源标记 source_id (rule=规则边 / llm=LLM 补边 / ""=手工)。
+        deepens (深化) 是 prerequisite_of 的反向, 由前端按箭头方向体现, 不单独成边。
+        """
+        from dy3_polaris.l2.kp_catalog import (
+            CHAPTER_LABELS,
+            NEW_KP_NAMES,
+            NEW_KP_TO_CHAPTER,
+            NEW_KP_TO_SECTION,
+            SECTION_LABELS,
+            to_new_id,
+        )
+
+        store = self._store
+        TEACHING = {"prerequisite_of", "analogous_to", "affects",
+                    "characterized_by", "subconcept_of", "applies_to"}
+
+        def _new_id(eid: str) -> str:
+            raw = eid.split(":", 1)[1] if ":" in eid else eid
+            if "." in raw and raw[0].isdigit():
+                return raw
+            return to_new_id(raw)
+
+        # 知识点节点 (48)
+        kp_entities = [
+            e for e in store.entity_store._entities.values()
+            if e.entity_id.startswith("kp:")
+        ]
+        nodes: list[dict[str, Any]] = []
+        for e in kp_entities:
+            nid = _new_id(e.entity_id)
+            ch = NEW_KP_TO_CHAPTER.get(nid, "")
+            sec = NEW_KP_TO_SECTION.get(nid, "")
+            nodes.append({
+                "id": f"kp:{nid}",
+                "kp_id": nid,
+                "label": NEW_KP_NAMES.get(nid, e.name),
+                "chapter": ch,
+                "chapter_label": CHAPTER_LABELS.get(ch, ""),
+                "section": sec,
+                "section_label": SECTION_LABELS.get(sec, ""),
+                "entity_id": e.entity_id,
+            })
+
+        # 教学关系边 (KP → KP)
+        kp_ids = {e.entity_id for e in kp_entities}
+        edges: list[dict[str, Any]] = []
+        seen: set[tuple[str, str, str]] = set()
+        for t in store.triple_store._triples.values():
+            if t.predicate not in TEACHING:
+                continue
+            if t.subject_id not in kp_ids or t.object_id not in kp_ids:
+                continue
+            sig = (t.subject_id, t.predicate, t.object_id)
+            if sig in seen:
+                continue
+            seen.add(sig)
+            edges.append({
+                "source": f"kp:{_new_id(t.subject_id)}",
+                "target": f"kp:{_new_id(t.object_id)}",
+                "label": t.predicate,
+                "source_id": getattr(t, "source_id", "") or "rule",
+                "confidence": float(t.confidence),
+            })
+
+        return JSONResponse(_ok({
+            "nodes": nodes,
+            "edges": edges,
+            "total": len(nodes),
+            "relation_types": sorted(TEACHING),
+        }))
+
+    async def graph_role_kp(self, request: Request) -> JSONResponse:
+        """GET /l3/graph/role-kp — 职业角色 + 角色-知识点关联 (多职业维度).
+
+        返回 7 种职业角色 (学生/教师/材料工程师/照明设计师/研究员/健康专家/
+        质量工程师) 各自关注的知识点子集 (含权重), 供按角色的个性化学习路径推荐。
+        """
+        from dy3_polaris.l2.kp_catalog import KP_NAMES
+        from dy3_polaris.l2.kp_roles import role_kps, role_list
+
+        roles: list[dict[str, Any]] = []
+        for r in role_list():
+            kps = [
+                {"kp_id": k, "name": KP_NAMES.get(k, k), "weight": w}
+                for k, w in sorted(role_kps(r["role_id"]).items())
+            ]
+            roles.append({**r, "kps": kps})
+        return JSONResponse(_ok({"roles": roles, "total": len(roles)}))
+
+    # ---- 图消费层 (P3) ----
+
+    async def graph_learning_path(self, request: Request) -> JSONResponse:
+        """GET /l3/graph/learning-path — 学习路径 (Dijkstra 加权最短路径 + 可读解释).
+
+        查询参数:
+            start: 起点实体 ID (如 kp:2.1.1 或 ion:Dy3+)
+            goal : 终点实体 ID
+            max_depth: 最大深度 (默认 10)
+        """
+        qp = request.query_params
+        start = qp.get("start", "").strip()
+        goal = qp.get("goal", "").strip()
+        if not start or not goal:
+            return JSONResponse(_err(-32700, "start 与 goal 参数必填"), status_code=400)
+        try:
+            max_depth = min(int(qp.get("max_depth", 10)), 20)
+        except ValueError:
+            max_depth = 10
+        try:
+            from dy3_polaris.l3.graph_consume import learning_path
+        except Exception as exc:  # noqa: BLE001
+            return JSONResponse(_err(-32603, f"图消费层不可用: {exc}"), status_code=500)
+        result = learning_path(self._store, start, goal, max_depth=max_depth)
+        if result is None:
+            return JSONResponse(
+                _err(-32602, f"未找到 {start} → {goal} 的路径"),
+                status_code=404,
+            )
+        return JSONResponse(_ok(result))
+
+    async def graph_analogy(self, request: Request) -> JSONResponse:
+        """POST /l3/graph/analogy — 类比推理 (关系模式迁移).
+
+        请求体:
+            source_a / source_b: 源关系对 (A, B)
+            target: 目标实体 ID (把 A→B 的关系模式迁移到 target)
+        """
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(_err(-32700, "请求体解析失败"), status_code=400)
+        src_a = str(body.get("source_a") or body.get("source_pair", [None])[0] or "")
+        src_b = str(body.get("source_b") or (body.get("source_pair") or [None, None])[1] or "")
+        target = str(body.get("target") or "")
+        if not src_a or not src_b or not target:
+            return JSONResponse(_err(-32700, "source_a/source_b/target 必填"), status_code=400)
+        try:
+            from dy3_polaris.l3.graph_consume import analogy
+        except Exception as exc:  # noqa: BLE001
+            return JSONResponse(_err(-32603, f"图消费层不可用: {exc}"), status_code=500)
+        return JSONResponse(_ok({"source_pair": [src_a, src_b], "target": target,
+                                 "results": analogy(self._store, (src_a, src_b), target)}))
+
+    async def graph_recall(self, request: Request) -> JSONResponse:
+        """POST /l3/graph/recall — 多跳召回 (多类型图 → 事实 + 概念实体证据).
+
+        请求体:
+            query: 查询文本 (必填)
+            max_hop: 最大跳数 (默认 2)
+            max_facts / max_concepts: 事实/概念实体上限
+        """
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(_err(-32700, "请求体解析失败"), status_code=400)
+        query = str(body.get("query") or "").strip()
+        if not query:
+            return JSONResponse(_err(-32700, "query 必填"), status_code=400)
+        try:
+            from dy3_polaris.l3.graph_consume import recall, resolve_seeds
+        except Exception as exc:  # noqa: BLE001
+            return JSONResponse(_err(-32603, f"图消费层不可用: {exc}"), status_code=500)
+        seeds = resolve_seeds(query, self._store)
+        evidence = recall(
+            query, self._store,
+            max_hop=int(body.get("max_hop", 2)),
+            max_facts=int(body.get("max_facts", 8)),
+            max_concepts=int(body.get("max_concepts", 8)),
+        )
+        return JSONResponse(_ok({"query": query, "seeds": seeds,
+                                 "evidence": evidence, "count": len(evidence)}))
+
+    async def graph_provenance(self, request: Request) -> JSONResponse:
+        """GET /l3/graph/provenance/{id} — 实体溯源 (入/出边 + 邻接实体 + 来源标记)."""
+        eid = request.path_params["id"]
+        try:
+            from dy3_polaris.l3.graph_consume import provenance
+        except Exception as exc:  # noqa: BLE001
+            return JSONResponse(_err(-32603, f"图消费层不可用: {exc}"), status_code=500)
+        result = provenance(self._store, eid)
+        if not result.get("exists"):
+            return JSONResponse(_err(-32602, f"实体不存在: {eid}"), status_code=404)
+        return JSONResponse(_ok(result))
 
     # ---- 本体管理 ----
 
@@ -988,6 +1387,7 @@ class L3Router:
         graph_reasoner: GraphReasoner | None = None,
         ontology_registry: OntologyRegistry | None = None,
         persistence_manager: PersistenceManager | None = None,
+        embedding_manager: Any | None = None,
         cors_origins: list[str] | None = None,
     ) -> None:
         """初始化 L3 路由器.
@@ -1002,6 +1402,7 @@ class L3Router:
             graph_reasoner: 图推理器 (None 自动创建)
             ontology_registry: 本体注册中心 (None 自动创建)
             persistence_manager: 持久化管理器 (None 自动创建)
+            embedding_manager: 嵌入管理器 (可选, 提供后启用语义检索)
             cors_origins: CORS 允许的源 (默认 ["*"])
         """
         self._store = store
@@ -1016,7 +1417,13 @@ class L3Router:
             graph_reasoner=graph_reasoner,
             ontology_registry=ontology_registry,
             persistence_manager=persistence_manager,
+            embedding_manager=embedding_manager,
         )
+
+    @property
+    def store(self) -> KnowledgeStore:
+        """获取关联的知识存储 (供统一应用集成使用)."""
+        return self._store
 
     def create_app(self) -> Starlette:
         """创建 Starlette 应用实例.
@@ -1066,12 +1473,21 @@ class L3Router:
             Route("/quality/conflicts/resolve", h.quality_resolve_conflict, methods=["POST"]),
             Route("/quality/dashboard", h.quality_dashboard, methods=["GET"]),
             Route("/quality/provenance", h.quality_record_provenance, methods=["POST"]),
+            Route("/quality/provenance/{id}/chain", h.quality_provenance_chain, methods=["GET"]),
             Route("/quality/provenance/{id}", h.quality_get_provenance, methods=["GET"]),
             Route("/quality/audit-log", h.quality_audit_log, methods=["GET"]),
 
             # 图推理
             Route("/graph/reason", h.graph_reason, methods=["POST"]),
             Route("/graph/stats", h.graph_stats, methods=["GET"]),
+            Route("/graph/subgraph", h.graph_subgraph, methods=["GET"]),
+            Route("/graph/hierarchy", h.graph_hierarchy, methods=["GET"]),
+            Route("/graph/kp-relations", h.graph_kp_relations, methods=["GET"]),
+            Route("/graph/role-kp", h.graph_role_kp, methods=["GET"]),
+            Route("/graph/learning-path", h.graph_learning_path, methods=["GET"]),
+            Route("/graph/analogy", h.graph_analogy, methods=["POST"]),
+            Route("/graph/recall", h.graph_recall, methods=["POST"]),
+            Route("/graph/provenance/{id}", h.graph_provenance, methods=["GET"]),
 
             # 本体管理
             Route("/ontology/domains", h.ontology_domains, methods=["GET"]),
@@ -1137,6 +1553,10 @@ class L3Router:
             {"path": "/quality/audit-log", "methods": ["GET"], "description": "审计日志"},
             {"path": "/graph/reason", "methods": ["POST"], "description": "图推理"},
             {"path": "/graph/stats", "methods": ["GET"], "description": "图统计"},
+            {"path": "/graph/learning-path", "methods": ["GET"], "description": "学习路径 (Dijkstra)"},
+            {"path": "/graph/analogy", "methods": ["POST"], "description": "类比推理"},
+            {"path": "/graph/recall", "methods": ["POST"], "description": "多跳召回 (多类型图)"},
+            {"path": "/graph/provenance/{id}", "methods": ["GET"], "description": "实体溯源"},
             {"path": "/ontology/domains", "methods": ["GET"], "description": "列出所有领域"},
             {"path": "/ontology/validate", "methods": ["POST"], "description": "本体验证"},
             {"path": "/ontology/{domain}", "methods": ["GET"], "description": "获取领域本体"},

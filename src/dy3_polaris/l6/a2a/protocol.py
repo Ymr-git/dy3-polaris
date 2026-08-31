@@ -210,7 +210,8 @@ def create_session_id(from_agent: str, to_agent: str) -> str:
     """
     pair = sorted([from_agent, to_agent])
     raw = f"{pair[0]}:{pair[1]}"
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
+    # 统一命名空间: a2a- 前缀 + 确定性哈希 (同一 Agent 对恒同 ID)
+    return f"a2a-{hashlib.sha256(raw.encode('utf-8')).hexdigest()[:20]}"
 
 
 def create_a2a_message(
@@ -630,7 +631,11 @@ class A2AMessageBus:
             if self._task_handler is not None:
                 result_data = await self._task_handler(task)
             else:
-                result_data = {"stub": True, "message": "未注册任务处理器，返回桩结果"}
+                raise A2ATaskError(
+                    task_id,
+                    "未注册任务处理器，任务未执行",
+                    {"to_agent": to_agent, "capability": capability},
+                )
 
             async with self._lock:
                 if task.status == TaskStatus.CANCELLED:

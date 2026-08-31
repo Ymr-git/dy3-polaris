@@ -80,6 +80,9 @@ class BaseRetriever:
         filter: RetrievalFilter | None = None,
     ) -> RetrievalResult:
         """构造统一检索结果."""
+        # 请求级 trace_id 接通 (contextvars 注入, 见 l5/tracing.py)
+        from dy3_polaris.l5.tracing import get_trace_id
+
         return RetrievalResult(
             query=query,
             results=[r[0] for r in results],
@@ -88,6 +91,7 @@ class BaseRetriever:
             retrieval_time_ms=round(retrieval_time_ms, 2),
             source_type=source_type,
             filters=filter.model_dump(mode="json") if filter else {},
+            trace_id=get_trace_id(),
         )
 
 

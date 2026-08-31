@@ -812,7 +812,7 @@ class TestQualityManager:
         assert isinstance(result.grade, QualityGrade)
         assert len(result.metric_results) > 0
         assert len(result.recommendations) > 0
-        assert result.assessment_time_ms > 0
+        assert result.assessment_time_ms >= 0  # 环境计时精度: 快速操作可能为 0
 
         # 应记录到仪表板
         assert manager.assessment_count == 1

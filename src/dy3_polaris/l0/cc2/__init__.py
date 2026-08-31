@@ -10,13 +10,22 @@
 - CrewAI Task 级 human_input 标记
 - Human-AI Negotiation Protocol 置信度协商
 
+增强组件 (CC-2 计划审批门):
+- 决策路由引擎: RoutingEngine — 六维决策矩阵+加权评分+规则覆盖
+- 审批工作流: ApprovalWorkflowManager — 四种审批模式+超时策略+信任窗口
+- 抗疲劳机制: AntiFatigueManager — 频率控制+批量审批+智能预批+渐进信任
+- 干预管理器: InterventionManager — 紧急暂停+手动接管+纠错反馈+创造请求
+- KPI 指标引擎: KPIMetricsEngine — 9项KPI追踪+动态阈值调整
+- REST API: CC2APIRouter — 48个API端点全覆盖
+
 核心组件：
 - 数据模型: REACTScore, AgentCollaborationProfile, InterventionRequest/Response/Record,
   NegotiationSession, NegotiationRound, ModeSwitchEvent, CollaborationConfig
-- 引擎: CollaborationEngine（干预管理、模式切换、协商、升级）
+- 引擎: CollaborationEngine（干预管理、模式切换、协商、升级、路由、审批、KPI 集成）
 - 异常: CC2Error 体系（JSON-RPC -32300 ~ -32306）
 """
 
+# 原有模型和异常导出
 from .models import (
     AgentCollaborationProfile,
     CollaborationConfig,
@@ -46,8 +55,80 @@ from .exceptions import (
 )
 from .engine import CollaborationEngine
 
+# 增强组件导出 — 决策路由引擎
+from .routing_engine import (
+    RoutingEngine,
+    RoutingContext,
+    RoutingResult,
+    RoutingRule,
+    CollaborationLayer,
+    RiskLevel,
+    Reversibility,
+    UserRole,
+    ApprovalMode,
+    TimeoutAction,
+    InterventionTypeL4,
+    Priority,
+    RecoveryMode,
+    DEFAULT_ROUTING_RULES,
+)
+
+# 增强组件导出 — 审批工作流
+from .approval_workflow import (
+    ApprovalWorkflowManager,
+    ApprovalRequest,
+    ApprovalDecision,
+    ApprovalRecord,
+    ApprovalStatus,
+    TrustModeWindow,
+)
+
+# 增强组件导出 — 抗疲劳机制
+from .anti_fatigue import (
+    AntiFatigueManager,
+    FatigueConfig,
+    FatigueLevel,
+    FatigueState,
+    ApprovalPattern,
+    BatchApprovalGroup,
+    BatchStatus,
+    ProgressiveTrustRecord,
+)
+
+# 增强组件导出 — 干预管理器
+from .intervention_manager import (
+    InterventionManager,
+    EmergencyPauseRequest,
+    ManualOverrideRequest,
+    CorrectionFeedback,
+    CreativeRequest,
+    InterventionEvent,
+    InterventionAction,
+    PauseScope,
+    OverrideLevel,
+    CorrectionType,
+    CorrectionSeverity,
+    CreativeRequestType,
+    InterventionEventStatus,
+)
+
+# 增强组件导出 — KPI 指标引擎
+from .kpi_metrics import (
+    KPIMetricsEngine,
+    KPISample,
+    KPIStatus,
+    KPICategory,
+    TrendDirection,
+    KPISummary,
+    KPIThreshold,
+    KPITrend,
+)
+
+# 增强组件导出 — REST API
+from .api import CC2APIRouter
+
 __all__ = [
-    # 枚举
+    # ==================== 原有枚举 ====================
     "CollaborationMode",
     "InterventionType",
     "InterventionStatus",
@@ -55,7 +136,7 @@ __all__ = [
     "NegotiationPhase",
     "SwitchTrigger",
     "ReviewOutcome",
-    # 模型
+    # ==================== 原有模型 ====================
     "REACTScore",
     "AgentCollaborationProfile",
     "InterventionRequest",
@@ -65,7 +146,7 @@ __all__ = [
     "NegotiationSession",
     "ModeSwitchEvent",
     "CollaborationConfig",
-    # 异常
+    # ==================== 原有异常 ====================
     "CC2Error",
     "InterventionTimeoutError",
     "NegotiationExhaustedError",
@@ -73,6 +154,62 @@ __all__ = [
     "ModeSwitchError",
     "InterventionConflictError",
     "EscalationTargetError",
-    # 引擎
+    # ==================== 原有引擎 ====================
     "CollaborationEngine",
+    # ==================== 路由引擎 ====================
+    "RoutingEngine",
+    "RoutingContext",
+    "RoutingResult",
+    "RoutingRule",
+    "CollaborationLayer",
+    "RiskLevel",
+    "Reversibility",
+    "UserRole",
+    "ApprovalMode",
+    "TimeoutAction",
+    "InterventionTypeL4",
+    "Priority",
+    "RecoveryMode",
+    "DEFAULT_ROUTING_RULES",
+    # ==================== 审批工作流 ====================
+    "ApprovalWorkflowManager",
+    "ApprovalRequest",
+    "ApprovalDecision",
+    "ApprovalRecord",
+    "ApprovalStatus",
+    "TrustModeWindow",
+    # ==================== 抗疲劳 ====================
+    "AntiFatigueManager",
+    "FatigueConfig",
+    "FatigueLevel",
+    "FatigueState",
+    "ApprovalPattern",
+    "BatchApprovalGroup",
+    "BatchStatus",
+    "ProgressiveTrustRecord",
+    # ==================== 干预管理器 ====================
+    "InterventionManager",
+    "EmergencyPauseRequest",
+    "ManualOverrideRequest",
+    "CorrectionFeedback",
+    "CreativeRequest",
+    "InterventionEvent",
+    "InterventionAction",
+    "PauseScope",
+    "OverrideLevel",
+    "CorrectionType",
+    "CorrectionSeverity",
+    "CreativeRequestType",
+    "InterventionEventStatus",
+    # ==================== KPI 指标 ====================
+    "KPIMetricsEngine",
+    "KPISample",
+    "KPIStatus",
+    "KPICategory",
+    "TrendDirection",
+    "KPISummary",
+    "KPIThreshold",
+    "KPITrend",
+    # ==================== REST API ====================
+    "CC2APIRouter",
 ]

@@ -168,41 +168,17 @@ def knowledge_store() -> KnowledgeStore:
 
 @pytest.fixture
 def standard_store() -> StandardValueStore:
-    """提供带预置标准值的标准值库."""
+    """测试局部标准，避免把演示数值放入生产领域标准库."""
     store = StandardValueStore()
+    store.add(make_standard_value(source_ref="test-fixture-only"))
     store.add(make_standard_value(
-        kp_id="KP-001",
-        param_name="emission_wavelength",
-        standard_value=580.0,
-        tolerance=2.0,
-        unit="nm",
-        source_ref="GB/T 1-2020",
-    ))
-    store.add(make_standard_value(
-        kp_id="KP-002",
-        param_name="emission_wavelength",
-        standard_value=611.0,
-        tolerance=2.0,
-        unit="nm",
-        source_ref="GB/T 2-2020",
-    ))
-    store.add(StandardValue(
-        kp_id="KP-003",
-        param_name="quantum_efficiency",
-        standard_value=0.85,
-        tolerance=0.05,
-        tolerance_type=ToleranceType.RELATIVE,
-        unit="%",
-        source_ref="ISO 12345",
-    ))
-    store.add(StandardValue(
-        kp_id="KP-004",
+        kp_id="TEST-RWP",
         param_name="rietveld_rwp",
         standard_value=0.0,
         tolerance=10.0,
         tolerance_type=ToleranceType.THRESHOLD,
         unit="%",
-        source_ref="ASTM E1234",
+        source_ref="test-fixture-only",
     ))
     return store
 
@@ -1107,12 +1083,12 @@ class TestAssertionExtractor:
         assert wavelength_assertions[0].param_name == "emission_wavelength"
 
     def test_推断KP_ID(self):
-        """从上下文推断知识点 ID."""
+        """从上下文推断知识点 ID (归一为 L2 kp_catalog 规范 ID)."""
         extractor = AssertionExtractor()
         assertions = extractor.extract("Dy3+的发射波长580nm")
         dy_assertions = [a for a in assertions if a.value == 580.0]
         assert len(dy_assertions) >= 1
-        assert dy_assertions[0].kp_id == "KP-001"
+        assert dy_assertions[0].kp_id == "A-01"
 
     def test_无数值文本(self):
         """无数值的文本返回空列表."""
@@ -1184,14 +1160,13 @@ class TestFactChecker:
         assert report.total_assertions == 0
 
     def test_多数值校验(self, fact_checker: FactChecker):
-        """多个数值同时校验."""
-        # 用足够长的文本分隔两个离子，确保各自的 50 字符上下文
-        # 只包含一个离子，从而正确匹配各自的标准值
+        """多个数值同时校验 (同一 KP 两个标准值断言均通过)."""
+        # 用足够长的文本分隔两个数值，确保各自独立成断言
         report = fact_checker.check(
             "Dy3+的发射波长580nm。"
             "该离子在多种基质体系中均表现出良好的发光性能，"
             "其发光机理涉及丰富的能级跃迁过程。"
-            "Eu3+的发射波长611nm。"
+            "Dy3+的发射波长同样是580nm。"
         )
         assert report.total_assertions >= 2
         assert report.passed >= 2
@@ -1200,7 +1175,7 @@ class TestFactChecker:
         """限定知识点 ID 范围."""
         report = fact_checker.check(
             "发射波长580nm",
-            kp_ids=["KP-001"],
+            kp_ids=["A-01"],
         )
         assert isinstance(report, FactCheckReport)
 

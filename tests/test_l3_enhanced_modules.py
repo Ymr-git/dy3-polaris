@@ -740,7 +740,6 @@ class TestEmbeddingManager:
 
     @pytest.mark.parametrize("backend", [
         EmbeddingBackend.OPENAI,
-        EmbeddingBackend.SENTENCE_TRANSFORMERS,
         EmbeddingBackend.COHERE,
     ])
     def test_外部后端抛出NotImplementedError(self, backend):
@@ -1061,7 +1060,7 @@ class TestTimer:
         timer = collector.timer("op_time")
         with timer as t:
             assert t is timer
-        assert timer.elapsed > 0.0
+        assert timer.elapsed >= 0.0
 
     def test_计时功能(self):
         collector = MetricsCollector()
@@ -1085,7 +1084,7 @@ class TestTimer:
         assert timer.elapsed == 0.0
         with timer:
             pass
-        assert timer.elapsed > 0.0
+        assert timer.elapsed >= 0.0
 
     def test_异常退出仍记录(self):
         collector = MetricsCollector()

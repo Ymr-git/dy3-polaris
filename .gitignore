@@ -35,3 +35,25 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# 知识库向量化/图构建快照 (体积膨胀源，见 _膨胀点标注-向量化快照.md)
+**/data/snapshots/
+**/data/
+
+# 密钥与本地配置 (绝不提交/随文件复制泄漏)
+.env
+.env.local
+.env.*
+!.env.example
+
+# 本机连接器与运行时产物
+.mcp.json
+.runtime/
+_debug-data/
+.tmp-*/
+.ai_runtime_check_*.log
+
+# 本地截图与临时评测输出
+shot/
+shot.py
+competition_eval_report*.json

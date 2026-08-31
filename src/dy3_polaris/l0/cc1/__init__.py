@@ -56,6 +56,87 @@ from .pipeline import (
 )
 from .store import VerificationStore
 
+# 四层反幻觉评审引擎 (增强)
+from .layers import (
+    BaseReviewLayer,
+    FactLayer,
+    LAYER_WEIGHTS,
+    LayerResult,
+    LayerRuleResult,
+    LogicLayer,
+    NumericalLayer,
+    ProvenanceLayer,
+    ReviewLayerType,
+    ReviewRule,
+    RuleSeverity,
+)
+from .state_machine import (
+    ReviewState,
+    ReviewStateMachine,
+    ReviewVerdict,
+    SelfCorrectionLoop,
+    SelfCorrectionRecord,
+)
+from .scoring import (
+    CompositeScoringEngine,
+    ScoringWeights,
+)
+from .review_pipeline import (
+    LearnerLevel,
+    LEARNER_LEVEL_THRESHOLDS,
+    ReviewPipeline,
+    ReviewPipelineConfig,
+    ReviewResult,
+)
+
+# L2 推理链提取与 DAG 分析
+from .reasoning_chain import (
+    Contradiction,
+    ContradictionDetector,
+    ReasoningChainError,
+    ReasoningChainExtractor,
+    ReasoningDAG,
+    ReasoningStep,
+)
+
+# L4 溯源链构建与权威性评级
+from .provenance_chain import (
+    AuthorityRater,
+    ProvenanceChain,
+    ProvenanceNode,
+    SourceTier,
+    TIER_1_JOURNALS,
+    TIER_BASE_SCORES,
+    SOURCE_TYPE_DEFAULT_TIER,
+    VersionManager,
+)
+
+# L3 数值层计算引擎 (单位换算 / Judd-Ofelt / CIE 色度 / 误差分析)
+from .computation import (
+    CIECalculator,
+    CIESpectrumPoint,
+    CIEWhitePoint,
+    ComputationError,
+    CONST,
+    ErrorAnalyzer,
+    JuddOfeltCalculator,
+    JuddOfeltRanges,
+    PhysicalConstants,
+    UnitConverter,
+)
+
+# 三阶段评审 (预评审 / 同步评审 / 后评审编排)
+from .pre_review import (
+    IntermediateSample,
+    PreReviewContext,
+    PreReviewEngine,
+    PreReviewResult,
+    ReviewStageType,
+    SynchronousReviewHook,
+    SynchronousReviewResult,
+    ThreeStageReviewOrchestrator,
+)
+
 __all__ = [
     # 枚举
     "VerificationStage",
@@ -95,4 +176,64 @@ __all__ = [
     "AntiHallucinationPipeline",
     # 存储
     "VerificationStore",
+    # 四层反幻觉评审引擎 (增强)
+    "ReviewLayerType",
+    "RuleSeverity",
+    "ReviewRule",
+    "LayerRuleResult",
+    "LayerResult",
+    "LAYER_WEIGHTS",
+    "BaseReviewLayer",
+    "FactLayer",
+    "LogicLayer",
+    "NumericalLayer",
+    "ProvenanceLayer",
+    "ReviewState",
+    "ReviewVerdict",
+    "ReviewStateMachine",
+    "SelfCorrectionRecord",
+    "SelfCorrectionLoop",
+    "ScoringWeights",
+    "CompositeScoringEngine",
+    "ReviewPipelineConfig",
+    "ReviewResult",
+    "ReviewPipeline",
+    "LearnerLevel",
+    "LEARNER_LEVEL_THRESHOLDS",
+    # L2 推理链与 DAG 分析
+    "ReasoningStep",
+    "ReasoningChainExtractor",
+    "ReasoningDAG",
+    "Contradiction",
+    "ContradictionDetector",
+    "ReasoningChainError",
+    # L4 溯源链与权威性评级
+    "SourceTier",
+    "ProvenanceNode",
+    "ProvenanceChain",
+    "AuthorityRater",
+    "VersionManager",
+    "TIER_BASE_SCORES",
+    "TIER_1_JOURNALS",
+    "SOURCE_TYPE_DEFAULT_TIER",
+    # L3 数值层计算引擎
+    "PhysicalConstants",
+    "ComputationError",
+    "CONST",
+    "UnitConverter",
+    "JuddOfeltRanges",
+    "JuddOfeltCalculator",
+    "CIESpectrumPoint",
+    "CIEWhitePoint",
+    "CIECalculator",
+    "ErrorAnalyzer",
+    # 三阶段评审
+    "ReviewStageType",
+    "PreReviewContext",
+    "PreReviewResult",
+    "PreReviewEngine",
+    "IntermediateSample",
+    "SynchronousReviewResult",
+    "SynchronousReviewHook",
+    "ThreeStageReviewOrchestrator",
 ]

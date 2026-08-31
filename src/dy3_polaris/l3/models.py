@@ -61,6 +61,16 @@ class EntityType(str, Enum):
     DOCUMENT_CHUNK = "document_chunk"
     COURSE = "course"
     EXPERIMENT = "experiment"
+    # ---- 教育知识图谱分层类型 (知识图谱重构 P0) ----
+    TOPIC = "topic"  # 章/节 主题节点 (part_of 挂载知识点)
+    KNOWLEDGE_POINT = "knowledge_point"  # 教学知识点
+    FACT = "fact"  # 权威事实
+    ROLE = "role"  # 职业角色
+    QUESTION = "question"  # 习题
+    # ---- 领域实体子类型 ----
+    ION = "ion"  # 离子 (激活剂 Dy3+/敏化剂 Yb3+/基质阳离子)
+    ENERGY_LEVEL = "energy_level"  # 能级/跃迁 (4F9/2, 6H15/2, 4f-4f, 4f-5d ...)
+    PARAMETER = "parameter"  # 性能参数 (量子效率/色坐标/色温/荧光寿命/T50 ...)
 
 
 class RelationType(str, Enum):
@@ -83,6 +93,20 @@ class RelationType(str, Enum):
     INSTANTIATES = "instantiates"
     SUPERSEDES = "supersedes"
     REFERENCES = "references"
+    # ---- 教学语义关系 (知识点间横向/纵向拓展, 镝-绿色健康照明领域) ----
+    # 纵向: 沿"前提 → 深化"钻深/溯源
+    PREREQUISITE_OF = "prerequisite_of"  # 前提: 学 B 前先掌握 A (A 是 B 的 prerequisite)
+    DEEPENS = "deepens"  # 深化: A 的延伸/应用 (prerequisite_of 的逆)
+    # 横向: 跨知识点/跨域的关联 (旁通/跳转)
+    ANALOGOUS_TO = "analogous_to"  # 同类机制/对比 (如浓度猝灭 ↔ 热猝灭)
+    AFFECTS = "affects"  # 因果/影响 (跨域, 如掺杂配比 → 浓度猝灭)
+    CHARACTERIZED_BY = "characterized_by"  # 表征关联 (机理/材料 → 用什么方法测)
+    SUBCONCEPT_OF = "subconcept_of"  # 上下位: 广义概念 → 狭义概念 (猝灭 → 浓度猝灭)
+    APPLIES_TO = "applies_to"  # 应用: 材料/机理 → 应用场景 (单基质白光 → 健康照明)
+    # ---- 实体/事实/知识点 桥接关系 (知识图谱重构 P0) ----
+    MENTIONS = "mentions"  # 知识点/事实 → 实体 (材料/离子/方法/参数)
+    MEASURED_BY = "measured_by"  # 性能参数 → 表征方法
+    DOPED_WITH = "doped_with"  # 材料 → 激活剂离子
 
 
 class SourceTier(str, Enum):

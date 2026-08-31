@@ -212,7 +212,9 @@ class TestMessageBusTask:
             input_data={"learner_id": "u001"},
         )
         assert isinstance(task, A2ATaskRecord)
-        assert task.status == TaskStatus.COMPLETED
+        assert task.status == TaskStatus.FAILED
+        assert task.result is None
+        assert "未注册任务处理器" in str(task.error)
         assert task.from_agent == "tutor-agent"
         assert task.to_agent == "assess-agent"
 
@@ -299,6 +301,11 @@ class TestMessageBusCancel:
     async def test_cancel_completed_task_fails(self, fresh_bus: A2AMessageBus, tutor_cap: A2ACapability, assess_cap: A2ACapability):
         fresh_bus.register_agent(tutor_cap.agent_id, tutor_cap)
         fresh_bus.register_agent(assess_cap.agent_id, assess_cap)
+
+        async def completed_handler(task_record: A2ATaskRecord) -> dict:
+            return {"completed": True}
+
+        fresh_bus.register_task_handler(completed_handler)
         task = await fresh_bus.send_task(
             from_agent="tutor-agent",
             to_agent="assess-agent",

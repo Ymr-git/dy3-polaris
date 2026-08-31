@@ -2033,7 +2033,9 @@ class KnowledgeGraphBuilder:
                     )
                     # 仍创建，但记录警告
                     try:
-                        self._store.add_entity(entity)
+                        # 注: track_version=False — 图谱批量构建关闭版本快照,
+                        # 避免数万实体各持一份完整 JSON 快照造成内存膨胀.
+                        self._store.add_entity(entity, track_version=False)
                         with self._lock:
                             self._entity_index[canonical_name.lower()] = (
                                 entity.entity_id
@@ -2042,7 +2044,7 @@ class KnowledgeGraphBuilder:
                     except Exception as exc:
                         return None, "skipped", f"创建实体失败: {exc}"
             try:
-                self._store.add_entity(entity)
+                self._store.add_entity(entity, track_version=False)
                 with self._lock:
                     self._entity_index[canonical_name.lower()] = (
                         entity.entity_id
@@ -2066,11 +2068,15 @@ class KnowledgeGraphBuilder:
                 new_confidence = max(
                     existing.confidence_score, cluster.best_confidence
                 )
+                # 注: track_version=False 跳过版本快照记录 — 图谱增量合并
+                # 高频实体 (如 Dy3+/YAG) 被数千切片反复更新时, 版本历史会
+                # 无限膨胀导致内存耗尽与换页灾难 (见 profile: 3.2GB).
                 self._store.update_entity(
                     existing_id,
                     aliases=list(new_aliases),
                     identifiers=new_identifiers,
                     confidence_score=new_confidence,
+                    track_version=False,
                     changed_by="kg_builder",
                     reason=f"增量合并: source={source_id}",
                 )

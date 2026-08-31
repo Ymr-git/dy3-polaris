@@ -38,38 +38,37 @@ class HashIndex:
 
     提供基于字典的 O(1) 精确查找，支持单值和多值映射。
 
+    内部使用 set 存储值集合: add/remove/contains 均为 O(1) 摊还,
+    避免高频键 (如反复出现的实体名) 下 list 线性扫描导致的 O(n²) 退化。
+
     Attributes:
-        _index: 键到值列表的映射
+        _index: 键到值集合的映射
         _lock: 线程安全锁
     """
 
     def __init__(self) -> None:
-        self._index: dict[str, list[str]] = defaultdict(list)
+        self._index: dict[str, set[str]] = defaultdict(set)
         self._lock = threading.RLock()
 
     def add(self, key: str, value: str) -> None:
-        """添加键值对."""
+        """添加键值对 (O(1) 摊还)."""
         with self._lock:
-            if value not in self._index[key]:
-                self._index[key].append(value)
+            self._index[key].add(value)
 
     def remove(self, key: str, value: str) -> bool:
-        """移除键值对."""
+        """移除键值对 (O(1) 摊还)."""
         with self._lock:
             if key in self._index:
-                try:
-                    self._index[key].remove(value)
-                    if not self._index[key]:
-                        del self._index[key]
-                    return True
-                except ValueError:
-                    pass
+                self._index[key].discard(value)
+                if not self._index[key]:
+                    del self._index[key]
+                return True
             return False
 
     def get(self, key: str) -> list[str]:
         """获取键对应的所有值."""
         with self._lock:
-            return list(self._index.get(key, []))
+            return list(self._index.get(key, ()))
 
     def contains(self, key: str) -> bool:
         """是否包含键."""
@@ -183,15 +182,20 @@ def _tokenize(text: str) -> list[str]:
     # 统一小写
     text = text.lower()
 
-    # 提取英文单词 (>=2 字符)
-    en_tokens = re.findall(r"[a-z]{2,}", text)
+    # 清洗 HTML 标签: <sup>3+</sup> -> 3+, <sub>2</sub> -> 2 (化学式上下标还原)
+    text = re.sub(r"<sup>([^<]*)</sup>", r"\1", text)
+    text = re.sub(r"<sub>([^<]*)</sub>", r"\1", text)
+    text = re.sub(r"</?[a-zA-Z][^>]*>", " ", text)
+
+    # 提取英文 token: 允许字母+数字+电荷组合 (dy3+, na4, f9/2 等化学式)
+    en_tokens = re.findall(r"[a-z][a-z0-9+\-/]*", text)
 
     # 提取中文字符序列，按字分词
     cn_chars = re.findall(r"[\u4e00-\u9fff]", text)
 
     tokens = en_tokens + cn_chars
 
-    # 过滤停用词
+    # 过滤停用词; 中文单字保留 (按字分词), 英文 token 已由正则保证 >=2 字符
     return [t for t in tokens if t not in _STOP_WORDS]
 
 

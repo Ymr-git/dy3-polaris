@@ -252,8 +252,9 @@ class PersistenceManager:
         if content:
             content += "\n"
 
-        file_path.write_text(content, encoding="utf-8")
-        return self._compute_sha256(content.encode("utf-8"))
+        data_bytes = content.encode("utf-8")
+        file_path.write_bytes(data_bytes)
+        return self._compute_sha256(data_bytes)
 
     @staticmethod
     def _read_jsonl(file_path: Path) -> list[dict[str, Any]]:

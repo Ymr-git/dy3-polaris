@@ -369,11 +369,11 @@ class TestVerificationReport评分:
         r.determine_hallucination()
         assert r.hallucination_severity == HallucinationSeverity.LOW
 
-        # >= 0.5 → MEDIUM
+        # >= 0.5 → MEDIUM (中等置信度, 需复核而非确认幻觉, 不置 detected)
         r = VerificationReport(overall_score=0.5)
         r.determine_hallucination()
         assert r.hallucination_severity == HallucinationSeverity.MEDIUM
-        assert r.hallucination_detected is True
+        assert r.hallucination_detected is False
 
         # >= 0.3 → HIGH
         r = VerificationReport(overall_score=0.3)
@@ -611,6 +611,24 @@ class TestGroundednessVerifier:
         )
         assert result.score > 0.3
         assert result.passed is True
+
+    def test_长上下文中的逐字声明视为直接支撑(self):
+        claim = _make_claim(
+            "The quantum efficiency was measured using an integrating sphere"
+        )
+        verifier = GroundednessVerifier()
+        result = verifier.verify(
+            claim,
+            context_chunks=[
+                "Experimental methods and instrument details. "
+                "The quantum efficiency was measured using an integrating sphere "
+                "attached to the spectrofluorometer at room temperature."
+            ],
+            threshold=0.7,
+        )
+
+        assert result.passed is True
+        assert result.score == 1.0
 
     def test_不匹配上下文时低分(self):
         claim = _make_claim("Python is a programming language")
@@ -886,6 +904,23 @@ class TestEvidenceCollector:
         claims = [_make_claim("The boiling point of water is 100 degrees")]
         evidence = collector.collect(request, claims)
         assert len(claims[0].evidence_ids) > 0
+
+    def test_长证据切片中的逐字声明仍建立关联(self):
+        collector = EvidenceCollector()
+        request = _make_request(
+            context_chunks=[
+                "Experimental methods and instrument details. "
+                "The quantum efficiency was measured using an integrating sphere "
+                "attached to the spectrofluorometer at room temperature."
+            ],
+        )
+        claims = [_make_claim(
+            "The quantum efficiency was measured using an integrating sphere"
+        )]
+
+        collector.collect(request, claims)
+
+        assert len(claims[0].evidence_ids) == 1
 
     def test_无匹配时不关联(self):
         collector = EvidenceCollector()

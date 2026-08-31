@@ -412,7 +412,7 @@ class AssertionExtractor:
     # 参数名推断关键词映射
     PARAM_KEYWORDS: dict[str, list[str]] = {
         "emission_wavelength": ["发射波长", "波长", "emission wavelength", "wavelength", "λem"],
-        "energy_level": ["能级", "能量", "energy level", "energy"],
+        "energy_level": ["能级", "energy level"],
         "quantum_efficiency": ["量子效率", "效率", "quantum efficiency", "QE", "EQE"],
         "temperature": ["温度", "temperature", "T"],
         "correlated_color_temperature": ["CCT", "色温", "correlated color temperature"],
@@ -421,13 +421,14 @@ class AssertionExtractor:
         "dopant_concentration": ["掺杂浓度", "浓度", "concentration", "dopant"],
     }
 
-    # KP 关键词映射 (简化版)
+    # KP 关键词映射 — 归一为 L2 kp_catalog 规范 ID (SSOT, 原 KP-001 旧式编号已收敛)
     KP_KEYWORDS: dict[str, list[str]] = {
-        "KP-001": ["Dy3+", "镝", "dysprosium"],
-        "KP-002": ["Eu3+", "铕", "europium"],
-        "KP-003": ["Tb3+", "铽", "terbium"],
-        "KP-004": ["YAG", "钇铝石榴石"],
-        "KP-005": ["4F9/2", "能级跃迁"],
+        "A-01": ["Dy3+", "镝", "dysprosium"],          # 稀土离子的电子构型
+        "A-03": ["4F9/2", "能级跃迁", "光谱项"],        # 原子光谱项与能级
+        "A-05": ["Dy3+ 能级", "4f-4f 跃迁"],           # Dy3+ 能级结构
+        "A-12": ["浓度猝灭", "cross-relaxation"],      # 浓度猝灭机理
+        "B-07": ["CIE", "色坐标", "色纯度"],           # 色坐标与色纯度
+        "D-01": ["XRD", "物相", "结晶度"],             # XRD 物相分析
     }
 
     def extract(self, content: str) -> list[NumericAssertion]:
@@ -686,7 +687,7 @@ class FactChecker:
                             return s
                 return standards[0]
 
-        # 按 kp_id 查找同参数
+        # 按 kp_id 查找同参数 (仅单位一致才匹配, 避免跨量纲误配如 mol%→nm)
         if assertion.kp_id:
             standards = self.standard_store.get_by_kp(assertion.kp_id)
             if standards:
@@ -694,7 +695,6 @@ class FactChecker:
                 for s in standards:
                     if s.unit == assertion.unit:
                         return s
-                return standards[0]
 
         return None
 

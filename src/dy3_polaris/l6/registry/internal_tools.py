@@ -13,8 +13,10 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import math
+import os
 import random
 from typing import Any
 
@@ -1075,27 +1077,46 @@ def _path_simulation_registration() -> ToolRegistration:
     )
 
 
-async def _path_simulation_handler(
+def _path_simulation_handler(
     learner_id: str,
     start_kp: str,
     target_kp: str,
     current_state: dict | None = None,
     constraints: dict | None = None,
 ) -> dict[str, Any]:
-    """学习路径模拟 (stub)."""
+    """学习路径模拟 — 委托 L4 唯一策略决策点 (next-action).
+
+    策略归位 L4: 由 l4.learning_strategy.generate_next_action 生成
+    recommended_path (统一 {kp_id, action, target, effort} 结构);
+    保留 recommended_path 字符串数组兼容旧调用方 (deprecated).
+    """
     if current_state is None:
         current_state = {}
     if constraints is None:
         constraints = {}
 
-    max_steps = constraints.get("max_steps", 10)
+    max_steps = min(int(constraints.get("max_steps", 10)), 50)
     difficulty = constraints.get("preferred_difficulty", "medium")
 
-    # 模拟路径
-    path = [start_kp, target_kp]
-    # 中间插入模拟的过渡知识点
-    mid_kps = [f"{start_kp}_step_{i}" for i in range(1, min(3, max_steps))]
-    path = [start_kp] + mid_kps + [target_kp]
+    # L4 唯一策略决策: 基于画像薄弱点生成路径 (无画像时由 start/target 拼装)
+    from dy3_polaris.l4.learning_strategy import generate_next_action
+
+    profile = {
+        "kp_mastery": current_state.get("mastered_kps") or {},
+        "weak_kps": current_state.get("weak_kps") or [],
+    }
+    decision = generate_next_action(profile, mode="guide")
+    steps = decision["recommended_path"][:max_steps]
+
+    if steps:
+        path = [st["kp_id"] for st in steps]
+        rationale = decision["summary"]
+    else:
+        # 无画像/无薄弱点: 兼容旧语义 (起点→终点)
+        path = [start_kp, target_kp]
+        rationale = (
+            f"Path optimized for {difficulty} difficulty, balancing coverage and efficiency."
+        )
 
     est_time = len(path) * 15  # 每步15分钟
     success_prob = 0.75 + random.uniform(-0.1, 0.15)
@@ -1111,10 +1132,14 @@ async def _path_simulation_handler(
 
     return {
         "recommended_path": path,
+        "recommended_path_detail": steps,  # L4 统一语义: {kp_id, action, target, effort}
         "alternatives": alternatives,
         "estimated_time_minutes": est_time,
         "success_probability": round(success_prob, 4),
-        "rationale": f"Path optimized for {difficulty} difficulty, balancing coverage and efficiency.",
+        "action_type": decision["action_type"],
+        "confidence": decision["confidence"],
+        "decision_source": "l4.next_action",
+        "rationale": rationale,
     }
 
 
@@ -1230,6 +1255,610 @@ async def _resource_matching_handler(
         "matched_resources": matched,
         "total_found": len(matched),
         "best_match": matched[0]["resource_id"] if matched else None,
+    }
+
+
+# ============================================================
+# 画布生成工具 (1): 知识生成 Agent 的视觉化能力
+# ============================================================
+
+def _canvas_generation_registration() -> ToolRegistration:
+    """internal.canvas_generation — 画布生成工具.
+
+    为知识生成 Agent 提供画布能力，根据需求生成架构图、流程图、
+    思维导图、时间线、泳道图和视觉化总结。输出 Mermaid.js 代码，
+    前端使用 Mermaid 渲染器渲染。
+    """
+    return ToolRegistration(
+        name="canvas_generation",
+        description=(
+            "画布生成工具：为知识生成 Agent 提供视觉化能力，"
+            "根据内容生成 Mermaid.js 格式的架构图、流程图、思维导图、"
+            "时间线、泳道图和视觉化总结。"
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "diagram_type": {
+                    "type": "string",
+                    "enum": [
+                        "flowchart",       # 流程图
+                        "mindmap",         # 思维导图
+                        "timeline",        # 时间线
+                        "swimlane",        # 泳道图
+                        "architecture",    # 架构图
+                        "visual_summary",  # 视觉化总结
+                    ],
+                    "description": "画布/图表类型",
+                },
+                "title": {
+                    "type": "string",
+                    "description": "图表标题",
+                },
+                "content": {
+                    "type": "object",
+                    "properties": {
+                        "nodes": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {"type": "string", "description": "节点标识"},
+                                    "label": {"type": "string", "description": "节点标签"},
+                                    "parent": {"type": "string", "description": "父节点ID（思维导图用）"},
+                                    "level": {"type": "integer", "description": "层级"},
+                                    "description": {"type": "string", "description": "节点描述"},
+                                },
+                            },
+                            "description": "节点列表",
+                        },
+                        "edges": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "from": {"type": "string"},
+                                    "to": {"type": "string"},
+                                    "label": {"type": "string", "description": "边标签"},
+                                },
+                            },
+                            "description": "边列表（流程图/架构图用）",
+                        },
+                        "phases": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "phase": {"type": "string", "description": "阶段名称"},
+                                    "start_time": {"type": "string", "description": "开始时间"},
+                                    "end_time": {"type": "string", "description": "结束时间"},
+                                    "items": {
+                                        "type": "array",
+                                        "items": {"type": "string"},
+                                        "description": "该阶段的事件/项",
+                                    },
+                                },
+                            },
+                            "description": "阶段列表（时间线用）",
+                        },
+                        "lanes": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string", "description": "泳道名称"},
+                                    "steps": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "label": {"type": "string"},
+                                                "action": {"type": "string"},
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                            "description": "泳道列表（泳道图用）",
+                        },
+                        "sections": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "items": {
+                                        "type": "array",
+                                        "items": {"type": "string"},
+                                    },
+                                },
+                            },
+                            "description": "章节列表（视觉化总结用）",
+                        },
+                    },
+                    "description": "图表内容数据",
+                },
+                "style": {
+                    "type": "string",
+                    "enum": ["default", "dark", "colorful", "minimal"],
+                    "default": "default",
+                    "description": "图表样式",
+                },
+            },
+            "required": ["diagram_type", "title", "content"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "diagram_type": {"type": "string", "description": "图表类型"},
+                "title": {"type": "string", "description": "图表标题"},
+                "mermaid_code": {"type": "string", "description": "Mermaid.js 代码"},
+                "svg_placeholder": {"type": "string", "description": "SVG 占位说明"},
+                "description": {"type": "string", "description": "图表说明"},
+                "nodes_count": {"type": "integer", "description": "节点数量"},
+                "edges_count": {"type": "integer", "description": "连接数量"},
+            },
+            "required": ["diagram_type", "mermaid_code", "description"],
+        },
+        annotations=Dy3ToolAnnotations(
+            tags=["canvas", "visualization", "generation", "mermaid", "L5"],
+            layer=LayerTag.L5_AGENT_RUNTIME,
+            category=ToolCategory.INTERNAL,
+            estimated_latency_ms=500,
+            domain_scope=["DOM-A", "DOM-B", "DOM-C"],
+            rate_limit=30,
+        ),
+    )
+
+
+def _build_mermaid_flowchart(
+    nodes: list[dict],
+    edges: list[dict],
+    title: str,
+    style: str = "default",
+) -> str:
+    """构建流程图 Mermaid 代码."""
+    lines = ["---", f"title: {title}", "---"]
+    if style == "dark":
+        lines.append("%%{init:{'theme':'dark','themeVariables':{'primaryColor':'#1a1a2e','primaryTextColor':'#fff','primaryBorderColor':'#0f3460','lineColor':'#e94560','secondaryColor':'#16213e','tertiaryColor':'#0f3460'}}}%%")
+    lines.append("flowchart TD")
+    node_ids: set[str] = set()
+    for n in nodes:
+        nid = n.get("id", "")
+        label = n.get("label", nid)
+        desc = n.get("description", "")
+        display = f"{label}<br/><small>{desc}</small>" if desc else label
+        lines.append(f"    {nid}[\"{display}\"]")
+        node_ids.add(nid)
+    for e in edges:
+        f = e.get("from", "")
+        t = e.get("to", "")
+        label = e.get("label", "")
+        if f and t:
+            if label:
+                lines.append(f"    {f} -->|\"{label}\"| {t}")
+            else:
+                lines.append(f"    {f} --> {t}")
+    return "\n".join(lines)
+
+
+def _build_mermaid_mindmap(
+    nodes: list[dict],
+    title: str,
+    style: str = "default",
+) -> str:
+    """构建思维导图 Mermaid 代码."""
+    lines = ["---", f"title: {title}", "---"]
+    if style == "colorful":
+        lines.append("%%{init:{'theme':'base','themeVariables':{'primaryColor':'#FFEAA7','primaryTextColor':'#2d3436','primaryBorderColor':'#fdcb6e','lineColor':'#636e72','secondaryColor':'#dfe6e9','tertiaryColor':'#b2bec3'}}}%%")
+    lines.append("mindmap")
+    root = [n for n in nodes if not n.get("parent")]
+    if root:
+        r = root[0]
+        lines.append(f"  {r.get('label', r.get('id', ''))}")
+        children = [n for n in nodes if n.get("parent") == r.get("id")]
+        for c in children:
+            lines.append(f"    {c.get('label', c.get('id', ''))}")
+            grandchildren = [n for n in nodes if n.get("parent") == c.get("id")]
+            for g in grandchildren:
+                lines.append(f"      {g.get('label', g.get('id', ''))}")
+    else:
+        for n in nodes:
+            lines.append(f"  {n.get('label', n.get('id', ''))}")
+    return "\n".join(lines)
+
+
+def _build_mermaid_timeline(
+    phases: list[dict],
+    title: str,
+    style: str = "default",
+) -> str:
+    """构建时间线 Mermaid 代码."""
+    lines = ["---", f"title: {title}", "---"]
+    if style == "minimal":
+        lines.append("%%{init:{'theme':'base','themeVariables':{'lineColor':'#0984e3','textColor':'#2d3436'}}}%%")
+    lines.append("timeline")
+    lines.append("    title Timeline")
+    for p in phases:
+        phase_name = p.get("phase", "")
+        items = p.get("items", [])
+        lines.append(f"    {phase_name} : {', '.join(items)}")
+    return "\n".join(lines)
+
+
+def _build_mermaid_swimlane(
+    lanes: list[dict],
+    title: str,
+    style: str = "default",
+) -> str:
+    """构建泳道图 Mermaid 代码."""
+    lines = ["---", f"title: {title}", "---"]
+    lines.append("flowchart LR")
+    # 泳道分组
+    for lane in lanes:
+        name = lane.get("name", "")
+        steps = lane.get("steps", [])
+        lines.append(f"    subgraph {name.replace(' ', '_')}[\"{name}\"]")
+        prev = None
+        for s in steps:
+            sid = s.get("label", "").replace(" ", "_")
+            action = s.get("action", "")
+            display = f"{sid}<br/><small>{action}</small>" if action else sid
+            lines.append(f"        {sid}[\"{display}\"]")
+            if prev:
+                lines.append(f"    {prev} --> {sid}")
+            prev = sid
+        lines.append("    end")
+    # 跨泳道连接
+    if len(lanes) >= 2:
+        for i in range(len(lanes) - 1):
+            l1_steps = lanes[i].get("steps", [])
+            l2_steps = lanes[i + 1].get("steps", [])
+            if l1_steps and l2_steps:
+                last = l1_steps[-1].get("label", "").replace(" ", "_")
+                first = l2_steps[0].get("label", "").replace(" ", "_")
+                lines.append(f"    {last} -.->|传递| {first}")
+    return "\n".join(lines)
+
+
+def _build_mermaid_architecture(
+    nodes: list[dict],
+    edges: list[dict],
+    title: str,
+    style: str = "default",
+) -> str:
+    """构建架构图 Mermaid 代码."""
+    lines = ["---", f"title: {title}", "---"]
+    if style == "colorful":
+        lines.append("%%{init:{'theme':'base','themeVariables':{'primaryColor':'#74b9ff','primaryTextColor':'#2d3436','primaryBorderColor':'#0984e3','lineColor':'#636e72','secondaryColor':'#a29bfe','tertiaryColor':'#fd79a8'}}}%%")
+    lines.append("graph TB")
+    # 按层级分组
+    levels: dict[int, list[dict]] = {}
+    for n in nodes:
+        lvl = n.get("level", 0)
+        levels.setdefault(lvl, []).append(n)
+    for lvl in sorted(levels.keys()):
+        group_nodes = levels[lvl]
+        if len(group_nodes) > 1:
+            gname = f"L{lvl}"
+            lines.append(f"    subgraph {gname}[\"层 {lvl}\"]")
+            for n in group_nodes:
+                nid = n.get("id", "")
+                label = n.get("label", nid)
+                lines.append(f"        {nid}[\"{label}\"]")
+            lines.append("    end")
+        else:
+            n = group_nodes[0]
+            nid = n.get("id", "")
+            label = n.get("label", nid)
+            lines.append(f"    {nid}[\"{label}\"]")
+    for e in edges:
+        lines.append(f"    {e.get('from', '')} --> {e.get('to', '')}")
+    return "\n".join(lines)
+
+
+def _build_mermaid_visual_summary(
+    sections: list[dict],
+    title: str,
+    style: str = "default",
+) -> str:
+    """构建视觉化总结 Mermaid 代码."""
+    lines = ["---", f"title: {title}", "---"]
+    lines.append("mindmap")
+    lines.append(f"  {title}")
+    for s in sections:
+        stitle = s.get("title", "")
+        items = s.get("items", [])
+        lines.append(f"    {stitle}")
+        for item in items:
+            lines.append(f"      {item}")
+    return "\n".join(lines)
+
+
+async def _canvas_generation_handler(
+    diagram_type: str,
+    title: str,
+    content: dict,
+    style: str = "default",
+) -> dict[str, Any]:
+    """画布生成处理函数."""
+    nodes = content.get("nodes", [])
+    edges = content.get("edges", [])
+    phases = content.get("phases", [])
+    lanes = content.get("lanes", [])
+    sections = content.get("sections", [])
+
+    mermaid_code = ""
+    description = ""
+    nodes_count = 0
+    edges_count = 0
+
+    if diagram_type == "flowchart":
+        mermaid_code = _build_mermaid_flowchart(nodes, edges, title, style)
+        nodes_count = len(nodes)
+        edges_count = len(edges)
+        description = f"流程图「{title}」：{nodes_count} 个节点，{edges_count} 条连接"
+    elif diagram_type == "mindmap":
+        mermaid_code = _build_mermaid_mindmap(nodes, title, style)
+        nodes_count = len(nodes)
+        description = f"思维导图「{title}」：{nodes_count} 个节点"
+    elif diagram_type == "timeline":
+        mermaid_code = _build_mermaid_timeline(phases, title, style)
+        nodes_count = len(phases)
+        description = f"时间线「{title}」：{nodes_count} 个阶段"
+    elif diagram_type == "swimlane":
+        mermaid_code = _build_mermaid_swimlane(lanes, title, style)
+        nodes_count = sum(len(l.get("steps", [])) for l in lanes)
+        edges_count = len(lanes)
+        description = f"泳道图「{title}」：{len(lanes)} 个泳道，{nodes_count} 个步骤"
+    elif diagram_type == "architecture":
+        mermaid_code = _build_mermaid_architecture(nodes, edges, title, style)
+        nodes_count = len(nodes)
+        edges_count = len(edges)
+        description = f"架构图「{title}」：{nodes_count} 个组件，{edges_count} 条依赖"
+    elif diagram_type == "visual_summary":
+        mermaid_code = _build_mermaid_visual_summary(sections, title, style)
+        nodes_count = sum(len(s.get("items", [])) for s in sections)
+        description = f"视觉化总结「{title}」：{len(sections)} 个章节，{nodes_count} 个要点"
+
+    return {
+        "diagram_type": diagram_type,
+        "title": title,
+        "mermaid_code": mermaid_code,
+        "svg_placeholder": "Mermaid 代码已生成，前端使用 Mermaid 渲染器渲染",
+        "description": description,
+        "nodes_count": nodes_count,
+        "edges_count": edges_count,
+    }
+
+
+# ============================================================
+# chart_type -> generate.js tool name 映射表
+# ============================================================
+
+_CHART_TYPE_TO_GENERATE_TOOL: dict[str, str] = {
+    "area_chart": "generate_area_chart",
+    "bar_chart": "generate_bar_chart",
+    "boxplot_chart": "generate_boxplot_chart",
+    "column_chart": "generate_column_chart",
+    "district_map": "generate_district_map",
+    "dual_axes_chart": "generate_dual_axes_chart",
+    "fishbone_diagram": "generate_fishbone_diagram",
+    "flow_diagram": "generate_flow_diagram",
+    "funnel_chart": "generate_funnel_chart",
+    "histogram_chart": "generate_histogram_chart",
+    "line_chart": "generate_line_chart",
+    "liquid_chart": "generate_liquid_chart",
+    "mind_map": "generate_mind_map",
+    "network_graph": "generate_network_graph",
+    "organization_chart": "generate_organization_chart",
+    "path_map": "generate_path_map",
+    "pie_chart": "generate_pie_chart",
+    "pin_map": "generate_pin_map",
+    "radar_chart": "generate_radar_chart",
+    "sankey_chart": "generate_sankey_chart",
+    "scatter_chart": "generate_scatter_chart",
+    "treemap_chart": "generate_treemap_chart",
+    "venn_chart": "generate_venn_chart",
+    "violin_chart": "generate_violin_chart",
+    "word_cloud_chart": "generate_word_cloud_chart",
+    "spreadsheet": "generate_spreadsheet",
+}
+
+
+# ============================================================
+# 图表生成工具: 基于 chart-visualization skill 的 26 种图表
+# ============================================================
+
+def _chart_generation_registration() -> ToolRegistration:
+    """internal.chart_generation — 图表生成工具.
+
+    基于 chart-visualization skill 的 26 种图表类型生成，
+    支持折线图、柱状图、饼图、散点图、雷达图、桑基图等。
+    调用 generate.js 脚本生成图表并返回图片 URL。
+    """
+    return ToolRegistration(
+        name="chart_generation",
+        description=(
+            "图表生成工具：基于 chart-visualization 能力生成 26 种类型的图表，"
+            "包括折线图、柱状图、饼图、散点图、雷达图、桑基图、思维导图、"
+            "词云、维恩图、箱线图、漏斗图等。返回图表图片 URL。"
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "chart_type": {
+                    "type": "string",
+                    "enum": [
+                        "area_chart",
+                        "bar_chart",
+                        "boxplot_chart",
+                        "column_chart",
+                        "district_map",
+                        "dual_axes_chart",
+                        "fishbone_diagram",
+                        "flow_diagram",
+                        "funnel_chart",
+                        "histogram_chart",
+                        "line_chart",
+                        "liquid_chart",
+                        "mind_map",
+                        "network_graph",
+                        "organization_chart",
+                        "path_map",
+                        "pie_chart",
+                        "pin_map",
+                        "radar_chart",
+                        "sankey_chart",
+                        "scatter_chart",
+                        "treemap_chart",
+                        "venn_chart",
+                        "violin_chart",
+                        "word_cloud_chart",
+                        "spreadsheet",
+                    ],
+                    "description": "图表类型",
+                },
+                "data": {
+                    "type": "array",
+                    "items": {"type": "object"},
+                    "description": "图表数据，数组格式，每个元素为数据对象",
+                },
+                "title": {
+                    "type": "string",
+                    "description": "图表标题（可选）",
+                },
+                "theme": {
+                    "type": "string",
+                    "default": "default",
+                    "description": "图表主题（可选，默认 default）",
+                },
+                "style": {
+                    "type": "object",
+                    "description": "图表样式配置（可选）",
+                },
+            },
+            "required": ["chart_type", "data"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "chart_type": {"type": "string", "description": "图表类型"},
+                "title": {"type": "string", "description": "图表标题"},
+                "image_url": {"type": "string", "description": "图表图片 URL"},
+                "description": {"type": "string", "description": "图表说明"},
+            },
+            "required": ["chart_type", "image_url"],
+        },
+        annotations=Dy3ToolAnnotations(
+            tags=["chart", "visualization", "generation", "L5"],
+            layer=LayerTag.L5_AGENT_RUNTIME,
+            category=ToolCategory.INTERNAL,
+            estimated_latency_ms=3000,
+            domain_scope=["DOM-A", "DOM-B", "DOM-C"],
+            rate_limit=20,
+        ),
+    )
+
+
+async def _chart_generation_handler(
+    chart_type: str,
+    data: list[dict],
+    title: str = "",
+    theme: str = "default",
+    style: dict | None = None,
+) -> dict[str, Any]:
+    """图表生成处理函数.
+
+    将数据写入临时 JSON 文件，调用 generate.js 脚本生成图表，
+    捕获输出 URL 并返回。若 Node.js 不可用则返回降级说明。
+    """
+    import shutil
+    import tempfile
+
+    # 映射 chart_type 到 generate.js 的 tool 名称
+    tool_name = _CHART_TYPE_TO_GENERATE_TOOL.get(chart_type)
+    if not tool_name:
+        raise ValueError(f"不支持的图表类型: {chart_type}")
+
+    # 检查 Node.js 是否可用
+    node_path = shutil.which("node")
+    if not node_path:
+        # 降级返回：描述图表类型和数据
+        data_summary = f"数据条目数: {len(data)}"
+        if data and len(data) > 0:
+            keys = list(data[0].keys())
+            data_summary += f"，字段: {', '.join(keys)}"
+        return {
+            "chart_type": chart_type,
+            "title": title or "",
+            "image_url": "",
+            "description": (
+                f"图表类型: {chart_type}（{title or '未命名'}）\n"
+                f"{data_summary}\n"
+                f"（Node.js 环境未安装，图表生成需要安装 Node.js ≥18.0.0 后方可渲染）"
+            ),
+            "fallback": True,
+        }
+
+    # 构建 generate.js 的 spec 参数
+    args: dict[str, Any] = {
+        "data": data,
+    }
+    if title:
+        args["title"] = title
+    if theme:
+        args["theme"] = theme
+    if style:
+        args["style"] = style
+
+    spec = {
+        "tool": tool_name,
+        "args": args,
+    }
+
+    # 写入临时 JSON 文件
+    tmp_dir = tempfile.gettempdir()
+    tmp_file = os.path.join(tmp_dir, f"chart_spec_{id(spec)}.json")
+    with open(tmp_file, "w", encoding="utf-8") as f:
+        json.dump(spec, f, ensure_ascii=False)
+
+    generate_script = (
+        r"c:\Users\86187\.trae-cn\skills\chart-visualization\scripts\generate.js"
+    )
+
+    try:
+        # 异步调用 generate.js 脚本
+        proc = await asyncio.create_subprocess_exec(
+            node_path,
+            generate_script,
+            tmp_file,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+
+        if proc.returncode != 0:
+            error_msg = stderr.decode("utf-8", errors="replace").strip()
+            raise RuntimeError(
+                f"图表生成失败 (exit={proc.returncode}): {error_msg}"
+            )
+
+        image_url = stdout.decode("utf-8", errors="replace").strip()
+    finally:
+        # 清理临时文件
+        try:
+            os.remove(tmp_file)
+        except OSError:
+            pass
+
+    return {
+        "chart_type": chart_type,
+        "title": title or "",
+        "image_url": image_url,
+        "description": f"已生成 {chart_type} 图表「{title or '未命名'}」",
     }
 
 
@@ -1366,6 +1995,8 @@ INTERNAL_TOOL_DEFINITIONS: list[tuple[ToolRegistration, Any]] = [
     (_path_simulation_registration(), _path_simulation_handler),
     (_resource_matching_registration(), _resource_matching_handler),
     (_literature_trace_registration(), _literature_trace_handler),
+    (_canvas_generation_registration(), _canvas_generation_handler),
+    (_chart_generation_registration(), _chart_generation_handler),
 ]
 
 # 便捷访问

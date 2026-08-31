@@ -433,8 +433,8 @@ class EmbeddingManager:
 
         根据后端类型调用对应的编码逻辑:
         - CUSTOM: hashlib 确定性伪嵌入 (默认, 无外部依赖)
-        - OPENAI/SENTENCE_TRANSFORMERS/COHERE: 需接入对应 SDK,
-          当前抛出 NotImplementedError 提示需实现外部后端。
+        - SENTENCE_TRANSFORMERS: 本地语义模型 (sentence-transformers, 离线可用)
+        - OPENAI/COHERE: 需接入对应 SDK, 当前抛出 NotImplementedError。
 
         Args:
             text: 待编码文本
@@ -448,11 +448,55 @@ class EmbeddingManager:
         if self._backend == EmbeddingBackend.CUSTOM:
             return self._compute_pseudo_embedding(text)
 
-        # 外部后端: 接口已预留, 接入时实现对应 SDK 调用
+        if self._backend == EmbeddingBackend.SENTENCE_TRANSFORMERS:
+            return self._compute_st_embedding(text)
+
+        # 外部 API 后端: 接口已预留, 接入时实现对应 SDK 调用
         raise NotImplementedError(
             f"嵌入后端 {self._backend.value} 需要外部 AI 库支持, "
-            f"请在子类中实现 _compute_embedding。当前仅 CUSTOM 后端可用。"
+            f"请在子类中实现 _compute_embedding。当前可用: CUSTOM / SENTENCE_TRANSFORMERS。"
         )
+
+    def _compute_st_embedding(self, text: str) -> list[float]:
+        """SENTENCE_TRANSFORMERS 本地语义嵌入 (离线, 无需 API Key).
+
+        首次调用时惰性加载模型 (model_name 例如 ``BAAI/bge-small-zh-v1.5``
+        或 ``paraphrase-multilingual-MiniLM-L12-v2``), 之后复用单例。
+        向量按 L2 归一化 (与余弦检索语义一致)。
+        """
+        st = self._get_st_model()
+        vec = st.encode(text, normalize_embeddings=True)
+        return [float(x) for x in vec][: self._dim]
+
+    def _get_st_model(self):
+        """惰性加载 sentence-transformers 模型单例."""
+        if getattr(self, "_st_model", None) is None:
+            # 离线加载兜底: 模型已在本地缓存时, 禁止 hf-hub 联网探测 (网络不可达会
+            # 卡住每次 ~20s 重试 adapter_config.json, 见 WinError 10060). 若
+            # huggingface_hub 已被其他模块提前 import, 其 constants.HF_HUB_OFFLINE
+            # 已在 import 时读死, 故此处显式刷新为 True 而非仅设环境变量.
+            import os as _os
+
+            _os.environ.setdefault("HF_HUB_OFFLINE", "1")
+            _os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+            try:
+                import huggingface_hub.constants as _hfc
+
+                _hfc.HF_HUB_OFFLINE = True
+            except Exception:  # noqa: BLE001
+                pass
+            from sentence_transformers import SentenceTransformer
+
+            self._st_model = SentenceTransformer(self._model_name)
+            # 实际维度与配置 dim 对齐 (bge-small-zh 为 512, 默认 768 需校准)
+            model_dim = self._st_model.get_sentence_embedding_dimension()
+            if self._dim != int(model_dim):
+                logger.warning(
+                    "嵌入维度校准: 配置 dim=%d, 模型实际 %d → 采用模型维度",
+                    self._dim, model_dim,
+                )
+                self._dim = int(model_dim)
+        return self._st_model
 
     def _compute_pseudo_embedding(self, text: str) -> list[float]:
         """生成确定性伪嵌入向量 (CUSTOM 后端, 借鉴 hashing trick).

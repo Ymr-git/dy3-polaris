@@ -1092,9 +1092,9 @@ class TestL3RouterMeta:
         app = router.create_app()
         assert isinstance(app, Starlette)
 
-    def test_get_routes_summary_35条路由(self, router: L3Router) -> None:
+    def test_get_routes_summary_39条路由(self, router: L3Router) -> None:
         routes = router.get_routes_summary()
-        assert len(routes) == 35
+        assert len(routes) == 39
 
     def test_routes_summary_每条有必需字段(self, router: L3Router) -> None:
         for r in router.get_routes_summary():

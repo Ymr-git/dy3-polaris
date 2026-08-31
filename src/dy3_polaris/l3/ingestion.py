@@ -317,6 +317,14 @@ class ChunkingEngine:
     _PARAGRAPH_PATTERN = re.compile(r"\n\s*\n")
     # 句子分隔正则 (中英文句号/问号/叹号)
     _SENTENCE_PATTERN = re.compile(r"(?<=[。！？.!?])\s+")
+    # Markdown 表格行检测
+    _TABLE_ROW = re.compile(r"^\|.*\|$", re.MULTILINE)
+    # Markdown 表格分隔行
+    _TABLE_SEP = re.compile(r"^\|[-:\s]+\|$", re.MULTILINE)
+    # LaTeX 行间公式 ($$...$$ 或 \[...\])
+    _FORMULA_DISPLAY = re.compile(r"\$\$[^$]+\$\$|\\\[[^\]]+\\\]", re.DOTALL)
+    # LaTeX 行内公式 ($...$)
+    _FORMULA_INLINE = re.compile(r"\$[^$\n]+\$")
 
     def __init__(self, config: ChunkingConfig | None = None) -> None:
         """初始化分块引擎.
@@ -336,6 +344,7 @@ class ChunkingEngine:
 
         根据配置的策略执行分块，自动合并过小块和拆分过大块，
         生成带有层级关系和重叠区域的 DocumentChunk 对象。
+        增强版: 自动检测表格/公式并独立成块，设置对应的 content_type。
 
         Args:
             text: 待分块的文档文本
@@ -355,32 +364,32 @@ class ChunkingEngine:
             )
 
         try:
-            # 步骤 1: 按策略初步分割
+            # 步骤 1: 按策略初步分割 (返回 _ChunkItem 列表，含类型和保护标记)
             strategy = self._config.strategy
             if strategy == ChunkingStrategy.STRUCTURED_HEADING:
-                raw_chunks = self._chunk_by_section(text)
+                items = self._chunk_by_section(text)
             elif strategy == ChunkingStrategy.SEMANTIC_PARAGRAPH:
-                raw_chunks = self._chunk_by_paragraph(text)
+                items = self._chunk_by_paragraph(text)
             elif strategy == ChunkingStrategy.RECURSIVE_CHAR:
-                raw_chunks = self._chunk_by_sentence(text)
+                items = self._chunk_by_sentence(text)
             else:
                 # FIXED_LENGTH: 按固定长度分割
-                raw_chunks = self._chunk_fixed_length(text)
+                items = self._chunk_fixed_length(text)
 
-            # 步骤 2: 合并过小块
-            raw_chunks = self._merge_small_chunks(
-                raw_chunks, self._config.min_chunk_size
+            # 步骤 2: 合并过小块 (保护表格/公式不被合并)
+            items = self._merge_small_chunks(
+                items, self._config.min_chunk_size
             )
 
-            # 步骤 3: 拆分过大块
-            raw_chunks = self._split_large_chunks(
-                raw_chunks, self._config.max_chunk_size
+            # 步骤 3: 拆分过大块 (保护表格/公式不被拆分)
+            items = self._split_large_chunks(
+                items, self._config.max_chunk_size
             )
 
             # 步骤 4: 生成 DocumentChunk 对象
             chunks: list[DocumentChunk] = []
-            for index, content in enumerate(raw_chunks):
-                content = content.strip()
+            for index, item in enumerate(items):
+                content = item.text.strip()
                 if not content:
                     continue
 
@@ -392,7 +401,7 @@ class ChunkingEngine:
                 chunk = DocumentChunk(
                     document_id=document_id,
                     content=content,
-                    content_type=ContentModality.TEXT,
+                    content_type=item.content_type,
                     chunk_index=index,
                     strategy=strategy,
                     overlap_prev=self._config.overlap if index > 0 else 0,
@@ -404,9 +413,11 @@ class ChunkingEngine:
                 )
                 chunks.append(chunk)
 
-            # 步骤 5: 添加重叠区域 (向前借用 overlap 字符)
+            # 步骤 5: 添加重叠区域 (向前借用 overlap 字符，跳过表格/公式块)
             if self._config.overlap > 0 and len(chunks) > 1:
                 for i in range(1, len(chunks)):
+                    if chunks[i].content_type in (ContentModality.TABLE, ContentModality.EQUATION):
+                        continue
                     prev_content = chunks[i - 1].content
                     overlap_text = prev_content[-self._config.overlap :]
                     chunks[i].content = overlap_text + chunks[i].content
@@ -414,10 +425,12 @@ class ChunkingEngine:
                     chunks[i].token_count = max(1, len(chunks[i].content) // 4)
 
             logger.info(
-                "文档 %s 分块完成: %d 个切片 (策略=%s)",
+                "文档 %s 分块完成: %d 个切片 (策略=%s, 表格=%d, 公式=%d)",
                 document_id,
                 len(chunks),
                 strategy.value,
+                sum(1 for c in chunks if c.content_type == ContentModality.TABLE),
+                sum(1 for c in chunks if c.content_type == ContentModality.EQUATION),
             )
             return chunks
 
@@ -431,10 +444,60 @@ class ChunkingEngine:
             ) from exc
 
     # --------------------------------------------------------
+    # _ChunkItem — 内部结构化切片项
+    # --------------------------------------------------------
+
+    class _ChunkItem:
+        """内部切片项，携带内容和类型信息，支持保护标记防止合并/拆分。"""
+        __slots__ = ('text', 'content_type', 'protected')
+
+        def __init__(self, text: str, content_type: ContentModality = ContentModality.TEXT, protected: bool = False):
+            self.text = text
+            self.content_type = content_type
+            self.protected = protected
+
+    # --------------------------------------------------------
+    # 内容类型检测
+    # --------------------------------------------------------
+
+    @staticmethod
+    def _detect_content_type(content: str) -> ContentModality:
+        """检测文本内容类型: 表格/公式/普通文本.
+
+        Args:
+            content: 待检测文本
+
+        Returns:
+            内容模态类型
+        """
+        text = content.strip()
+        if not text:
+            return ContentModality.TEXT
+        # 检测表格: 至少包含一个表头行和一个分隔行
+        lines = text.split('\n')
+        if len(lines) >= 2:
+            # 检查是否包含表格分隔行 (|---|)
+            has_sep = any(ChunkingEngine._TABLE_SEP.match(l) for l in lines)
+            # 检查是否至少有两行以 | 开头
+            pipe_count = sum(1 for l in lines if l.strip().startswith('|') and l.strip().endswith('|'))
+            if has_sep and pipe_count >= 2:
+                return ContentModality.TABLE
+        # 检测行间公式 ($$...$$ 或 \[...\])
+        if ChunkingEngine._FORMULA_DISPLAY.search(text):
+            return ContentModality.EQUATION
+        # 检测行内公式密度 (含 $...$ 且有公式特征词)
+        inline_matches = ChunkingEngine._FORMULA_INLINE.findall(text)
+        if len(inline_matches) >= 2:
+            return ContentModality.EQUATION
+        if len(inline_matches) == 1 and len(text) < 200:
+            return ContentModality.EQUATION
+        return ContentModality.TEXT
+
+    # --------------------------------------------------------
     # 分块策略实现
     # --------------------------------------------------------
 
-    def _chunk_by_section(self, text: str) -> list[str]:
+    def _chunk_by_section(self, text: str) -> list['ChunkingEngine._ChunkItem']:
         """按章节分块 (L1 章级策略).
 
         使用章节标题正则识别章节边界，每个章节作为一个分块。
@@ -443,7 +506,7 @@ class ChunkingEngine:
             text: 待分块文本
 
         Returns:
-            章节文本块列表
+            _ChunkItem 列表
         """
         # 查找所有章节标题位置
         matches = list(self._SECTION_PATTERN.finditer(text))
@@ -451,12 +514,12 @@ class ChunkingEngine:
             # 无章节标题，退化为段落分块
             return self._chunk_by_paragraph(text)
 
-        chunks: list[str] = []
+        raw_chunks: list[str] = []
         # 第一个标题之前的内容
         if matches[0].start() > 0:
             prefix = text[: matches[0].start()].strip()
             if prefix:
-                chunks.append(prefix)
+                raw_chunks.append(prefix)
 
         # 每个标题到下一个标题之间的内容
         for i, match in enumerate(matches):
@@ -464,25 +527,103 @@ class ChunkingEngine:
             end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
             section_text = text[start:end].strip()
             if section_text:
-                chunks.append(section_text)
+                raw_chunks.append(section_text)
 
-        return chunks
+        return [self._ChunkItem(c, self._detect_content_type(c)) for c in raw_chunks]
 
-    def _chunk_by_paragraph(self, text: str) -> list[str]:
-        """按段落分块 (L2 节级策略).
+    def _chunk_by_paragraph(self, text: str) -> list['ChunkingEngine._ChunkItem']:
+        """按段落分块 (L2 节级策略)，增强版自动检测表格和公式.
 
-        使用双换行符识别段落边界，每个段落作为一个分块。
+        使用双换行符识别段落边界，同时检测并标记表格/公式块，
+        使其在后续的合并/拆分步骤中保持独立。
 
         Args:
             text: 待分块文本
 
         Returns:
-            段落文本块列表
+            _ChunkItem 列表 (含 content_type 和保护标记)
         """
-        paragraphs = self._PARAGRAPH_PATTERN.split(text)
-        return [p.strip() for p in paragraphs if p.strip()]
+        # 步骤 1: 提取行间公式块 ($$...$$ 或 \[...\])，用占位符替换
+        formula_blocks: dict[str, str] = {}
+        def _replace_formula(m):
+            fid = f"\x00FORMULA_{len(formula_blocks)}\x00"
+            formula_blocks[fid] = m.group(0)
+            return fid
+        text_clean = self._FORMULA_DISPLAY.sub(_replace_formula, text)
 
-    def _chunk_by_sentence(self, text: str) -> list[str]:
+        # 步骤 2: 提取表格块 (连续 | 行，含分隔行)
+        table_blocks: dict[str, str] = {}
+        def _extract_tables(t: str) -> str:
+            lines = t.split('\n')
+            result = []
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+                # 检测表格起始: 行以 | 开头
+                if line.strip().startswith('|') and line.strip().endswith('|'):
+                    table_lines = [line]
+                    i += 1
+                    # 收集后续表格行 (连续 | 行)
+                    while i < len(lines):
+                        l = lines[i].strip()
+                        if l.startswith('|') and l.endswith('|'):
+                            table_lines.append(lines[i])
+                            i += 1
+                        else:
+                            break
+                    # 判断是否包含分隔行 (|---|)
+                    if any(self._TABLE_SEP.match(l) for l in table_lines):
+                        tid = f"\x00TABLE_{len(table_blocks)}\x00"
+                        table_blocks[tid] = '\n'.join(table_lines)
+                        result.append(tid)
+                    else:
+                        result.extend(table_lines)
+                else:
+                    result.append(line)
+                    i += 1
+            return '\n'.join(result)
+        text_clean = _extract_tables(text_clean)
+
+        # 步骤 3: 按段落分割剩余文本
+        paragraphs = self._PARAGRAPH_PATTERN.split(text_clean)
+
+        # 步骤 4: 还原占位符并创建 _ChunkItem
+        items: list[ChunkingEngine._ChunkItem] = []
+        for para in paragraphs:
+            para = para.strip()
+            if not para:
+                continue
+
+            # 按位置依次替换占位符: 处理段落中的公式/表格占位符
+            # 有些段落可能包含多个占位符 (如 "前言 \x00TABLE_0\x00 结论")
+            while True:
+                tidx = para.find('\x00TABLE_')
+                fidx = para.find('\x00FORMULA_')
+                if tidx == -1 and fidx == -1:
+                    break
+                # 找到最靠前的占位符
+                earliest = min(
+                    (tidx if tidx >= 0 else len(para)),
+                    (fidx if fidx >= 0 else len(para))
+                )
+                # 占位符前的文本
+                prefix = para[:earliest].strip()
+                if prefix:
+                    items.append(self._ChunkItem(prefix, self._detect_content_type(prefix)))
+                # 占位符本身
+                marker_end = para.index('\x00', earliest + 1) + 1
+                marker = para[earliest:marker_end]
+                if marker in table_blocks:
+                    items.append(self._ChunkItem(table_blocks[marker], ContentModality.TABLE, protected=True))
+                elif marker in formula_blocks:
+                    items.append(self._ChunkItem(formula_blocks[marker], ContentModality.EQUATION, protected=True))
+                para = para[marker_end:].strip()
+            if para:
+                items.append(self._ChunkItem(para, self._detect_content_type(para)))
+
+        return items
+
+    def _chunk_by_sentence(self, text: str) -> list['ChunkingEngine._ChunkItem']:
         """按句子分块 (L3 段落级策略).
 
         使用句号/问号/叹号识别句子边界，每个句子作为一个分块。
@@ -492,7 +633,7 @@ class ChunkingEngine:
             text: 待分块文本
 
         Returns:
-            句子文本块列表
+            _ChunkItem 列表
         """
         # 先按段落分割，再按句子分割
         paragraphs = self._PARAGRAPH_PATTERN.split(text)
@@ -504,16 +645,16 @@ class ChunkingEngine:
             # 按句子分割
             parts = self._SENTENCE_PATTERN.split(para)
             sentences.extend(s.strip() for s in parts if s.strip())
-        return sentences
+        return [self._ChunkItem(s, self._detect_content_type(s)) for s in sentences]
 
-    def _chunk_fixed_length(self, text: str) -> list[str]:
+    def _chunk_fixed_length(self, text: str) -> list['ChunkingEngine._ChunkItem']:
         """按固定长度分块 (FIXED_LENGTH 策略).
 
         Args:
             text: 待分块文本
 
         Returns:
-            固定长度文本块列表
+            _ChunkItem 列表
         """
         max_size = self._config.max_chunk_size
         chunks: list[str] = []
@@ -521,93 +662,124 @@ class ChunkingEngine:
             chunk = text[i : i + max_size]
             if chunk.strip():
                 chunks.append(chunk)
-        return chunks
+        return [self._ChunkItem(c, self._detect_content_type(c)) for c in chunks]
 
     # --------------------------------------------------------
     # 块调整策略
     # --------------------------------------------------------
 
     def _merge_small_chunks(
-        self, chunks: list[str], min_size: int
-    ) -> list[str]:
+        self, items: list['ChunkingEngine._ChunkItem'], min_size: int
+    ) -> list['ChunkingEngine._ChunkItem']:
         """合并过小块 (借鉴 Haystack PreProcessor merge策略).
 
         将小于 min_size 的相邻块合并，直到达到最小尺寸要求。
+        受保护块 (表格/公式) 独立保留，不参与合并。
 
         Args:
-            chunks: 待合并的文本块列表
+            items: 待合并的切片项列表
             min_size: 最小块大小 (字符)
 
         Returns:
-            合并后的文本块列表
+            合并后的切片项列表
         """
-        if not chunks:
+        if not items:
             return []
 
-        merged: list[str] = []
-        buffer = ""
+        merged: list[ChunkingEngine._ChunkItem] = []
+        buffer_text = ""
+        buffer_types: list[ContentModality] = []
 
-        for chunk in chunks:
-            if len(buffer) + len(chunk) < min_size:
+        for item in items:
+            # 保护块: 直接输出，不清空缓冲区
+            if item.protected:
+                if buffer_text.strip():
+                    merged.append(self._ChunkItem(
+                        buffer_text.strip(),
+                        ContentModality.MIXED if len(set(buffer_types)) > 1 else buffer_types[0],
+                    ))
+                    buffer_text = ""
+                    buffer_types = []
+                merged.append(item)
+                continue
+
+            if len(buffer_text) + len(item.text) < min_size:
                 # 合并到缓冲区
-                if buffer:
-                    buffer += "\n\n" + chunk
+                if buffer_text:
+                    buffer_text += "\n\n" + item.text
                 else:
-                    buffer = chunk
+                    buffer_text = item.text
+                buffer_types.append(item.content_type)
             else:
                 # 缓冲区已达最小尺寸
-                if buffer:
-                    merged.append(buffer)
-                buffer = chunk
+                if buffer_text:
+                    merged.append(self._ChunkItem(
+                        buffer_text.strip(),
+                        ContentModality.MIXED if len(set(buffer_types)) > 1 else buffer_types[0],
+                    ))
+                buffer_text = item.text
+                buffer_types = [item.content_type]
 
         # 处理最后剩余的缓冲区
-        if buffer:
-            if merged and len(buffer) < min_size:
-                # 最后一个小块合并到前一块
-                merged[-1] += "\n\n" + buffer
+        if buffer_text.strip():
+            if merged and len(buffer_text) < min_size and not merged[-1].protected:
+                # 最后一个小块合并到前一块 (仅当前一块非保护)
+                merged[-1] = self._ChunkItem(
+                    merged[-1].text + "\n\n" + buffer_text,
+                    ContentModality.MIXED
+                    if merged[-1].content_type != ContentModality.TEXT and len(buffer_types) > 0
+                    else merged[-1].content_type,
+                )
             else:
-                merged.append(buffer)
+                merged.append(self._ChunkItem(
+                    buffer_text.strip(),
+                    ContentModality.MIXED if len(set(buffer_types)) > 1 else buffer_types[0],
+                ))
 
         return merged
 
     def _split_large_chunks(
-        self, chunks: list[str], max_size: int
-    ) -> list[str]:
+        self, items: list['ChunkingEngine._ChunkItem'], max_size: int
+    ) -> list['ChunkingEngine._ChunkItem']:
         """拆分过大块 (借鉴 LlamaIndex SentenceSplitter).
 
         将大于 max_size 的块按句子边界拆分，直到每个块不超过最大尺寸。
+        受保护块 (表格/公式) 独立保留，不参与拆分。
 
         Args:
-            chunks: 待拆分的文本块列表
+            items: 待拆分的切片项列表
             max_size: 最大块大小 (字符)
 
         Returns:
-            拆分后的文本块列表
+            拆分后的切片项列表
         """
-        result: list[str] = []
-        for chunk in chunks:
-            if len(chunk) <= max_size:
-                result.append(chunk)
+        result: list[ChunkingEngine._ChunkItem] = []
+        for item in items:
+            # 保护块或未超限: 原样保留
+            if item.protected or len(item.text) <= max_size:
+                result.append(item)
                 continue
 
             # 按句子拆分
-            sentences = self._SENTENCE_PATTERN.split(chunk)
+            sentences = self._SENTENCE_PATTERN.split(item.text)
             if len(sentences) <= 1:
                 # 无法按句子拆分，强制按字符拆分
-                for i in range(0, len(chunk), max_size):
-                    result.append(chunk[i : i + max_size])
+                for i in range(0, len(item.text), max_size):
+                    seg = item.text[i: i + max_size].strip()
+                    if seg:
+                        result.append(self._ChunkItem(seg, item.content_type))
                 continue
 
             # 贪心合并句子，不超过 max_size
             buffer = ""
             for sentence in sentences:
                 if len(buffer) + len(sentence) > max_size and buffer:
-                    result.append(buffer.strip())
+                    result.append(self._ChunkItem(buffer.strip(), item.content_type))
                     buffer = sentence
                 else:
                     buffer = buffer + sentence if buffer else sentence
             if buffer.strip():
-                result.append(buffer.strip())
+                result.append(self._ChunkItem(buffer.strip(), item.content_type))
 
         return result
 

@@ -113,17 +113,8 @@ _logger = logging.getLogger("dy3_polaris.l0.governance_router")
 # ============================================================
 
 
-def _ok(data: Any = None, message: str = "") -> dict[str, Any]:
-    """构造成功响应."""
-    return {"code": 0, "data": data, "message": message}
-
-
-def _err(code: int, message: str, detail: str = "") -> dict[str, Any]:
-    """构造错误响应."""
-    resp: dict[str, Any] = {"code": code, "message": message}
-    if detail:
-        resp["detail"] = detail
-    return resp
+# 响应信封单点 (SSOT: shared/contract.py)
+from dy3_polaris.shared.contract import err as _err, ok as _ok
 
 
 def _l6_error_to_dict(err: L6Error) -> dict[str, Any]:
@@ -166,6 +157,7 @@ class GovernanceSubsystems:
         audit_engine: Any | None = None,
         metrics_engine: Any | None = None,
         compliance_reporter: Any | None = None,
+        review_pipeline: Any | None = None,
     ) -> None:
         self.policy_store = policy_store
         self.policy_evaluator = policy_evaluator
@@ -174,6 +166,7 @@ class GovernanceSubsystems:
         self.audit_engine = audit_engine
         self.metrics_engine = metrics_engine
         self.compliance_reporter = compliance_reporter
+        self.review_pipeline = review_pipeline
 
     def health_map(self) -> dict[str, bool]:
         """返回各子系统的就绪状态."""
@@ -185,6 +178,7 @@ class GovernanceSubsystems:
             "audit": self.audit_engine is not None,
             "metrics": self.metrics_engine is not None,
             "compliance": self.compliance_reporter is not None,
+            "review_pipeline": self.review_pipeline is not None,
         }
 
 
@@ -467,6 +461,183 @@ class _GovernanceHandlers:
             return JSONResponse(_ok({"pipeline_initialized": True}))
         except Exception as e:
             return JSONResponse(_err(-32000, str(e)), status_code=500)
+
+    # ---- CC1 四层反幻觉评审引擎 (增强) ----
+
+    async def cc1_review(self, request: Request) -> JSONResponse:
+        """POST /governance/v1/review/execute — 执行四层反幻觉评审."""
+        body, err = await _parse_body(request)
+        if err:
+            return err
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        try:
+            from dy3_polaris.l0.cc1.models import VerificationRequest
+            from dy3_polaris.l0.cc1.review_pipeline import ReviewResult as RR
+            req = VerificationRequest(**body)
+            result = pipeline.review(req)
+            return JSONResponse(_ok(self._review_result_to_dict(result)))
+        except Exception as e:
+            return JSONResponse(_err(-32000, str(e)), status_code=400)
+
+    async def cc1_review_layers(self, request: Request) -> JSONResponse:
+        """GET /governance/v1/review/layers — 列出四层评审规则."""
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        try:
+            layers_info = []
+            for layer in [
+                pipeline.fact_layer,
+                pipeline.logic_layer,
+                pipeline.numerical_layer,
+                pipeline.provenance_layer,
+            ]:
+                rules_info = []
+                for rule in layer.rules:
+                    rules_info.append({
+                        "rule_id": rule.rule_id,
+                        "name": rule.name,
+                        "description": rule.description,
+                        "severity": rule.severity.value,
+                    })
+                layers_info.append({
+                    "layer_type": layer.layer_type.value,
+                    "rule_count": len(layer.rules),
+                    "rules": rules_info,
+                })
+            return JSONResponse(_ok(layers_info))
+        except Exception as e:
+            return JSONResponse(_err(-32000, str(e)), status_code=500)
+
+    async def cc1_review_config(self, request: Request) -> JSONResponse:
+        """GET /governance/v1/review/config — 获取评审配置."""
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        try:
+            cfg = pipeline.config
+            return JSONResponse(_ok({
+                "pass_threshold": cfg.pass_threshold,
+                "flag_threshold": cfg.flag_threshold,
+                "max_corrections": cfg.max_corrections,
+                "enable_self_correction": cfg.enable_self_correction,
+                "error_penalty": cfg.error_penalty,
+                "critical_penalty": cfg.critical_penalty,
+                "warning_penalty": cfg.warning_penalty,
+                "info_penalty": cfg.info_penalty,
+            }))
+        except Exception as e:
+            return JSONResponse(_err(-32000, str(e)), status_code=500)
+
+    async def cc1_review_weights(self, request: Request) -> JSONResponse:
+        """GET /governance/v1/review/weights — 获取四层权重."""
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        try:
+            from dy3_polaris.l0.cc1.layers import LAYER_WEIGHTS
+            weights = {k.value: v for k, v in LAYER_WEIGHTS.items()}
+            return JSONResponse(_ok(weights))
+        except Exception as e:
+            return JSONResponse(_err(-32000, str(e)), status_code=500)
+
+    async def cc1_review_report(self, request: Request) -> JSONResponse:
+        """GET /governance/v1/review/reports/{report_id} — 获取评审报告."""
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        report_id = request.path_params.get("report_id", "")
+        result = pipeline.get_result(report_id)
+        if result is None:
+            return JSONResponse(_err(-32001, f"报告 {report_id} 不存在"), status_code=404)
+        return JSONResponse(_ok(self._review_result_to_dict(result)))
+
+    async def cc1_review_reports(self, request: Request) -> JSONResponse:
+        """GET /governance/v1/review/reports — 列出评审报告."""
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        agent_id = request.query_params.get("agent_id")
+        verdict = request.query_params.get("verdict")
+        limit = int(request.query_params.get("limit", "50"))
+        from dy3_polaris.l0.cc1.state_machine import ReviewVerdict
+        v = ReviewVerdict(verdict) if verdict else None
+        results = pipeline.list_results(agent_id=agent_id, verdict=v, limit=limit)
+        return JSONResponse(_ok([
+            {
+                "report_id": r.report_id,
+                "agent_id": r.agent_id,
+                "verdict": r.verdict.value,
+                "composite_score": r.composite_score,
+                "created_at": r.created_at,
+            }
+            for r in results
+        ]))
+
+    async def cc1_review_statistics(self, request: Request) -> JSONResponse:
+        """GET /governance/v1/review/statistics — 获取评审统计."""
+        pipeline = self._sub.review_pipeline
+        if pipeline is None:
+            return JSONResponse(_err(-32000, "评审管道未初始化"), status_code=503)
+        stats = pipeline.get_statistics()
+        return JSONResponse(_ok(stats))
+
+    @staticmethod
+    def _review_result_to_dict(result: Any) -> dict:
+        """将 ReviewResult 转为可序列化字典."""
+        data: dict[str, Any] = {
+            "report_id": result.report_id,
+            "request_id": result.request_id,
+            "agent_id": result.agent_id,
+            "verdict": result.verdict.value,
+            "composite_score": result.composite_score,
+            "issues": result.issues,
+            "corrected_output": result.corrected_output,
+            "created_at": result.created_at,
+            "completed_at": result.completed_at,
+        }
+        # 层结果
+        layer_data: dict[str, Any] = {}
+        for layer_type, layer_result in result.layer_results.items():
+            layer_data[layer_type.value] = {
+                "score": layer_result.score,
+                "verdict": layer_result.verdict,
+                "summary": layer_result.summary,
+                "passed_count": layer_result.passed_count,
+                "failed_count": layer_result.failed_count,
+                "total_count": layer_result.total_count,
+                "rule_results": [
+                    {
+                        "rule_id": r.rule_id,
+                        "rule_name": r.rule_name,
+                        "passed": r.passed,
+                        "severity": r.severity.value,
+                        "detail": r.detail,
+                        "score": r.score,
+                    }
+                    for r in layer_result.rule_results
+                ],
+            }
+        data["layer_results"] = layer_data
+        data["layer_scores"] = {
+            k.value: v for k, v in result.layer_scores.items()
+        }
+        # 自纠信息
+        if result.self_correction:
+            sc = result.self_correction
+            data["self_correction"] = {
+                "attempts": sc.attempts,
+                "max_attempts": sc.max_attempts,
+                "can_retry": sc.can_retry,
+                "needs_escalation": sc.needs_escalation,
+                "is_resolved": sc.is_resolved,
+                "history": sc.history,
+            }
+        else:
+            data["self_correction"] = None
+        return data
 
     # ---- G4 CC2 人机协作 ----
 
@@ -1268,6 +1439,7 @@ class GovernanceRouter:
 
         from dy3_polaris.l0.governance import PolicyStore, PolicyEvaluator
         from dy3_polaris.l0.cc1.pipeline import AntiHallucinationPipeline
+        from dy3_polaris.l0.cc1.review_pipeline import ReviewPipeline
         from dy3_polaris.l0.cc2.engine import CollaborationEngine
         from dy3_polaris.l0.governance import AuditEngine, MetricsEngine, ComplianceReporter
 
@@ -1275,6 +1447,7 @@ class GovernanceRouter:
             policy_store=PolicyStore(),
             policy_evaluator=PolicyEvaluator(store),
             anti_hallucination_pipeline=AntiHallucinationPipeline(),
+            review_pipeline=ReviewPipeline(),
             collaboration_engine=CollaborationEngine(),
             audit_engine=AuditEngine(),
             metrics_engine=MetricsEngine(),
@@ -1297,9 +1470,13 @@ class GovernanceRouter:
         self._handlers = _GovernanceHandlers(subsys)
 
     def create_app(self) -> Starlette:
-        """创建 Starlette 应用实例."""
+        """创建 Starlette 应用实例.
+
+        注意: 该子应用由 UnifiedApp 挂载于 ``/governance`` 前缀下,
+        故内部路径从 ``/v1`` 开始, 完整路径为 ``/governance/v1/...``。
+        """
         h = self._handlers
-        p = "/governance/v1"
+        p = "/v1"
 
         routes = [
             # 健康检查
@@ -1323,6 +1500,15 @@ class GovernanceRouter:
             Route(f"{p}/anti-hallucination/config", h.cc1_update_config, methods=["PUT"]),
             Route(f"{p}/anti-hallucination/verifiers", h.cc1_list_verifiers, methods=["GET"]),
             Route(f"{p}/anti-hallucination/stats", h.cc1_stats, methods=["GET"]),
+
+            # CC1 四层反幻觉评审引擎 (增强)
+            Route(f"{p}/review/execute", h.cc1_review, methods=["POST"]),
+            Route(f"{p}/review/layers", h.cc1_review_layers, methods=["GET"]),
+            Route(f"{p}/review/config", h.cc1_review_config, methods=["GET"]),
+            Route(f"{p}/review/weights", h.cc1_review_weights, methods=["GET"]),
+            Route(f"{p}/review/reports", h.cc1_review_reports, methods=["GET"]),
+            Route(f"{p}/review/reports/{{report_id}}", h.cc1_review_report, methods=["GET"]),
+            Route(f"{p}/review/statistics", h.cc1_review_statistics, methods=["GET"]),
 
             # G4 CC2 人机协作
             Route(f"{p}/collaboration/profiles", h.cc2_register_profile, methods=["POST"]),
@@ -1411,6 +1597,14 @@ class GovernanceRouter:
             {"path": f"{p}/anti-hallucination/config", "methods": ["GET", "PUT"], "description": "获取/更新配置"},
             {"path": f"{p}/anti-hallucination/verifiers", "methods": ["GET"], "description": "列出验证器"},
             {"path": f"{p}/anti-hallucination/stats", "methods": ["GET"], "description": "统计信息"},
+            # CC1 四层反幻觉评审引擎 (增强)
+            {"path": f"{p}/review/execute", "methods": ["POST"], "description": "执行四层反幻觉评审"},
+            {"path": f"{p}/review/layers", "methods": ["GET"], "description": "列出四层评审规则"},
+            {"path": f"{p}/review/config", "methods": ["GET"], "description": "获取评审配置"},
+            {"path": f"{p}/review/weights", "methods": ["GET"], "description": "获取四层权重"},
+            {"path": f"{p}/review/reports", "methods": ["GET"], "description": "列出评审报告"},
+            {"path": f"{p}/review/reports/{{report_id}}", "methods": ["GET"], "description": "获取指定评审报告"},
+            {"path": f"{p}/review/statistics", "methods": ["GET"], "description": "获取评审统计"},
             # G4 CC2
             {"path": f"{p}/collaboration/profiles", "methods": ["GET", "POST"], "description": "列出/注册协作配置"},
             {"path": f"{p}/collaboration/profiles/{{id}}", "methods": ["GET", "PUT"], "description": "查询/更新配置"},
@@ -1460,10 +1654,71 @@ class GovernanceRouter:
         ]
 
 
+def create_governance_app(
+    *,
+    include_review_pipeline: bool = True,
+) -> Starlette:
+    """创建预配置的治理 Starlette 应用.
+
+    便捷工厂函数, 自动初始化所有子系统 (G1-G5, CC1-CC2),
+    包括四层反幻觉评审引擎.
+
+    Args:
+        include_review_pipeline: 是否初始化四层评审管道 (默认 True)
+
+    Returns:
+        Starlette 应用实例
+
+    Usage::
+
+        from dy3_polaris.l0.governance_router import create_governance_app
+
+        app = create_governance_app()
+        # 或挂载到 L6 Router
+        # l6_app.mount("/governance", app)
+    """
+    from dy3_polaris.l0.governance import (
+        AuditEngine,
+        ComplianceReporter,
+        MetricsEngine,
+        PolicyEvaluator,
+        PolicyStore,
+    )
+    from dy3_polaris.l0.cc1.pipeline import AntiHallucinationPipeline
+    from dy3_polaris.l0.cc2.engine import CollaborationEngine
+
+    store = PolicyStore()
+
+    kwargs: dict[str, Any] = dict(
+        policy_store=store,
+        policy_evaluator=PolicyEvaluator(store),
+        anti_hallucination_pipeline=AntiHallucinationPipeline(),
+        collaboration_engine=CollaborationEngine(),
+        audit_engine=AuditEngine(),
+        metrics_engine=MetricsEngine(),
+        compliance_reporter=ComplianceReporter(),
+    )
+
+    if include_review_pipeline:
+        from dy3_polaris.l0.cc1.review_pipeline import ReviewPipeline
+
+        kwargs["review_pipeline"] = ReviewPipeline()
+
+    subsys = GovernanceSubsystems(**kwargs)
+    router = GovernanceRouter(subsys)
+    app = router.create_app()
+    # 与 UnifiedApp 一致: 挂载到 /governance 前缀, 内部 /v1
+    from starlette.routing import Mount
+
+    wrapped = Starlette(routes=[Mount("/governance", app=app)])
+    return wrapped
+
+
 __all__ = [
     "GovernanceSubsystems",
     "GovernanceRouter",
     "_GovernanceHandlers",
+    "create_governance_app",
     "_ok",
     "_err",
     "_l6_error_to_dict",

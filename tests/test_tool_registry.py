@@ -359,7 +359,7 @@ class TestRegistryDiscovery:
 
     def test_discover_by_category(self, loaded_registry: ToolRegistry):
         internal = loaded_registry.discover_by_category(ToolCategory.INTERNAL)
-        assert len(internal) == 11
+        assert len(internal) == 13
 
         tier1 = loaded_registry.discover_by_category(ToolCategory.CONNECTOR_TIER1)
         assert len(tier1) == 10
@@ -410,7 +410,7 @@ class TestRegistryDiscovery:
 
     def test_discover_no_filter(self, loaded_registry: ToolRegistry):
         results = loaded_registry.discover()
-        assert len(results) == 47
+        assert len(results) == 49
 
     def test_search(self, loaded_registry: ToolRegistry):
         results = loaded_registry.search("bkt")
@@ -481,7 +481,7 @@ class TestDependencyResolution:
 class TestRegistryExport:
     def test_export_mcp_tool_list(self, loaded_registry: ToolRegistry):
         mcp_list = loaded_registry.export_mcp_tool_list()
-        assert len(mcp_list) == 47
+        assert len(mcp_list) == 49
         for tool in mcp_list:
             assert "name" in tool
             assert "description" in tool
@@ -492,27 +492,27 @@ class TestRegistryExport:
         entry = loaded_registry.get("bkt_compute")
         entry.registration.enabled = False
         mcp_list = loaded_registry.export_mcp_tool_list(enabled_only=True)
-        assert len(mcp_list) == 46
+        assert len(mcp_list) == 48
         assert all(t["name"] != "bkt_compute" for t in mcp_list)
         # Restore
         entry.registration.enabled = True
 
     def test_export_registry_summary(self, loaded_registry: ToolRegistry):
         summary = loaded_registry.export_registry_summary()
-        assert summary["total_tools"] == 47
-        assert summary["enabled_tools"] == 47
-        assert summary["stub_tools"] == 0  # All have handlers
-        assert summary["category_breakdown"]["internal"] == 11
+        assert summary["total_tools"] == 49
+        assert summary["enabled_tools"] == 49
+        assert summary["stub_tools"] == 25  # 未落地的连接器/外部工具默认失败关闭
+        assert summary["category_breakdown"]["internal"] == 13
         assert summary["category_breakdown"]["connector_tier1"] == 10
         assert summary["category_breakdown"]["connector_tier2"] == 6
         assert summary["category_breakdown"]["connector_tier3"] == 4
         assert summary["category_breakdown"]["skillbook"] == 11
         assert summary["category_breakdown"]["external"] == 5
-        assert summary["total_registrations"] == 47
+        assert summary["total_registrations"] == 49
 
     def test_export_all_entries(self, loaded_registry: ToolRegistry):
         entries = loaded_registry.export_all_entries()
-        assert len(entries) == 47
+        assert len(entries) == 49
         for e in entries:
             assert "name" in e
             assert "category" in e
@@ -530,7 +530,7 @@ class TestRegistryExport:
 
 class TestToolDefinitionsCompleteness:
     def test_total_count(self):
-        assert TOTAL_TOOL_COUNT == 47
+        assert TOTAL_TOOL_COUNT == 49
 
     def test_all_unique_names(self):
         assert len(ALL_TOOL_NAMES) == len(set(ALL_TOOL_NAMES))
@@ -543,13 +543,13 @@ class TestToolDefinitionsCompleteness:
         skillbook = get_tool_names_by_category(ToolCategory.SKILLBOOK)
         external = get_tool_names_by_category(ToolCategory.EXTERNAL)
 
-        assert len(internal) == 11
+        assert len(internal) == 13
         assert len(tier1) == 10
         assert len(tier2) == 6
         assert len(tier3) == 4
         assert len(skillbook) == 11
         assert len(external) == 5
-        assert len(internal) + len(tier1) + len(tier2) + len(tier3) + len(skillbook) + len(external) == 47
+        assert len(internal) + len(tier1) + len(tier2) + len(tier3) + len(skillbook) + len(external) == 49
 
     def test_internal_subcategories(self):
         assert len(DIAGNOSIS_TOOLS) == 3
@@ -591,6 +591,7 @@ class TestToolDefinitionsCompleteness:
                 LayerTag.CC1_ANTI_HALLUCINATION,
                 LayerTag.L4_DECISION_ENGINE,
                 LayerTag.CC3_PROVENANCE,
+                LayerTag.L5_AGENT_RUNTIME,
             ], f"Internal tool '{reg.name}' has unexpected layer: {reg.annotations.layer}"
 
     def test_connector_tools_have_l3_layer(self):
@@ -735,10 +736,10 @@ class TestInternalToolHandlers:
         assert len(result["nodes"]) == 3
 
     @pytest.mark.asyncio
-    async def test_path_simulation_handler(self):
+    def test_path_simulation_handler(self):
         from dy3_polaris.l6.registry.internal_tools import get_internal_tool
         reg, handler = get_internal_tool("path_simulation")
-        result = await handler(
+        result = handler(
             learner_id="u001",
             start_kp="KP-01",
             target_kp="KP-05",
@@ -746,8 +747,10 @@ class TestInternalToolHandlers:
         assert "recommended_path" in result
         assert "estimated_time_minutes" in result
         assert "success_probability" in result
-        assert result["recommended_path"][0] == "KP-01"
-        assert result["recommended_path"][-1] == "KP-05"
+        assert "decision_source" in result  # 策略归位 L4
+        # 无画像时兼容旧语义: 路径含起点/终点
+        assert result["recommended_path"][0] in ("KP-01",)
+        assert result["recommended_path"][-1] in ("KP-05",)
 
     @pytest.mark.asyncio
     async def test_resource_matching_handler(self):
@@ -793,17 +796,27 @@ class TestGlobalRegistry:
     def test_load_all_to_fresh_registry(self):
         reg = ToolRegistry()
         load_all_tools(reg)
-        assert reg.size == 47
+        assert reg.size == 49
+        assert reg.get(CONNECTOR_TOOL_NAMES[0]).is_stub is True
+        assert reg.get(EXTERNAL_TOOL_NAMES[0]).is_stub is True
+        assert reg.get(INTERNAL_TOOL_NAMES[0]).is_stub is False
+
+    def test_demo_stub_handlers_require_explicit_opt_in(self):
+        reg = ToolRegistry()
+        load_all_tools(reg, include_demo_stubs=True)
+        assert reg.get(CONNECTOR_TOOL_NAMES[0]).is_stub is False
+        assert reg.get(EXTERNAL_TOOL_NAMES[0]).is_stub is False
 
     def test_load_internal_only(self):
         reg = ToolRegistry()
         load_internal_tools(reg)
-        assert reg.size == 11
+        assert reg.size == 13
 
     def test_load_connector_only(self):
         reg = ToolRegistry()
         load_connector_tools(reg)
         assert reg.size == 20
+        assert all(reg.get(name).is_stub for name in CONNECTOR_TOOL_NAMES)
 
     def test_load_skillbook_only(self):
         reg = ToolRegistry()
@@ -814,17 +827,18 @@ class TestGlobalRegistry:
         reg = ToolRegistry()
         load_external_tools(reg)
         assert reg.size == 5
+        assert all(reg.get(name).is_stub for name in EXTERNAL_TOOL_NAMES)
 
     def test_load_incremental(self):
         reg = ToolRegistry()
         load_internal_tools(reg)
-        assert reg.size == 11
+        assert reg.size == 13
         load_connector_tools(reg)
-        assert reg.size == 31
+        assert reg.size == 33
         load_skillbook_tools(reg)
-        assert reg.size == 42
+        assert reg.size == 44
         load_external_tools(reg)
-        assert reg.size == 47
+        assert reg.size == 49
 
 
 # ============================================================

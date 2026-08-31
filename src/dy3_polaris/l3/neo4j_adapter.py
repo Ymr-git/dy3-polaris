@@ -1281,57 +1281,62 @@ class Neo4jAdapter:
                     with self._driver.session(
                         database=self._database
                     ) as session:
-                        # 导入实体间关系
+                        # 导入实体间关系 (按 predicate 分组: Cypher 关系类型不能参数化,
+                        # 跨谓词合并到单一关系类型会张冠李戴)
                         if entity_triples:
-                            rel_data = []
+                            entity_grouped: dict[str, list[dict]] = {}
                             for triple in entity_triples:
                                 rel_props = self._mapper.triple_to_rel_props(triple)
-                                rel_data.append({
+                                entity_grouped.setdefault(
+                                    triple.predicate, []
+                                ).append({
                                     "subject_id": triple.subject_id,
                                     "object_id": triple.object_id,
-                                    "predicate": triple.predicate,
                                     "triple_id": triple.triple_id,
                                     "rel_props": rel_props,
                                 })
 
-                            cypher = (
-                                "UNWIND $batch AS item "
-                                "MATCH (s {entity_id: item.subject_id}) "
-                                "MATCH (o {entity_id: item.object_id}) "
-                                f"MERGE (s)-[r:`{entity_triples[0].predicate}` "
-                                "{triple_id: item.triple_id}]->(o) "
-                                "ON CREATE SET r += item.rel_props "
-                                "ON MATCH SET r += item.rel_props "
-                                "RETURN count(r) AS cnt"
-                            )
-                            result = session.run(cypher, {"batch": rel_data})
-                            for record in result:
-                                triples_synced += record["cnt"]
+                            for predicate, rel_data in entity_grouped.items():
+                                cypher = (
+                                    "UNWIND $batch AS item "
+                                    "MATCH (s {entity_id: item.subject_id}) "
+                                    "MATCH (o {entity_id: item.object_id}) "
+                                    f"MERGE (s)-[r:`{predicate}` "
+                                    "{triple_id: item.triple_id}]->(o) "
+                                    "ON CREATE SET r += item.rel_props "
+                                    "ON MATCH SET r += item.rel_props "
+                                    "RETURN count(r) AS cnt"
+                                )
+                                result = session.run(cypher, {"batch": rel_data})
+                                for record in result:
+                                    triples_synced += record["cnt"]
 
-                        # 导入字面值关系 (不要求宾语节点)
+                        # 导入字面值关系 (不要求宾语节点, 同样按 predicate 分组)
                         if literal_triples:
-                            lit_data = []
+                            literal_grouped: dict[str, list[dict]] = {}
                             for triple in literal_triples:
                                 rel_props = self._mapper.triple_to_rel_props(triple)
-                                lit_data.append({
+                                literal_grouped.setdefault(
+                                    triple.predicate, []
+                                ).append({
                                     "subject_id": triple.subject_id,
-                                    "predicate": triple.predicate,
                                     "triple_id": triple.triple_id,
                                     "rel_props": rel_props,
                                 })
 
-                            cypher = (
-                                "UNWIND $batch AS item "
-                                "MATCH (s {entity_id: item.subject_id}) "
-                                f"MERGE (s)-[r:`{literal_triples[0].predicate}` "
-                                "{triple_id: item.triple_id}]->() "
-                                "ON CREATE SET r += item.rel_props "
-                                "ON MATCH SET r += item.rel_props "
-                                "RETURN count(r) AS cnt"
-                            )
-                            result = session.run(cypher, {"batch": lit_data})
-                            for record in result:
-                                triples_synced += record["cnt"]
+                            for predicate, lit_data in literal_grouped.items():
+                                cypher = (
+                                    "UNWIND $batch AS item "
+                                    "MATCH (s {entity_id: item.subject_id}) "
+                                    f"MERGE (s)-[r:`{predicate}` "
+                                    "{triple_id: item.triple_id}]->() "
+                                    "ON CREATE SET r += item.rel_props "
+                                    "ON MATCH SET r += item.rel_props "
+                                    "RETURN count(r) AS cnt"
+                                )
+                                result = session.run(cypher, {"batch": lit_data})
+                                for record in result:
+                                    triples_synced += record["cnt"]
 
             except Exception as e:
                 errors.append(f"批量导入关系失败: {e}")

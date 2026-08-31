@@ -9,15 +9,18 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import threading
 import time
 from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+_logger = logger
 
 
 # ============================================================
@@ -141,7 +144,7 @@ class AuditEngine:
         alerts = engine.detect_anomalies("agent-tutor")
     """
 
-    def __init__(self, max_logs: int = 10000) -> None:
+    def __init__(self, max_logs: int = 10000, persist_path: str | None = None) -> None:
         self._max_logs = max_logs
         self._logs: list[DecisionLog] = []
         self._index_by_decision: dict[str, DecisionLog] = {}
@@ -150,10 +153,57 @@ class AuditEngine:
         self._baselines: dict[str, BehaviorBaseline] = {}
         self._alerts: list[AnomalyAlert] = []
         self._lock = threading.RLock()
+        self._persist_path: str | None = persist_path
 
         # 统计
         self._total_recorded = 0
         self._total_anomalies = 0
+
+        if self._persist_path:
+            self._load_persisted()
+
+    def _load_persisted(self) -> None:
+        """启动加载上次会话的审计日志 (JSON Lines, 根治重启丢失轨迹)."""
+        try:
+            path = Path(self._persist_path)
+            if not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                return
+            loaded = 0
+            with path.open("r", encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        data = json.loads(line)
+                        log = DecisionLog.model_validate(data)
+                        self._logs.append(log)
+                        self._index_by_decision[log.decision_id] = log
+                        if log.trace_id:
+                            self._index_by_trace[log.trace_id].append(log)
+                        if log.agent_id:
+                            self._index_by_agent[log.agent_id].append(log)
+                        loaded += 1
+                    except Exception:  # noqa: BLE001 - 跳过损坏行
+                        continue
+            self._logs = self._logs[-self._max_logs :]
+            self._total_recorded = len(self._logs)
+            _logger.info("审计日志加载 %d 条 (persist=%s)", loaded, path)
+        except Exception as exc:  # noqa: BLE001
+            _logger.warning("审计日志加载失败: %s", exc)
+
+    def _persist(self, log: DecisionLog) -> None:
+        """追加写一条审计日志 (JSON Lines)."""
+        if not self._persist_path:
+            return
+        try:
+            path = Path(self._persist_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(log.model_dump(mode="json"), ensure_ascii=False) + "\n")
+        except Exception as exc:  # noqa: BLE001
+            _logger.warning("审计日志写盘失败: %s", exc)
 
     def record(
         self,
@@ -200,6 +250,9 @@ class AuditEngine:
             while len(self._logs) > self._max_logs:
                 removed = self._logs.pop(0)
                 self._index_by_decision.pop(removed.decision_id, None)
+
+        # 持久化 (JSON Lines 追加, 失败不影响内存)
+        self._persist(log)
 
         return log
 

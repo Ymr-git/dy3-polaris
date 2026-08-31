@@ -783,7 +783,9 @@ class TestViolationManagement:
         assert len(result) == 3
 
     def test_query_按时间倒序(self) -> None:
+        import time as _t
         self.store.add_violation(ViolationRecord(policy_id="p1"))
+        _t.sleep(0.002)  # 保证时间戳可区分 (同毫秒创建排序不稳定)
         self.store.add_violation(ViolationRecord(policy_id="p2"))
         result = self.store.query_violations()
         assert result[0].policy_id == "p2"  # 最新在前

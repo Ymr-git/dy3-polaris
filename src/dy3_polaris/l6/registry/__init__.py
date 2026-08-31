@@ -90,8 +90,16 @@ TOTAL_TOOL_COUNT: int = len(ALL_TOOL_DEFINITIONS)
 # 批量加载函数
 # ============================================================
 
-def load_all_tools(registry: ToolRegistry | None = None) -> ToolRegistry:
-    """将全部 47 个工具加载到注册中心.
+def load_all_tools(
+    registry: ToolRegistry | None = None,
+    *,
+    include_demo_stubs: bool = False,
+) -> ToolRegistry:
+    """将完整工具目录加载到注册中心.
+
+    默认产品模式会保留未落地连接器的 schema，但不注册其
+    演示 handler；调用时会明确返回不可用，而不是伪造外部结果。
+    ``include_demo_stubs=True`` 仅供显式的开发/测试场景使用。
 
     Args:
         registry: 目标注册中心，None 使用全局单例
@@ -100,7 +108,21 @@ def load_all_tools(registry: ToolRegistry | None = None) -> ToolRegistry:
         加载完成的 ToolRegistry
     """
     reg = registry or get_registry()
-    reg.register_batch_sync(ALL_TOOL_DEFINITIONS)
+    if include_demo_stubs:
+        entries = ALL_TOOL_DEFINITIONS
+    else:
+        unavailable_connectors = [
+            (registration, None)
+            for registration, _handler in (
+                CONNECTOR_TOOL_DEFINITIONS + EXTERNAL_TOOL_DEFINITIONS
+            )
+        ]
+        entries = (
+            INTERNAL_TOOL_DEFINITIONS
+            + SKILLBOOK_TOOL_DEFINITIONS
+            + unavailable_connectors
+        )
+    reg.register_batch_sync(entries)
     return reg
 
 
@@ -111,10 +133,19 @@ def load_internal_tools(registry: ToolRegistry | None = None) -> ToolRegistry:
     return reg
 
 
-def load_connector_tools(registry: ToolRegistry | None = None) -> ToolRegistry:
-    """仅加载 20 个连接器工具."""
+def load_connector_tools(
+    registry: ToolRegistry | None = None,
+    *,
+    include_demo_stubs: bool = False,
+) -> ToolRegistry:
+    """加载 20 个连接器 schema；演示 handler 需显式开启."""
     reg = registry or get_registry()
-    reg.register_batch_sync(CONNECTOR_TOOL_DEFINITIONS)
+    entries = (
+        CONNECTOR_TOOL_DEFINITIONS
+        if include_demo_stubs
+        else [(registration, None) for registration, _ in CONNECTOR_TOOL_DEFINITIONS]
+    )
+    reg.register_batch_sync(entries)
     return reg
 
 
@@ -125,10 +156,19 @@ def load_skillbook_tools(registry: ToolRegistry | None = None) -> ToolRegistry:
     return reg
 
 
-def load_external_tools(registry: ToolRegistry | None = None) -> ToolRegistry:
-    """仅加载 5 个外部工具."""
+def load_external_tools(
+    registry: ToolRegistry | None = None,
+    *,
+    include_demo_stubs: bool = False,
+) -> ToolRegistry:
+    """加载 5 个外部工具 schema；演示 handler 需显式开启."""
     reg = registry or get_registry()
-    reg.register_batch_sync(EXTERNAL_TOOL_DEFINITIONS)
+    entries = (
+        EXTERNAL_TOOL_DEFINITIONS
+        if include_demo_stubs
+        else [(registration, None) for registration, _ in EXTERNAL_TOOL_DEFINITIONS]
+    )
+    reg.register_batch_sync(entries)
     return reg
 
 

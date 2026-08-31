@@ -237,9 +237,21 @@ class EvidenceCollector:
 
     @staticmethod
     def _similarity(a: str, b: str) -> float:
-        """计算两段文本的相似度（SequenceMatcher）."""
+        """计算声明与证据的相似度.
+
+        ``SequenceMatcher`` compares complete strings, so a sentence copied
+        verbatim from a long paper chunk used to receive a low score merely
+        because the surrounding chunk was long.  Direct containment is the
+        strongest available local grounding fact and must be recognised before
+        the fuzzy fallback.
+        """
         from difflib import SequenceMatcher
-        return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+        a_normalized = re.sub(r"\s+", " ", str(a or "")).strip().casefold()
+        b_normalized = re.sub(r"\s+", " ", str(b or "")).strip().casefold()
+        if a_normalized and a_normalized in b_normalized:
+            return 1.0
+        return SequenceMatcher(None, a_normalized, b_normalized).ratio()
 
 
 # ============================================================
