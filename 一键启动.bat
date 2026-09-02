@@ -42,9 +42,16 @@ REM ---- 4. 首次运行自动安装依赖 ----
 "%PY%" -c "import dy3_polaris" >nul 2>nul
 if errorlevel 1 (
     echo.
-    echo 首次运行，正在自动安装依赖（约 1-3 分钟，请耐心等待）...
+    echo 首次运行，正在自动安装依赖（约 1-5 分钟，请耐心等待）...
     echo.
+    REM 优先使用清华镜像（国内快）；失败则回退官方 PyPI
     "%PY%" -m pip install -e ".[dev]" -i https://pypi.tuna.tsinghua.edu.cn/simple
+    if errorlevel 1 (
+        echo.
+        echo 清华镜像安装失败，回退到官方 PyPI ...
+        echo.
+        "%PY%" -m pip install -e ".[dev]" -i https://pypi.org/simple
+    )
     if errorlevel 1 (
         echo.
         echo [错误] 依赖安装失败，请检查网络后重试。
