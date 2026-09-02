@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "package_id": "dy3-green-healthy-lighting",
+  "display_name": "Dy³⁺ 绿色健康照明知识域",
+  "domain": "rare-earth-luminescent-materials",
+  "version": "2026.08",
+  "language": "zh-CN",
+  "snapshot_root": "../snapshots",
+  "active_snapshot": "snapshot_final",
+  "concept_catalog": {
+    "catalog_id": "r06b-dy3-canonical-concepts",
+    "provider": "dy3_polaris.l3.concept_foundation:canonical_concepts"
+  },
+  "curriculum_catalog": {
+    "catalog_id": "dy3-48-kp-curriculum",
+    "provider": "dy3_polaris.l2.kp_catalog"
+  },
+  "source_policy": "reviewed_snapshot"
+}

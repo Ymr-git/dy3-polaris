@@ -1,0 +1,1297 @@
+{
+  "learner_id": "DY20240002",
+  "snapshot_ts": 1787618492.5657337,
+  "kp_mastery": {
+    "A-01": 0.681,
+    "A-02": 0.718,
+    "A-03": 0.866,
+    "A-04": 0.757,
+    "A-05": 0.9,
+    "A-06": 0.798,
+    "A-07": 0.844,
+    "A-08": 0.631,
+    "A-09": 0.874,
+    "A-10": 0.555,
+    "A-11": 0.599,
+    "A-12": 0.864,
+    "A-13": 0.621,
+    "B-01": 0.607,
+    "B-02": 0.84,
+    "B-03": 0.943,
+    "B-04": 0.562,
+    "B-05": 0.6,
+    "B-06": 0.63,
+    "B-07": 0.63,
+    "B-08": 0.553,
+    "B-09": 0.799,
+    "B-10": 0.811,
+    "B-11": 0.796,
+    "C-01": 0.944,
+    "C-02": 0.678,
+    "C-03": 0.643,
+    "C-04": 0.686,
+    "C-05": 0.674,
+    "C-06": 0.593,
+    "C-07": 0.624,
+    "C-08": 0.592,
+    "C-09": 0.725,
+    "C-10": 0.723,
+    "D-01": 0.656,
+    "D-02": 0.862,
+    "D-03": 0.562,
+    "D-04": 0.703,
+    "D-05": 0.788,
+    "D-06": 0.559,
+    "D-07": 0.799,
+    "D-08": 0.757
+  },
+  "theta": 1.1,
+  "level": "advanced",
+  "learning_style": "reading",
+  "bloom_target": "understand",
+  "weak_kps": [
+    "A-10",
+    "A-11",
+    "B-04",
+    "B-08",
+    "C-06",
+    "C-08",
+    "D-03",
+    "D-06"
+  ],
+  "confidence": 0.76,
+  "extras": {
+    "review_log": [
+      {
+        "ts": 1786764990.692885,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6532
+      },
+      {
+        "ts": 1786764992.7818751,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.3
+      },
+      {
+        "ts": 1786764992.7995493,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.3
+      },
+      {
+        "ts": 1786766207.6266277,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 0.7094
+      },
+      {
+        "ts": 1786766210.0290186,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6532
+      },
+      {
+        "ts": 1786766210.3985262,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6532
+      },
+      {
+        "ts": 1786766212.7046041,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6584
+      },
+      {
+        "ts": 1786766212.9428186,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6584
+      },
+      {
+        "ts": 1786767969.6059222,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 0.7094
+      },
+      {
+        "ts": 1786767973.137539,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6532
+      },
+      {
+        "ts": 1786767973.505521,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6532
+      },
+      {
+        "ts": 1786767975.9714684,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6584
+      },
+      {
+        "ts": 1786767976.1842194,
+        "verdict": "needs_review",
+        "reason": "检测到潜在幻觉或需要人工复核",
+        "confidence": 0.6584
+      },
+      {
+        "ts": 1788146602.028145,
+        "verdict": "needs_review",
+        "reason": "Claim-Evidence 审查发现：fact_not_directly_supported",
+        "confidence": 0.4767
+      },
+      {
+        "ts": 1788146614.3639448,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1788147554.794337,
+        "verdict": "needs_review",
+        "reason": "Claim-Evidence 审查发现：fact_not_directly_supported",
+        "confidence": 0.5055
+      },
+      {
+        "ts": 1788147568.4820528,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1788148029.3429706,
+        "verdict": "needs_review",
+        "reason": "Claim-Evidence 审查发现：fact_not_directly_supported",
+        "confidence": 0.4773
+      },
+      {
+        "ts": 1788148038.7624936,
+        "verdict": "needs_review",
+        "reason": "独立模型交叉审核提出挑战：回答正确指出了Dy3+双发射的能级跃迁来源，但未解释'为什么'会同时产生这两种跃迁（即黄蓝双发射的内在物理机制），且未说明黄光发射也是4f-4f跃迁，遗漏了关键因果信息。",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1788148046.8825104,
+        "verdict": "needs_review",
+        "reason": "独立模型交叉审核提出挑战：回答正确指出了Dy3+双发射的能级跃迁来源，但未完整解释'为什么'会同时产生这两种发射（即6H15/2受磁偶极跃迁主导对格位不敏感，而6H13/2受电偶极跃迁主导对格位敏感，导致两者共存且相对强度可调），遗漏了双发射机理的核心要点。",
+        "confidence": 1.0
+      }
+    ],
+    "agent_memory": [
+      {
+        "ts": 1786688020.780518,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "answer": "当前知识库暂无与「帮我系统讲解一下 Dy3+ 的发光机理」直接相关的知识（最接近的知识与问题主题重叠度仅 0.12）。\n本系统知识库聚焦稀土发光材料领域（Dy3+/Eu3+ 掺杂、能量传递、浓度猝灭、热猝灭、荧光粉表征等 42 个知识点）。\n请尝试在该范围内提问，或补充更多上下文（如材料体系、性能参数）。",
+        "verdict": "needs_review",
+        "confidence": 0.45
+      },
+      {
+        "ts": 1786688498.6714354,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "answer": "当前知识库暂无与「帮我系统讲解一下 Dy3+ 的发光机理」直接相关的知识（最接近的知识与问题主题重叠度仅 0.00）。\n本系统知识库聚焦稀土发光材料领域（Dy3+/Eu3+ 掺杂、能量传递、浓度猝灭、热猝灭、荧光粉表征等 42 个知识点）。\n请尝试在该范围内提问，或补充更多上下文（如材料体系、性能参数）。",
+        "verdict": "needs_review",
+        "confidence": 0.45
+      },
+      {
+        "ts": 1786688611.2310092,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "answer": "针对“帮我系统讲解一下 Dy3+ 的发光机理”，综合 4 条相关知识，解答如下：\n- 与 荧光粉样品的测试结果不同，在535nm 波长的光激发下，发射峰的发光强度最强；\n- 在375nm波长的光激发下，发射峰的发光强度最弱。\n- ## 5.4 与 Eu荧光粉的发光光谱对比\n- e-b7f9-4f7e-a672-f9b6f06f8e8b/88616df3fe3cffadc2816a127e8f28cab1f07fc956fb3c2bc3aa4ab124b529c2.jpg)图 3.5 室温下 1 at.% 荧光粉光致发光激发光谱和发射光谱",
+        "verdict": "needs_review",
+        "confidence": 0.6089
+      },
+      {
+        "ts": 1786688695.8146431,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "answer": "针对“帮我系统讲解一下 Dy3+ 的发光机理”，综合 2 条相关知识，解答如下：\n- 与 荧光粉样品的测试结果不同，在535nm 波长的光激发下，发射峰的发光强度最强；\n- 在375nm波长的光激发下，发射峰的发光强度最弱。",
+        "verdict": "needs_review",
+        "confidence": 0.6086
+      },
+      {
+        "ts": 1786692814.3846745,
+        "query": "出 3 道浓度猝灭的分阶测试题",
+        "answer": "好的，根据证据内容，我为你设计了三道关于浓度猝灭的分阶测试题，从基础概念到机理分析逐步深入：\n\n**第一题（基础理解）**\n根据证据，稀土离子发光的浓度猝灭存在一个临界浓度。请回答：证据中提到的Eu²⁺离子浓度猝灭的临界浓度大约是多少？这一数值是在什么条件下得出的？\n\n**第二题（机理辨析）**\n证据中提到了两种不同的浓度猝灭机制。请指出：对于Eu²⁺和Eu³⁺离子，它们各自的浓度猝灭分别主要由哪种相互作用引起？证据中是如何说明这一区别的？\n\n**第三题（综合分析）**\n证据对比了体材料与纳米晶中稀土离子的浓度猝灭行为。请根据证据回答：在体材料中，Eu³⁺发光在质量分数低于多少时未观察到浓度猝",
+        "verdict": "needs_review",
+        "confidence": 0.45
+      },
+      {
+        "ts": 1786763606.776173,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "answer": "针对“出一节'稀土 4f 跃迁'的讲义”，综合 14 条相关知识，解答如下：\n- p63 s23 p64 s23 d104 p65 s24 d105 p66 s24 fn5dm，当稀土原子变成离子时，首先失去最外层 6 s2 电子，随后4f轨道电子会越过5s 和5p 失去。\n- 4f电子层被 5s 与 5 p 轨道满壳层结构保护，几乎不受外界影响，轨道电子能量较高。\n- 一旦受到外界激发，在中心离子与配体的静电场作用下，晶体场对中心离子的 d电子产生排斥作用，使d轨道产生能级分裂，从而稀土离子具有类原子的光谱性质，容易发生能级跃迁并发射大量不同波长的光。\n- 稀土发光材料电子跃迁遵循光谱选律，",
+        "verdict": "needs_review",
+        "confidence": 0.7047
+      },
+      {
+        "ts": 1786763609.6362612,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "answer": "针对“出 3 道浓度猝灭的分阶题”，综合 12 条相关知识，解答如下：\n- 质的若干因素 ## 1.激活剂浓度 Eu2+离子发光的浓度猝灭问题，在绝大多数基质中都作过讨论。\n- 实验表明，浓度猝灭的临界浓度大约为 2% 克原子铕。\n- 表Ⅳ给出了某些 Eu2+激活磷光体激活剂浓度与效率。\n- 表Ⅳ 磷光体中 Eu2+浓度与效率 磷光体Eu2+浓度(克原子)量子效率(%)(254nm激发)文献BaBPO5:Eu2+0.0056017<\n- Tb3+发光浓度猝灭的机制 [32] ： 5D3 的浓度猝灭是电偶极·电偶极相互作用引起的，而 5D4 浓度猝灭是交换相互作用引起的。\n- 与体材料相比，在 ",
+        "verdict": "needs_review",
+        "confidence": 0.6594
+      },
+      {
+        "ts": 1786763847.574593,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "answer": "针对“出一节'稀土 4f 跃迁'的讲义”，综合 15 条相关知识，解答如下：\n- p63 s23 p64 s23 d104 p65 s24 d105 p66 s24 fn5dm，当稀土原子变成离子时，首先失去最外层 6 s2 电子，随后4f轨道电子会越过5s 和5p 失去。\n- 4f电子层被 5s 与 5 p 轨道满壳层结构保护，几乎不受外界影响，轨道电子能量较高。\n- 一旦受到外界激发，在中心离子与配体的静电场作用下，晶体场对中心离子的 d电子产生排斥作用，使d轨道产生能级分裂，从而稀土离子具有类原子的光谱性质，容易发生能级跃迁并发射大量不同波长的光。\n- 稀土发光材料电子跃迁遵循光谱选律，",
+        "verdict": "approved",
+        "confidence": 0.7145
+      },
+      {
+        "ts": 1786763849.7010312,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "answer": "针对“出 3 道浓度猝灭的分阶题”，综合 12 条相关知识，解答如下：\n- 质的若干因素 1.激活剂浓度 Eu2+离子发光的浓度猝灭问题，在绝大多数基质中都作过讨论。\n- 实验表明，浓度猝灭的临界浓度大约为 2% 克原子铕。\n- 表Ⅳ给出了某些 Eu2+激活磷光体激活剂浓度与效率。\n- 表Ⅳ 磷光体中 Eu2+浓度与效率 磷光体Eu2+浓度(克原子)量子效率(%)(254nm激发)文献BaBPO5:Eu2+0.0056017<\n- Tb3+发光浓度猝灭的机制 ： 5D3 的浓度猝灭是电偶极·电偶极相互作用引起的，而 5D4 浓度猝灭是交换相互作用引起的。\n- 与体材料相比，在 Y2O2S:Tb",
+        "verdict": "needs_review",
+        "confidence": 0.6592
+      },
+      {
+        "ts": 1786764026.8865116,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "answer": "针对“出一节'稀土 4f 跃迁'的讲义”，综合 15 条相关知识，解答如下：\n- p63 s23 p64 s23 d104 p65 s24 d105 p66 s24 fn5dm，当稀土原子变成离子时，首先失去最外层 6 s2 电子，随后4f轨道电子会越过5s 和5p 失去。\n- 4f电子层被 5s 与 5 p 轨道满壳层结构保护，几乎不受外界影响，轨道电子能量较高。\n- 一旦受到外界激发，在中心离子与配体的静电场作用下，晶体场对中心离子的 d电子产生排斥作用，使d轨道产生能级分裂，从而稀土离子具有类原子的光谱性质，容易发生能级跃迁并发射大量不同波长的光。\n- 稀土发光材料电子跃迁遵循光谱选律，",
+        "verdict": "approved",
+        "confidence": 0.7156
+      },
+      {
+        "ts": 1786764029.0378067,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "answer": "针对“出 3 道浓度猝灭的分阶题”，综合 12 条相关知识，解答如下：\n- 质的若干因素 1.激活剂浓度 Eu2+离子发光的浓度猝灭问题，在绝大多数基质中都作过讨论。\n- 实验表明，浓度猝灭的临界浓度大约为 2% 克原子铕。\n- 表Ⅳ给出了某些 Eu2+激活磷光体激活剂浓度与效率。\n- 表Ⅳ 磷光体中 Eu2+浓度与效率 磷光体Eu2+浓度(克原子)量子效率(%)(254nm激发)文献BaBPO5:Eu2+0.0056017<\n- Tb3+发光浓度猝灭的机制 ： 5D3 的浓度猝灭是电偶极·电偶极相互作用引起的，而 5D4 浓度猝灭是交换相互作用引起的。\n- 与体材料相比，在 Y2O2S:Tb",
+        "verdict": "needs_review",
+        "confidence": 0.6603
+      },
+      {
+        "ts": 1786764988.5904183,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "answer": "针对“出一节'稀土 4f 跃迁'的讲义”，综合 15 条相关知识，解答如下：\n- p63 s23 p64 s23 d104 p65 s24 d105 p66 s24 fn5dm，当稀土原子变成离子时，首先失去最外层 6 s2 电子，随后4f轨道电子会越过5s 和5p 失去。\n- 4f电子层被 5s 与 5 p 轨道满壳层结构保护，几乎不受外界影响，轨道电子能量较高。\n- 一旦受到外界激发，在中心离子与配体的静电场作用下，晶体场对中心离子的 d电子产生排斥作用，使d轨道产生能级分裂，从而稀土离子具有类原子的光谱性质，容易发生能级跃迁并发射大量不同波长的光。\n- 稀土发光材料电子跃迁遵循光谱选律，",
+        "verdict": "approved",
+        "confidence": 0.7168
+      },
+      {
+        "ts": 1786764990.699773,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "answer": "针对“出 3 道浓度猝灭的分阶题”，综合 12 条相关知识，解答如下：\n- 质的若干因素 1.激活剂浓度 Eu2+离子发光的浓度猝灭问题，在绝大多数基质中都作过讨论。\n- 实验表明，浓度猝灭的临界浓度大约为 2% 克原子铕。\n- 表Ⅳ给出了某些 Eu2+激活磷光体激活剂浓度与效率。\n- 表Ⅳ 磷光体中 Eu2+浓度与效率 磷光体Eu2+浓度(克原子)量子效率(%)(254nm激发)文献BaBPO5:Eu2+0.0056017<\n- Tb3+发光浓度猝灭的机制 ： 5D3 的浓度猝灭是电偶极·电偶极相互作用引起的，而 5D4 浓度猝灭是交换相互作用引起的。\n- 与体材料相比，在 Y2O2S:Tb",
+        "verdict": "needs_review",
+        "confidence": 0.6613
+      },
+      {
+        "ts": 1786764992.8054802,
+        "query": "写一段'4f 跃迁'的课堂导入语",
+        "answer": "「4f 跃迁」这一术语/概念在本地知识库中未收录，我无法给出可靠解释。\n本系统知识库聚焦稀土发光材料领域（Dy³⁺/Eu³⁺ 掺杂、能量传递、浓度猝灭、量子效率、荧光粉表征等 42 个知识点）。请确认术语名称，或换用知识库已有的概念提问，例如「浓度猝灭」「量子效率」「Dy³⁺ 发光机理」。",
+        "verdict": "needs_review",
+        "confidence": 0.45
+      },
+      {
+        "ts": 1786766207.6337535,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "answer": "针对“出一节'稀土 4f 跃迁'的讲义”，综合 15 条相关知识，解答如下：\n- p63 s23 p64 s23 d104 p65 s24 d105 p66 s24 fn5dm，当稀土原子变成离子时，首先失去最外层 6 s2 电子，随后4f轨道电子会越过5s 和5p 失去。\n- 4f电子层被 5s 与 5 p 轨道满壳层结构保护，几乎不受外界影响，轨道电子能量较高。\n- 一旦受到外界激发，在中心离子与配体的静电场作用下，晶体场对中心离子的 d电子产生排斥作用，使d轨道产生能级分裂，从而稀土离子具有类原子的光谱性质，容易发生能级跃迁并发射大量不同波长的光。\n- 稀土发光材料电子跃迁遵循光谱选律，",
+        "verdict": "approved",
+        "confidence": 0.7176
+      },
+      {
+        "ts": 1786766210.4053037,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "answer": "针对“出 3 道浓度猝灭的分阶题”，综合 12 条相关知识，解答如下：\n- 质的若干因素 1.激活剂浓度 Eu2+离子发光的浓度猝灭问题，在绝大多数基质中都作过讨论。\n- 实验表明，浓度猝灭的临界浓度大约为 2% 克原子铕。\n- 表Ⅳ给出了某些 Eu2+激活磷光体激活剂浓度与效率。\n- 表Ⅳ 磷光体中 Eu2+浓度与效率 磷光体Eu2+浓度(克原子)量子效率(%)(254nm激发)文献BaBPO5:Eu2+0.0056017<\n- Tb3+发光浓度猝灭的机制 ： 5D3 的浓度猝灭是电偶极·电偶极相互作用引起的，而 5D4 浓度猝灭是交换相互作用引起的。\n- 与体材料相比，在 Y2O2S:Tb",
+        "verdict": "needs_review",
+        "confidence": 0.6621
+      },
+      {
+        "ts": 1786766212.9492905,
+        "query": "写一段'4f 跃迁'的课堂导入语",
+        "answer": "针对“写一段'4f 跃迁'的课堂导入语”，综合 3 条相关知识，解答如下：\n- 跃迁，在极个别的情况下，在实验上测得了相对于 5D0→7F2 跃迁来说相当可观的强度而不能用J-混合所解释。\n- 表 1 光学材料中稀土离子跃迁的选择定则 Table1Transition selection rules of rare-earth in optical materials 跃迁类型SLJ选择定则备注电偶极跃迁l& x27; = l1; |l| = 1; S = 0;\n- 2.2 我们关于 f-f光跃迁强度 Judd公式有以下两方面的工作 2.2.1 在 Judd-O felt三参量公式中计入 J混",
+        "verdict": "needs_review",
+        "confidence": 0.6219
+      },
+      {
+        "ts": 1786767969.7076404,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "answer": "针对“出一节'稀土 4f 跃迁'的讲义”，综合 15 条相关知识，解答如下：\n- p63 s23 p64 s23 d104 p65 s24 d105 p66 s24 fn5dm，当稀土原子变成离子时，首先失去最外层 6 s2 电子，随后4f轨道电子会越过5s 和5p 失去。\n- 4f电子层被 5s 与 5 p 轨道满壳层结构保护，几乎不受外界影响，轨道电子能量较高。\n- 一旦受到外界激发，在中心离子与配体的静电场作用下，晶体场对中心离子的 d电子产生排斥作用，使d轨道产生能级分裂，从而稀土离子具有类原子的光谱性质，容易发生能级跃迁并发射大量不同波长的光。\n- 稀土发光材料电子跃迁遵循光谱选律，",
+        "verdict": "approved",
+        "confidence": 0.7185
+      },
+      {
+        "ts": 1786767973.6129513,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "answer": "针对“出 3 道浓度猝灭的分阶题”，综合 12 条相关知识，解答如下：\n- 质的若干因素 1.激活剂浓度 Eu2+离子发光的浓度猝灭问题，在绝大多数基质中都作过讨论。\n- 实验表明，浓度猝灭的临界浓度大约为 2% 克原子铕。\n- 表Ⅳ给出了某些 Eu2+激活磷光体激活剂浓度与效率。\n- 表Ⅳ 磷光体中 Eu2+浓度与效率 磷光体Eu2+浓度(克原子)量子效率(%)(254nm激发)文献BaBPO5:Eu2+0.0056017<\n- Tb3+发光浓度猝灭的机制 ： 5D3 的浓度猝灭是电偶极·电偶极相互作用引起的，而 5D4 浓度猝灭是交换相互作用引起的。\n- 与体材料相比，在 Y2O2S:Tb",
+        "verdict": "needs_review",
+        "confidence": 0.6629
+      },
+      {
+        "ts": 1786767976.3469417,
+        "query": "写一段'4f 跃迁'的课堂导入语",
+        "answer": "针对“写一段'4f 跃迁'的课堂导入语”，综合 3 条相关知识，解答如下：\n- 跃迁，在极个别的情况下，在实验上测得了相对于 5D0→7F2 跃迁来说相当可观的强度而不能用J-混合所解释。\n- 表 1 光学材料中稀土离子跃迁的选择定则 Table1Transition selection rules of rare-earth in optical materials 跃迁类型SLJ选择定则备注电偶极跃迁l& x27; = l1; |l| = 1; S = 0;\n- 2.2 我们关于 f-f光跃迁强度 Judd公式有以下两方面的工作 2.2.1 在 Judd-O felt三参量公式中计入 J混",
+        "verdict": "needs_review",
+        "confidence": 0.6226
+      }
+    ],
+    "agent_reputation": {
+      "agent.learning.diagnosis": 83.8,
+      "agent.knowledge.generation": 83.8,
+      "agent.quality.review": 83.8,
+      "agent.guidance.decision": 83.8
+    },
+    "query_log": [
+      {
+        "ts": 1786688020.7863607,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "source": "query"
+      },
+      {
+        "ts": 1786688498.677192,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "source": "query"
+      },
+      {
+        "ts": 1786688611.236469,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "source": "query"
+      },
+      {
+        "ts": 1786688695.8225064,
+        "query": "帮我系统讲解一下 Dy3+ 的发光机理",
+        "source": "query"
+      },
+      {
+        "ts": 1786692814.3911614,
+        "query": "出 3 道浓度猝灭的分阶测试题",
+        "source": "query"
+      },
+      {
+        "ts": 1786763606.7868578,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "source": "query"
+      },
+      {
+        "ts": 1786763609.660593,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "source": "query"
+      },
+      {
+        "ts": 1786763847.585064,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "source": "query"
+      },
+      {
+        "ts": 1786763849.7163267,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "source": "query"
+      },
+      {
+        "ts": 1786764026.9015505,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "source": "query"
+      },
+      {
+        "ts": 1786764029.0559216,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "source": "query"
+      },
+      {
+        "ts": 1786764988.6076672,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "source": "query"
+      },
+      {
+        "ts": 1786764990.71078,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "source": "query"
+      },
+      {
+        "ts": 1786764992.818752,
+        "query": "写一段'4f 跃迁'的课堂导入语",
+        "source": "query"
+      },
+      {
+        "ts": 1786766207.6451068,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "source": "query"
+      },
+      {
+        "ts": 1786766210.416667,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "source": "query"
+      },
+      {
+        "ts": 1786766212.9614563,
+        "query": "写一段'4f 跃迁'的课堂导入语",
+        "source": "query"
+      },
+      {
+        "ts": 1786767969.7223582,
+        "query": "出一节'稀土 4f 跃迁'的讲义",
+        "source": "query"
+      },
+      {
+        "ts": 1786767973.627594,
+        "query": "出 3 道浓度猝灭的分阶题",
+        "source": "query"
+      },
+      {
+        "ts": 1786767976.3636308,
+        "query": "写一段'4f 跃迁'的课堂导入语",
+        "source": "query"
+      },
+      {
+        "ts": 1788146328.640198,
+        "query": "为什么 Dy³⁺ 浓度增加会导致发光猝灭？请结合证据解释机制。",
+        "source": "query"
+      },
+      {
+        "ts": 1788146614.5322347,
+        "query": "Dy³⁺为什么具有黄蓝双发射？",
+        "source": "query"
+      },
+      {
+        "ts": 1788147568.6369991,
+        "query": "Dy³⁺为什么具有黄蓝双发射？",
+        "source": "query"
+      },
+      {
+        "ts": 1788148047.038027,
+        "query": "Dy³⁺为什么具有黄蓝双发射？",
+        "source": "query"
+      }
+    ],
+    "decision_log": [
+      {
+        "ts": 1786692814.392414,
+        "decision": "direct",
+        "confidence": 0.45,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786763606.7891154,
+        "decision": "direct",
+        "confidence": 0.7047,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786763609.6632373,
+        "decision": "direct",
+        "confidence": 0.6594,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786763847.5868435,
+        "decision": "direct",
+        "confidence": 0.7145,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786763849.7188568,
+        "decision": "direct",
+        "confidence": 0.6592,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786764026.904736,
+        "decision": "direct",
+        "confidence": 0.7156,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786764029.0609286,
+        "decision": "direct",
+        "confidence": 0.6603,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786764988.6111586,
+        "decision": "direct",
+        "confidence": 0.7168,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786764990.714017,
+        "decision": "direct",
+        "confidence": 0.6613,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786764992.8213024,
+        "decision": "direct",
+        "confidence": 0.45,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786766207.647969,
+        "decision": "direct",
+        "confidence": 0.7176,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786766210.419488,
+        "decision": "direct",
+        "confidence": 0.6621,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786766212.963604,
+        "decision": "direct",
+        "confidence": 0.6219,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786767969.7247787,
+        "decision": "direct",
+        "confidence": 0.7185,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786767973.631535,
+        "decision": "direct",
+        "confidence": 0.6629,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1786767976.3676255,
+        "decision": "direct",
+        "confidence": 0.6226,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1788146328.6440897,
+        "decision": "withhold",
+        "confidence": 0.25,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1788146614.5360231,
+        "decision": "direct",
+        "confidence": 0.95,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1788147568.6419668,
+        "decision": "direct",
+        "confidence": 0.95,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      },
+      {
+        "ts": 1788148047.0428646,
+        "decision": "withhold",
+        "confidence": 0.55,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-10",
+          "A-11",
+          "B-04",
+          "B-08",
+          "C-06",
+          "C-08",
+          "D-03",
+          "D-06"
+        ]
+      }
+    ],
+    "learner_memory": {
+      "version": 3,
+      "knowledge_state": {},
+      "learning_history": [
+        {
+          "task_id": "task-799ef0b418f044388cdf5b23db082240",
+          "question": "Dy³⁺为什么具有黄蓝双发射？",
+          "task_mode": "EXPLAIN",
+          "covered_topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "remaining_gap": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "recommended_next_action": "先学习 Dy3+蓝光发射，再推进当前问题",
+          "completed_at": 1788146614.508613
+        },
+        {
+          "task_id": "task-c049e3c0de7f4e2885cdeb2118c8c960",
+          "question": "Dy³⁺为什么具有黄蓝双发射？",
+          "task_mode": "EXPLAIN",
+          "covered_topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "remaining_gap": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "recommended_next_action": "先学习 Dy3+蓝光发射，再推进当前问题",
+          "completed_at": 1788147568.608368
+        }
+      ],
+      "learning_events": [
+        {
+          "event_id": "learning-event-0f3aa6469457314a",
+          "learner_id": "DY20240002",
+          "task_id": "task-799ef0b418f044388cdf5b23db082240",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1788146614.508485,
+          "topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "content": "Dy³⁺为什么具有黄蓝双发射？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-91fa438da9ca9c19",
+          "learner_id": "DY20240002",
+          "task_id": "task-799ef0b418f044388cdf5b23db082240",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1788146614.5085237,
+          "topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "content": "",
+          "reference": "c37df047b7ce5852021190da99e21dbf04fb7961cfa29dd5515a0dd2303b4c30",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-89f9dee88625fd2b",
+          "learner_id": "DY20240002",
+          "task_id": "task-799ef0b418f044388cdf5b23db082240",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1788146614.5085459,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-da3aaee1c89ecec8",
+          "learner_id": "DY20240002",
+          "task_id": "task-799ef0b418f044388cdf5b23db082240",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1788146614.508565,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "先学习 Dy3+蓝光发射，再推进当前问题",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-0fb5081049b265c7",
+          "learner_id": "DY20240002",
+          "task_id": "task-c049e3c0de7f4e2885cdeb2118c8c960",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1788147568.60825,
+          "topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "content": "Dy³⁺为什么具有黄蓝双发射？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-177bcf4c9e6ecf83",
+          "learner_id": "DY20240002",
+          "task_id": "task-c049e3c0de7f4e2885cdeb2118c8c960",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1788147568.6082826,
+          "topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "content": "",
+          "reference": "e191db7f6c1e39c148c47f0aa1c56fc60210c7cb9def6b1cb7f23f2120ab555e",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-b66a3df68b344e71",
+          "learner_id": "DY20240002",
+          "task_id": "task-c049e3c0de7f4e2885cdeb2118c8c960",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1788147568.6083014,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-b972150d44541c05",
+          "learner_id": "DY20240002",
+          "task_id": "task-c049e3c0de7f4e2885cdeb2118c8c960",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1788147568.6083186,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "先学习 Dy3+蓝光发射，再推进当前问题",
+          "reference": "",
+          "outcome": "NONE"
+        }
+      ],
+      "error_patterns": [],
+      "misconceptions": [],
+      "evidence_sources": [
+        "c-curated:6220aead78807f5e70bc",
+        "curated-concept-evidence:dy3-yellow-blue-transitions",
+        "c-curated:d02d8d4fe5c12a3ccd25",
+        "curated-concept-evidence:host-local-environment",
+        "c-curated:59ea5556cc408a52b538",
+        "curated-concept-evidence:excitation-emission-spectrum-distinction"
+      ],
+      "updated_at": 1788147568.608368,
+      "teaching_memory": {
+        "version": "r07b-v1",
+        "concept_learning": [
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "learning_attempts": 1,
+            "first_seen": 1788147568.736342,
+            "last_seen": 1788147568.736342,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "learning_attempts": 1,
+            "first_seen": 1788147568.736342,
+            "last_seen": 1788147568.736342,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "learning_attempts": 1,
+            "first_seen": 1788147568.736342,
+            "last_seen": 1788147568.736342,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "learning_attempts": 1,
+            "first_seen": 1788147568.736342,
+            "last_seen": 1788147568.736342,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "learning_attempts": 1,
+            "first_seen": 1788147568.736342,
+            "last_seen": 1788147568.736342,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          }
+        ],
+        "misconceptions": [],
+        "strategies": [
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240002",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-a6816fe2e677228ba7e3"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1788147568.736342,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          }
+        ],
+        "experiences": [
+          {
+            "experience_id": "experience-teaching-event-a6816fe2e677228ba7e3",
+            "learner_id": "DY20240002",
+            "event_id": "teaching-event-a6816fe2e677228ba7e3",
+            "task_id": "task-c049e3c0de7f4e2885cdeb2118c8c960",
+            "concept_ids": [
+              "concept:dy3:dy3-blue-emission",
+              "concept:dy3:dy3-yellow-emission",
+              "concept:dy3:emission-spectrum",
+              "concept:dy3:excitation-spectrum",
+              "concept:dy3:photoluminescence-spectroscopy"
+            ],
+            "strategies": [
+              "explanation",
+              "concept_introduction",
+              "evidence_based_learning"
+            ],
+            "outcome": "reviewed_delivery",
+            "next_learning_target": "concept:dy3:dy3-blue-emission",
+            "timestamp": 1788147568.736342
+          },
+          {
+            "experience_id": "experience-teaching-event-30955832a798065d9863",
+            "learner_id": "DY20240002",
+            "event_id": "teaching-event-30955832a798065d9863",
+            "task_id": "task-add980ab3731451faf029ab34f51e7ee",
+            "concept_ids": [
+              "concept:dy3:dy3-blue-emission",
+              "concept:dy3:dy3-yellow-emission",
+              "concept:dy3:emission-spectrum",
+              "concept:dy3:excitation-spectrum",
+              "concept:dy3:photoluminescence-spectroscopy"
+            ],
+            "strategies": [],
+            "outcome": "no_delivery",
+            "next_learning_target": "concept:dy3:dy3-blue-emission",
+            "timestamp": 1788148047.1393185
+          }
+        ],
+        "resource_interactions": [],
+        "practice_validations": [],
+        "updated_at": 1788148047.1393185
+      }
+    }
+  },
+  "version": 372,
+  "dimensions": {
+    "A": 0.7468,
+    "B": 0.7065,
+    "C": 0.6882,
+    "D": 0.7107,
+    "E": 0.75
+  }
+}

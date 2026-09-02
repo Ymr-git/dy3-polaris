@@ -1,0 +1,4209 @@
+{
+  "learner_id": "DY20240001",
+  "snapshot_ts": 1787618492.5618212,
+  "kp_mastery": {
+    "A-01": 0.163,
+    "A-02": 0.465,
+    "A-03": 0.378,
+    "A-04": 0.336,
+    "A-05": 0.236,
+    "A-06": 0.157,
+    "A-07": 0.478,
+    "A-08": 0.208,
+    "A-09": 0.45,
+    "A-10": 0.19,
+    "A-11": 0.452,
+    "A-12": 0.155,
+    "A-13": 0.413,
+    "B-01": 0.156,
+    "B-02": 0.537,
+    "B-03": 0.221,
+    "B-04": 0.332,
+    "B-05": 0.242,
+    "B-06": 0.264,
+    "B-07": 0.465,
+    "B-08": 0.324,
+    "B-09": 0.404,
+    "B-10": 0.248,
+    "B-11": 0.391,
+    "C-01": 0.266,
+    "C-02": 0.268,
+    "C-03": 0.445,
+    "C-04": 0.282,
+    "C-05": 0.426,
+    "C-06": 0.518,
+    "C-07": 0.432,
+    "C-08": 0.358,
+    "C-09": 0.315,
+    "C-10": 0.282,
+    "D-01": 0.35,
+    "D-02": 0.49,
+    "D-03": 0.226,
+    "D-04": 0.428,
+    "D-05": 0.15,
+    "D-06": 0.195,
+    "D-07": 0.539,
+    "D-08": 0.178
+  },
+  "theta": -0.6,
+  "level": "beginner",
+  "learning_style": "visual",
+  "bloom_target": "understand",
+  "weak_kps": [
+    "A-01",
+    "A-02",
+    "A-03",
+    "A-04",
+    "A-05",
+    "A-06",
+    "A-07",
+    "A-08",
+    "A-09",
+    "A-10",
+    "A-11",
+    "A-12",
+    "A-13",
+    "B-01",
+    "B-02",
+    "B-03",
+    "B-04",
+    "B-05",
+    "B-06",
+    "B-07",
+    "B-08",
+    "B-09",
+    "B-10",
+    "B-11",
+    "C-01",
+    "C-02",
+    "C-03",
+    "C-04",
+    "C-05",
+    "C-06",
+    "C-07",
+    "C-08",
+    "C-09",
+    "C-10",
+    "D-01",
+    "D-02",
+    "D-03",
+    "D-04",
+    "D-05",
+    "D-06",
+    "D-07",
+    "D-08"
+  ],
+  "confidence": 0.32,
+  "extras": {
+    "assess_log": [
+      {
+        "ts": 1786079172.7142525,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "A-05",
+          "A-01"
+        ],
+        "avg_mastery": 0.6549
+      },
+      {
+        "ts": 1786079173.0963254,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-01"
+        ],
+        "avg_mastery": 0.6642
+      },
+      {
+        "ts": 1786080288.9301722,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "B-07",
+          "C-01"
+        ],
+        "avg_mastery": 0.6514
+      },
+      {
+        "ts": 1786080289.3233051,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "C-01"
+        ],
+        "avg_mastery": 0.66
+      },
+      {
+        "ts": 1786080589.8797982,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "C-01",
+          "A-05"
+        ],
+        "avg_mastery": 0.6535
+      },
+      {
+        "ts": 1786080590.254359,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-05"
+        ],
+        "avg_mastery": 0.6628
+      },
+      {
+        "ts": 1786086571.2208116,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "A-13",
+          "A-05"
+        ],
+        "avg_mastery": 0.6523
+      },
+      {
+        "ts": 1786086571.6170578,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-05"
+        ],
+        "avg_mastery": 0.6613
+      },
+      {
+        "ts": 1786086815.2277787,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "A-05",
+          "C-02"
+        ],
+        "avg_mastery": 0.6549
+      },
+      {
+        "ts": 1786086815.6090157,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "C-02"
+        ],
+        "avg_mastery": 0.6642
+      },
+      {
+        "ts": 1786087294.770753,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "A-12",
+          "A-13"
+        ],
+        "avg_mastery": 0.6459
+      },
+      {
+        "ts": 1786087295.1560805,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-13"
+        ],
+        "avg_mastery": 0.6548
+      },
+      {
+        "ts": 1786087542.645232,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "C-02",
+          "A-12"
+        ],
+        "avg_mastery": 0.6535
+      },
+      {
+        "ts": 1786087543.03258,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-12"
+        ],
+        "avg_mastery": 0.6628
+      },
+      {
+        "ts": 1786087788.2881951,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "C-02",
+          "A-12"
+        ],
+        "avg_mastery": 0.6535
+      },
+      {
+        "ts": 1786087788.6917777,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-12"
+        ],
+        "avg_mastery": 0.6628
+      },
+      {
+        "ts": 1786092662.2610648,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "C-02",
+          "B-09"
+        ],
+        "avg_mastery": 0.6566
+      },
+      {
+        "ts": 1786092662.6469684,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "B-09"
+        ],
+        "avg_mastery": 0.6656
+      },
+      {
+        "ts": 1786092912.3039465,
+        "agent": "agent.knowledge.generation",
+        "total": 2,
+        "correct": 1,
+        "kps": [
+          "B-09",
+          "A-05"
+        ],
+        "avg_mastery": 0.6549
+      },
+      {
+        "ts": 1786092912.7018917,
+        "agent": "agent.knowledge.generation",
+        "total": 1,
+        "correct": 1,
+        "kps": [
+          "A-05"
+        ],
+        "avg_mastery": 0.6639
+      }
+    ],
+    "review_log": [
+      {
+        "ts": 1787819238.8967092,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 0.7394
+      },
+      {
+        "ts": 1787819257.5488715,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 0.7394
+      },
+      {
+        "ts": 1787819471.225419,
+        "verdict": "needs_review",
+        "reason": "Claim-Evidence 审查发现：fact_not_directly_supported",
+        "confidence": 0.5278
+      },
+      {
+        "ts": 1787819471.6844516,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 0.7437
+      },
+      {
+        "ts": 1787819543.940113,
+        "verdict": "needs_review",
+        "reason": "Claim-Evidence 审查发现：fact_not_directly_supported",
+        "confidence": 0.5278
+      },
+      {
+        "ts": 1787819544.4121773,
+        "verdict": "needs_review",
+        "reason": "Claim-Evidence 审查发现：fact_not_directly_supported",
+        "confidence": 0.5278
+      },
+      {
+        "ts": 1787819606.5495431,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 0.7187
+      },
+      {
+        "ts": 1787845817.2560773,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787845833.7781298,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787845920.2917154,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787845978.660184,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787846133.7133794,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787846148.2047293,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787846239.1977541,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787846329.5184166,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787847113.4703248,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787847127.14539,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787920311.6488183,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787920324.9464183,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      },
+      {
+        "ts": 1787991378.3682897,
+        "verdict": "approved",
+        "reason": "事实校验与防幻觉校验均通过",
+        "confidence": 1.0
+      }
+    ],
+    "decision_log": [
+      {
+        "ts": 1787818631.6662707,
+        "decision": "withhold",
+        "confidence": 0.55,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787818791.9268506,
+        "decision": "direct",
+        "confidence": 0.7071,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787819239.0144181,
+        "decision": "direct",
+        "confidence": 0.7394,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787819257.681584,
+        "decision": "direct",
+        "confidence": 0.7394,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787819471.8441076,
+        "decision": "direct",
+        "confidence": 0.7437,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787819544.5798762,
+        "decision": "withhold",
+        "confidence": 0.55,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787819606.6824143,
+        "decision": "direct",
+        "confidence": 0.6787,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787845817.3779562,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787845833.8960156,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787845920.424266,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787845978.78188,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787846133.8336005,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787846148.3410058,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787846239.3317602,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787846329.7171185,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787847113.6114578,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787847127.2959893,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787920311.771038,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787920325.0634198,
+        "decision": "direct",
+        "confidence": 0.65,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "ts": 1787991378.539248,
+        "decision": "direct",
+        "confidence": 0.95,
+        "action_type": "answer",
+        "weak_kps": [
+          "A-01",
+          "A-02",
+          "A-03",
+          "A-04",
+          "A-05",
+          "A-06",
+          "A-07",
+          "A-08",
+          "A-09",
+          "A-10",
+          "A-11",
+          "A-12",
+          "A-13",
+          "B-01",
+          "B-02",
+          "B-03",
+          "B-04",
+          "B-05",
+          "B-06",
+          "B-07",
+          "B-08",
+          "B-09",
+          "B-10",
+          "B-11",
+          "C-01",
+          "C-02",
+          "C-03",
+          "C-04",
+          "C-05",
+          "C-06",
+          "C-07",
+          "C-08",
+          "C-09",
+          "C-10",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      }
+    ],
+    "interaction_log": [
+      {
+        "ts": 1786071678.5490608,
+        "event_type": "view",
+        "detail": "kb A-05",
+        "session_id": ""
+      },
+      {
+        "ts": 1786071687.7606108,
+        "event_type": "query",
+        "detail": "Dy3+ 的量子效率受哪些因素影响？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786071691.3895366,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786071713.7789962,
+        "event_type": "view",
+        "detail": "kb A-05",
+        "session_id": ""
+      },
+      {
+        "ts": 1786071722.5137072,
+        "event_type": "query",
+        "detail": "Dy3+ 的量子效率受哪些因素影响？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786071726.1601238,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786073218.9189935,
+        "event_type": "query",
+        "detail": "Dy3+ 发射波长是多少？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786074586.1173382,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786074618.915932,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786074727.1158965,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786079281.0573444,
+        "event_type": "query",
+        "detail": "Dy3+ 量子效率如何提升？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786080743.4332516,
+        "event_type": "query",
+        "detail": "Dy3+ 发光机制",
+        "session_id": ""
+      },
+      {
+        "ts": 1786080799.8947554,
+        "event_type": "query",
+        "detail": "Dy3+ 发光机制",
+        "session_id": ""
+      },
+      {
+        "ts": 1786080906.9080355,
+        "event_type": "query",
+        "detail": "Dy3+ 发光机制",
+        "session_id": ""
+      },
+      {
+        "ts": 1786087952.5151534,
+        "event_type": "query",
+        "detail": "Dy3+ 发射波长？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786089363.2455904,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786089380.3786306,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786089597.612402,
+        "event_type": "query",
+        "detail": "Dy3+ 发光机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786091492.9946716,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786091510.3545918,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786094959.9806347,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786094975.1925025,
+        "event_type": "query",
+        "detail": "dy离子是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786095106.9661686,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786095122.2566783,
+        "event_type": "query",
+        "detail": "dy离子是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786325668.364345,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786325758.4797688,
+        "event_type": "query",
+        "detail": "上转换发光是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786326300.4853485,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786326316.0067854,
+        "event_type": "query",
+        "detail": "Tb3+ 发光是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786326430.1179655,
+        "event_type": "query",
+        "detail": "Tb3+ 发光是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786326439.1843123,
+        "event_type": "query",
+        "detail": "Tm3+ 发光是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786326631.9409347,
+        "event_type": "query",
+        "detail": "Er3+ 上转换是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786326797.3196428,
+        "event_type": "query",
+        "detail": "Er3+ 上转换是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786327937.1440012,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328273.7774417,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328292.112438,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328427.5537622,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328445.8488293,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328605.1659782,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328623.4844468,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328828.9215772,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786328847.2165554,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329311.9194803,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329330.2198236,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329432.282953,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329450.6036627,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329582.4072723,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329600.7207732,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329703.4038966,
+        "event_type": "query",
+        "detail": "dy离子的量子效率",
+        "session_id": ""
+      },
+      {
+        "ts": 1786329721.7212074,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786332545.8713324,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786332593.8539603,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786332666.1053078,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786336787.0868728,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786336851.8187227,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340355.660837,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340410.3931022,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340472.691754,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340511.87126,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340572.9017892,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340930.121118,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786340974.936021,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786341913.900307,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786341963.5802734,
+        "event_type": "query",
+        "detail": "dy是什么",
+        "session_id": ""
+      },
+      {
+        "ts": 1786342917.1752963,
+        "event_type": "query",
+        "detail": "Dy3+的浓度猝灭机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786347162.0819275,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453176.4650872,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453181.5877275,
+        "event_type": "query",
+        "detail": "Dy3+的发光机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453299.4041731,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453428.7799656,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453440.074914,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453446.1137505,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453490.1877482,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453501.4810286,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453507.5201457,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453609.253874,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453620.54638,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786453626.5892363,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786495621.3823342,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786495680.6748388,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786510047.5424101,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786510149.9439332,
+        "event_type": "query",
+        "detail": "Dy3+ 的发光机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786510184.0566754,
+        "event_type": "query",
+        "detail": "浓度猝灭怎么避免？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786511366.0774267,
+        "event_type": "query",
+        "detail": "浓度猝灭怎么避免？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786511408.5233803,
+        "event_type": "query",
+        "detail": "浓度猝灭怎么避免？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786601670.4882348,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786762078.3385038,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786762109.8155365,
+        "event_type": "query",
+        "detail": "Dy3+ 的浓度猝灭机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786762615.0350745,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786762646.5094197,
+        "event_type": "query",
+        "detail": "Dy3+ 的浓度猝灭机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786763128.30158,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786763159.8053536,
+        "event_type": "query",
+        "detail": "Dy3+ 的浓度猝灭机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786763358.9201064,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786763390.5781283,
+        "event_type": "query",
+        "detail": "Dy3+ 的浓度猝灭机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1786783128.32639,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786783159.7897644,
+        "event_type": "query",
+        "detail": "Dy3+ 的浓度猝灭机理是什么？",
+        "session_id": ""
+      },
+      {
+        "ts": 1787715614.3071418,
+        "event_type": "query",
+        "detail": "3000 K 是否一定更健康？",
+        "session_id": ""
+      },
+      {
+        "ts": 1787715731.4563694,
+        "event_type": "query",
+        "detail": "3000 K 是否一定更健康？",
+        "session_id": ""
+      },
+      {
+        "ts": 1787719804.2866004,
+        "event_type": "query",
+        "detail": "为什么 Dy³⁺ 会产生黄蓝双发射？",
+        "session_id": ""
+      },
+      {
+        "ts": 1787719876.6262014,
+        "event_type": "query",
+        "detail": "为什么 Dy³⁺ 会产生黄蓝双发射？",
+        "session_id": ""
+      }
+    ],
+    "feedback_log": [
+      {
+        "ts": 1,
+        "rating": 0.7
+      },
+      {
+        "ts": 2,
+        "rating": 0.6
+      }
+    ],
+    "agent_memory": [
+      {
+        "ts": 1786886429.181865,
+        "query": "发光材料是什么",
+        "answer": "发光材料，说白了就是「吸了能量会自己发光的材料」。\n打个比方：它像一块能「存光」的海绵——你用光或电去「喂」它，它先把能量吃进去，过一会儿再慢慢把能量变成光「吐」出来。\n你身边到处都是：荧光笔、夜光手表、LED 灯里那层白色粉末（荧光粉）、手机屏幕，背后都靠这类材料在发光。",
+        "verdict": "approved",
+        "confidence": 0.7834
+      },
+      {
+        "ts": 1786886431.810657,
+        "query": "如何降低白光LED的蓝光危害",
+        "answer": "针对“如何降低白光LED的蓝光危害”，依据教材级权威事实解答如下：\n- 白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；\n- 色温与显色指数由蓝光/荧光粉配比决定。\n- 白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；\n- 降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.7472
+      },
+      {
+        "ts": 1786886539.9418502,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "从图中可以直观地看出,随着 Dy3+掺杂浓度的逐渐增加,样品的发光强度先逐渐增大,在 Dy3 + 掺杂含量达到 7% 时达到最大,随后由于浓度猝灭发光强度逐渐减小。由 Dexter 能量传递理论可知,引起离子发生浓度猝灭的原因主要是由于浓度较高时离子的非辐射跃迁导致的 而由下列公式我们可以得到 Dy3 \\ + 的离子相互作用机制类型 I / x = K [ 1+(x) Q / 3 ] - 1,2 其中,I 为发光强度,x 为掺杂离子的摩尔分数,K和 为常量,Q =6,8,10 分别代表多电极相互作用中的(d-d)电偶极-电偶极、(d-q)电偶极-电四极、 ( q - q ) 电四极-电四极相互",
+        "verdict": "approved",
+        "confidence": 0.7864
+      },
+      {
+        "ts": 1786886539.9969358,
+        "query": "4F9/2到6H15/2能量差2.58eV发射波长多少",
+        "answer": "由 E(eV) = 1240 / λ(nm) 推得：能量差 2.58 eV 对应的发射波长约为 481 nm。",
+        "verdict": "approved",
+        "confidence": 0.788
+      },
+      {
+        "ts": 1786886540.0451367,
+        "query": "发光材料是什么",
+        "answer": "发光材料，说白了就是「吸了能量会自己发光的材料」。\n打个比方：它像一块能「存光」的海绵——你用光或电去「喂」它，它先把能量吃进去，过一会儿再慢慢把能量变成光「吐」出来。\n你身边到处都是：荧光笔、夜光手表、LED 灯里那层白色粉末（荧光粉）、手机屏幕，背后都靠这类材料在发光。",
+        "verdict": "approved",
+        "confidence": 0.7895
+      },
+      {
+        "ts": 1786886542.729865,
+        "query": "如何降低白光LED的蓝光危害",
+        "answer": "白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.791
+      },
+      {
+        "ts": 1786886631.5935235,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "随着 Dy3+掺杂浓度的逐渐增加,样品的发光强度先逐渐增大,在 Dy3 + 掺杂含量达到 7% 时达到最大,随后由于浓度猝灭发光强度逐渐减小。由 Dexter 能量传递理论可知,引起离子发生浓度猝灭的原因主要是由于浓度较高时离子的非辐射跃迁导致的 而由下列公式我们可以得到 Dy3 \\ + 的离子相互作用机制类型 I / x = K [ 1+(x) Q / 3 ] - 1,2 其中,I 为发光强度,x 为掺杂离子的摩尔分数,K和 为常量,Q =6,8,10 分别代表多电极相互作用中的(d-d)电偶极-电偶极、(d-q)电偶极-电四极、 ( q - q ) 电四极-电四极相互作用。",
+        "verdict": "approved",
+        "confidence": 0.7926
+      },
+      {
+        "ts": 1786886631.650753,
+        "query": "4F9/2到6H15/2能量差2.58eV发射波长多少",
+        "answer": "由 E(eV) = 1240 / λ(nm) 推得：能量差 2.58 eV 对应的发射波长约为 481 nm。",
+        "verdict": "approved",
+        "confidence": 0.7941
+      },
+      {
+        "ts": 1786886631.6989563,
+        "query": "发光材料是什么",
+        "answer": "发光材料，说白了就是「吸了能量会自己发光的材料」。\n打个比方：它像一块能「存光」的海绵——你用光或电去「喂」它，它先把能量吃进去，过一会儿再慢慢把能量变成光「吐」出来。\n你身边到处都是：荧光笔、夜光手表、LED 灯里那层白色粉末（荧光粉）、手机屏幕，背后都靠这类材料在发光。",
+        "verdict": "approved",
+        "confidence": 0.7957
+      },
+      {
+        "ts": 1786886634.3266258,
+        "query": "如何降低白光LED的蓝光危害",
+        "answer": "白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.7972
+      },
+      {
+        "ts": 1786886694.0098326,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "随着 Dy3+掺杂浓度的逐渐增加,样品的发光强度先逐渐增大,在 Dy3 + 掺杂含量达到 7% 时达到最大,随后由于浓度猝灭发光强度逐渐减小。由 Dexter 能量传递理论可知,引起离子发生浓度猝灭的原因主要是由于浓度较高时离子的非辐射跃迁导致的 而 Dy3 \\ + 的离子相互作用机制类型 I / x = K [ 1+(x) Q / 3 ] - 1,2 其中,I 为发光强度,x 为掺杂离子的摩尔分数,K和 为常量,Q =6,8,10 分别代表多电极相互作用中的(d-d)电偶极-电偶极、(d-q)电偶极-电四极、 ( q - q ) 电四极-电四极相互作用。",
+        "verdict": "approved",
+        "confidence": 0.7987
+      },
+      {
+        "ts": 1786886694.0644941,
+        "query": "4F9/2到6H15/2能量差2.58eV发射波长多少",
+        "answer": "由 E(eV) = 1240 / λ(nm) 推得：能量差 2.58 eV 对应的发射波长约为 481 nm。",
+        "verdict": "approved",
+        "confidence": 0.8003
+      },
+      {
+        "ts": 1786886694.1143076,
+        "query": "发光材料是什么",
+        "answer": "发光材料，说白了就是「吸了能量会自己发光的材料」。\n打个比方：它像一块能「存光」的海绵——你用光或电去「喂」它，它先把能量吃进去，过一会儿再慢慢把能量变成光「吐」出来。\n你身边到处都是：荧光笔、夜光手表、LED 灯里那层白色粉末（荧光粉）、手机屏幕，背后都靠这类材料在发光。",
+        "verdict": "approved",
+        "confidence": 0.8018
+      },
+      {
+        "ts": 1786886696.6921139,
+        "query": "如何降低白光LED的蓝光危害",
+        "answer": "白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8034
+      },
+      {
+        "ts": 1786886858.2356987,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "answer": "Dy3+ 掺杂荧光粉的发射光谱（PL/荧光光谱）在选定激发波长下记录发射强度随波长的分布，用于判定发光中心、确认跃迁归属、计算色坐标与色纯度。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 2 章 · 制备与表征（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.6904
+      },
+      {
+        "ts": 1786886875.2968168,
+        "query": "如何提高上转换量子产率",
+        "answer": "Dy3+ 掺杂上转换材料的发光量子产率通常远低于下转换，常见约 0.1% 10% 的数量级，量子效率随泵浦功率密度变化，且受多声子弛豫与表面猝灭限制。Dy3+ 掺杂上转换发光机理：敏化剂（如 Yb3+）连续吸收多个低能光子，经能量传递上转换/激发态吸收/合作上转换把能量累积到高能级，再发射高能光子。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8064
+      },
+      {
+        "ts": 1786886881.0433977,
+        "query": "如何降低白光 LED 的蓝光危害",
+        "answer": "白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786888457.8760567,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "answer": "Dy3+ 掺杂荧光粉的发射光谱（PL/荧光光谱）在选定激发波长下记录发射强度随波长的分布，用于判定发光中心、确认跃迁归属、计算色坐标与色纯度。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 2 章 · 制备与表征（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.6928
+      },
+      {
+        "ts": 1786888467.1604207,
+        "query": "如何提高上转换量子产率",
+        "answer": "关于「如何提高上转换量子产率」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.5867
+      },
+      {
+        "ts": 1786888469.0769684,
+        "query": "如何降低白光 LED 的蓝光危害",
+        "answer": "白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786888471.2393265,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "随着 Dy3+掺杂浓度的逐渐增加,样品的发光强度先逐渐增大,在 Dy3 + 掺杂含量达到 7% 时达到最大,随后由于浓度猝灭发光强度逐渐减小。由 Dexter 能量传递理论可知,引起离子发生浓度猝灭的原因主要是由于浓度较高时离子的非辐射跃迁导致的 而 Dy3 \\ + 的离子相互作用机制类型 I / x = K [ 1+(x) Q / 3 ] - 1,2 其中,I 为发光强度,x 为掺杂离子的摩尔分数,K和 为常量,Q =6,8,10 分别代表多电极相互作用中的(d-d)电偶极-电偶极、(d-q)电偶极-电四极、 ( q - q ) 电四极-电四极相互作用。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786888582.6943166,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "answer": "Dy3+ 掺杂荧光粉的发射光谱（PL/荧光光谱）在选定激发波长下记录发射强度随波长的分布，用于判定发光中心、确认跃迁归属、计算色坐标与色纯度。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 2 章 · 制备与表征（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.6928
+      },
+      {
+        "ts": 1786888932.3808894,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "answer": "关于「PL 光谱怎么测？激发波长和狭缝怎么设」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786888932.7083776,
+        "query": "如何提高上转换量子产率",
+        "answer": "关于「如何提高上转换量子产率」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786888935.8882267,
+        "query": "如何降低白光 LED 的蓝光危害",
+        "answer": "白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786888937.990506,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "随着 Dy3+掺杂浓度的逐渐增加,样品的发光强度先逐渐增大,在 Dy3 + 掺杂含量达到 7% 时达到最大,随后由于浓度猝灭发光强度逐渐减小。由 Dexter 能量传递理论可知,引起离子发生浓度猝灭的原因主要是由于浓度较高时离子的非辐射跃迁导致的 而 Dy3 \\ + 的离子相互作用机制类型 I / x = K [ 1+(x) Q / 3 ] - 1,2 其中,I 为发光强度,x 为掺杂离子的摩尔分数,K和 为常量,Q =6,8,10 分别代表多电极相互作用中的(d-d)电偶极-电偶极、(d-q)电偶极-电四极、 ( q - q ) 电四极-电四极相互作用。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892310.42245,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "answer": "关于「PL 光谱怎么测？激发波长和狭缝怎么设」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892310.7537053,
+        "query": "如何提高上转换量子产率",
+        "answer": "关于「如何提高上转换量子产率」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892316.2847612,
+        "query": "如何降低白光 LED 的蓝光危害",
+        "answer": "白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892319.5642204,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "关于「Dy3+ 的浓度猝灭机理是什么」，我暂时没有足够的相关知识，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892321.2359667,
+        "query": "Dy3+ 的电子构型是什么",
+        "answer": "关于「Dy3+ 的电子构型是什么」，我暂时没有足够的相关知识，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892398.683226,
+        "query": "Dy3+ 的电子构型是什么",
+        "answer": "关于「Dy3+ 的电子构型是什么」，我暂时没有足够的相关知识，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892508.7874923,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "answer": "关于「PL 光谱怎么测？激发波长和狭缝怎么设」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892509.1200066,
+        "query": "如何提高上转换量子产率",
+        "answer": "关于「如何提高上转换量子产率」，我目前只有相关的定义或机理知识，暂时没有具体的方法/步骤，无法给出符合要求的回答。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892515.143976,
+        "query": "如何降低白光 LED 的蓝光危害",
+        "answer": "白光 LED（含 Dy3+ 掺杂荧光粉）的蓝光危害主要来自高能短波蓝光；降低方法：降低色温、提高显色指数、增补红光/黄光荧光粉、降低蓝光比例、加滤光或扩散层。白光 LED 用蓝光芯片激发黄色荧光粉（如 Dy3+ 掺杂荧光粉，或红/绿荧光粉），蓝光与荧光粉转换光混合成白光；色温与显色指数由蓝光/荧光粉配比决定。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 3 章 · 健康照明应用与猝灭机理（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892521.588645,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "answer": "随着 Dy3+掺杂浓度的逐渐增加,样品的发光强度先逐渐增大,在 Dy3 + 掺杂含量达到 7% 时达到最大,随后由于浓度猝灭发光强度逐渐减小。由 Dexter 能量传递理论可知,引起离子发生浓度猝灭的原因主要是由于浓度较高时离子的非辐射跃迁导致的 而 Dy3 \\ + 的离子相互作用机制类型 I / x = K [ 1+(x) Q / 3 ] - 1,2 其中,I 为发光强度,x 为掺杂离子的摩尔分数,K和 为常量,Q =6,8,10 分别代表多电极相互作用中的(d-d)电偶极-电偶极、(d-q)电偶极-电四极、 ( q - q ) 电四极-电四极相互作用。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786892548.570294,
+        "query": "Dy3+ 的电子构型是什么",
+        "answer": "基态原子的价电子构型受主量子数 n和角量子数 l 的共同影响，镧系元素具有相似的价电子构型，即 [ Xe ] 4 f n - 15 d0 - 16 s2 ( n = 1 - 15 ) 。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      },
+      {
+        "ts": 1786894678.9927065,
+        "query": "Dy3+ 的电子构型是什么",
+        "answer": "镝（Dy，原子序数 66）的电子构型为 [Xe]4f10 6s2；三价离子 Dy3+ 为 [Xe]4f9，具有 9 个 4f 电子。4f 电子被外层 5s2 5p6 屏蔽，受晶场影响小。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 1 章 · 发光机理与能级跃迁（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.724
+      },
+      {
+        "ts": 1786894683.3445272,
+        "query": "Dy3+ 是什么",
+        "answer": "镝（Dy，原子序数 66）的电子构型为 [Xe]4f10 6s2；三价离子 Dy3+ 为 [Xe]4f9，具有 9 个 4f 电子。4f 电子被外层 5s2 5p6 屏蔽，受晶场影响小。\n\n（来源：教材兜底层 · 《镝基绿色健康照明发光材料》第 1 章 · 发光机理与能级跃迁（占位，待替换为真实教材切片））",
+        "verdict": "approved",
+        "confidence": 0.724
+      },
+      {
+        "ts": 1786894683.3978722,
+        "query": "浓度猝灭是什么",
+        "answer": "浓度猝灭，说的是「好东西也不能贪多」：\n发光材料里掺的发光离子（比如镝 Dy）一开始越多越亮，但超过某个量之后，离子之间会「互相打架」，把本该发出来的光悄悄耗掉了，结果反而变暗。",
+        "verdict": "approved",
+        "confidence": 0.8077
+      }
+    ],
+    "agent_reputation": {
+      "agent.learning.diagnosis": 100.0,
+      "agent.knowledge.generation": 100.0,
+      "agent.quality.review": 100.0,
+      "agent.guidance.decision": 100.0
+    },
+    "query_log": [
+      {
+        "ts": 1786892508.8150551,
+        "query": "PL 光谱怎么测？激发波长和狭缝怎么设",
+        "source": "query"
+      },
+      {
+        "ts": 1786892509.1442473,
+        "query": "如何提高上转换量子产率",
+        "source": "query"
+      },
+      {
+        "ts": 1786892515.1743348,
+        "query": "如何降低白光 LED 的蓝光危害",
+        "source": "query"
+      },
+      {
+        "ts": 1786892521.6191173,
+        "query": "Dy3+ 的浓度猝灭机理是什么",
+        "source": "query"
+      },
+      {
+        "ts": 1786892548.600231,
+        "query": "Dy3+ 的电子构型是什么",
+        "source": "query"
+      },
+      {
+        "ts": 1786894679.020132,
+        "query": "Dy3+ 的电子构型是什么",
+        "source": "query"
+      },
+      {
+        "ts": 1786894683.3735225,
+        "query": "Dy3+ 是什么",
+        "source": "query"
+      },
+      {
+        "ts": 1786894683.4245546,
+        "query": "浓度猝灭是什么",
+        "source": "query"
+      },
+      {
+        "ts": 1787715615.1416492,
+        "query": "3000 K 是否一定更健康？",
+        "source": "query"
+      },
+      {
+        "ts": 1787715731.6695383,
+        "query": "3000 K 是否一定更健康？",
+        "source": "query"
+      },
+      {
+        "ts": 1787719807.3700871,
+        "query": "为什么 Dy³⁺ 会产生黄蓝双发射？",
+        "source": "query"
+      },
+      {
+        "ts": 1787719879.0012228,
+        "query": "为什么 Dy³⁺ 会产生黄蓝双发射？",
+        "source": "query"
+      },
+      {
+        "ts": 1787719904.411978,
+        "query": "为什么 Dy³⁺ 会产生黄蓝双发射？",
+        "source": "query"
+      },
+      {
+        "ts": 1787719917.7389371,
+        "query": "为什么 Dy³⁺ 会产生黄蓝双发射？",
+        "source": "query"
+      },
+      {
+        "ts": 1787818164.058931,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818255.9784272,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818304.9898868,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818456.5311506,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818523.938598,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818551.2677643,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818631.659106,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787818791.9136586,
+        "query": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+        "source": "query"
+      },
+      {
+        "ts": 1787819239.0084708,
+        "query": "XRD 测荧光粉物相的操作步骤",
+        "source": "query"
+      },
+      {
+        "ts": 1787819257.6751034,
+        "query": "XRD 测荧光粉物相的操作步骤",
+        "source": "query"
+      },
+      {
+        "ts": 1787819471.8302007,
+        "query": "XRD 测荧光粉物相的操作步骤",
+        "source": "query"
+      },
+      {
+        "ts": 1787819544.5706654,
+        "query": "XRD 测荧光粉物相的操作步骤",
+        "source": "query"
+      },
+      {
+        "ts": 1787819606.6744003,
+        "query": "如何提高上转换量子产率",
+        "source": "query"
+      },
+      {
+        "ts": 1787845817.3701518,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787845833.8901417,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787845920.4160655,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787845978.7759678,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787846133.8220904,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787846148.333023,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787846239.3202765,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787846329.7063498,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787847113.600612,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787847127.2863662,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787920311.7643046,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787920325.0556018,
+        "query": "蓝光危害评价为什么不能只看相关色温？",
+        "source": "query"
+      },
+      {
+        "ts": 1787991378.5268676,
+        "query": "Dy³⁺为什么具有黄蓝双发射？",
+        "source": "query"
+      }
+    ],
+    "learner_memory": {
+      "version": 3,
+      "knowledge_state": {},
+      "learning_history": [
+        {
+          "task_id": "task-debug",
+          "question": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+          "task_mode": "FACT_FIND",
+          "covered_topics": [
+            "2.1.1"
+          ],
+          "remaining_gap": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "recommended_next_action": "确认该事实对应的证据来源",
+          "completed_at": 1787818791.8639503
+        },
+        {
+          "task_id": "task-7266cd9652cc4b2f8d85bdd3cc2ccc8c",
+          "question": "XRD 测荧光粉物相的操作步骤",
+          "task_mode": "FACT_FIND",
+          "covered_topics": [
+            "5.1.1"
+          ],
+          "remaining_gap": [],
+          "recommended_next_action": "确认该事实对应的证据来源",
+          "completed_at": 1787819238.9764392
+        },
+        {
+          "task_id": "task-bc8d2cec62a74ac8b146689d7eb5e9e6",
+          "question": "XRD 测荧光粉物相的操作步骤",
+          "task_mode": "FACT_FIND",
+          "covered_topics": [
+            "5.1.1"
+          ],
+          "remaining_gap": [],
+          "recommended_next_action": "确认该事实对应的证据来源",
+          "completed_at": 1787819257.637628
+        },
+        {
+          "task_id": "task-d3420a02d6694853aeff6471a9291465",
+          "question": "XRD 测荧光粉物相的操作步骤",
+          "task_mode": "FACT_FIND",
+          "covered_topics": [
+            "5.1.1"
+          ],
+          "remaining_gap": [],
+          "recommended_next_action": "确认该事实对应的证据来源",
+          "completed_at": 1787819471.7857738
+        },
+        {
+          "task_id": "task-49d89799754b454985a6f6717083ef7c",
+          "question": "如何提高上转换量子产率",
+          "task_mode": "FACT_FIND",
+          "covered_topics": [
+            "3.4.1"
+          ],
+          "remaining_gap": [],
+          "recommended_next_action": "确认该事实对应的证据来源",
+          "completed_at": 1787819606.6380029
+        },
+        {
+          "task_id": "task-5bec7fe2a6504abcbb82ec3319e4ab57",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787845817.3310463
+        },
+        {
+          "task_id": "task-051d63324fea456a83778cbcc52cb444",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787845833.8606536
+        },
+        {
+          "task_id": "task-faa4626f85d74d52abd333282e6ef61e",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787845920.3761532
+        },
+        {
+          "task_id": "task-cea366f28ddc45d1b1f01a162c946907",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787845978.738546
+        },
+        {
+          "task_id": "task-608ff376dc2d4e9aaa4c60726cd8d3ab",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787846133.7881703
+        },
+        {
+          "task_id": "task-66552c21ac6e4c3c89922202c3b75dce",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787846148.2906442
+        },
+        {
+          "task_id": "task-7c4379ff74d9466295bf868f0493a852",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787846239.2757397
+        },
+        {
+          "task_id": "task-20d02e6c66af409dac2ad4ecb66de73e",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787846329.6437986
+        },
+        {
+          "task_id": "task-74a7ac851bf74a80b9ce8b1253d0d303",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787847113.548803
+        },
+        {
+          "task_id": "task-af7676f1c4bc40e18ac73bf9b606b1ce",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787847127.240523
+        },
+        {
+          "task_id": "task-6406f65d62724f2b8219ba721335d276",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787920311.728169
+        },
+        {
+          "task_id": "task-67281074f4a044e291ca1f998594d115",
+          "question": "蓝光危害评价为什么不能只看相关色温？",
+          "task_mode": "EVALUATE",
+          "covered_topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "remaining_gap": [
+            "6.3.2"
+          ],
+          "recommended_next_action": "复核当前不确定主张",
+          "completed_at": 1787920325.0196586
+        },
+        {
+          "task_id": "task-d345264a76b54e3a853d5e6a18aa13c2",
+          "question": "Dy³⁺为什么具有黄蓝双发射？",
+          "task_mode": "EXPLAIN",
+          "covered_topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "remaining_gap": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "recommended_next_action": "先学习 Dy3+蓝光发射，再推进当前问题",
+          "completed_at": 1787991378.4751275
+        }
+      ],
+      "learning_events": [
+        {
+          "event_id": "learning-event-69078486ac742562",
+          "learner_id": "DY20240001",
+          "task_id": "task-debug",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787818456.4877114,
+          "topics": [
+            "2.1.1"
+          ],
+          "content": "Dy3+ 的蓝光和黄光分别来自哪个能级跃迁",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-1a6acd9507368a6d",
+          "learner_id": "DY20240001",
+          "task_id": "task-debug",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787818456.4877372,
+          "topics": [
+            "2.1.1"
+          ],
+          "content": "",
+          "reference": "f8fffc9b75925489e130bac82321835398af54c7f0abcbde05c233d18bab3152",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-be3f47d5a6b7fc36",
+          "learner_id": "DY20240001",
+          "task_id": "task-debug",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787818456.4877512,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-383e919085fddba3",
+          "learner_id": "DY20240001",
+          "task_id": "task-debug",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787818456.487765,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "确认该事实对应的证据来源",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-685d14725e9a24f6",
+          "learner_id": "DY20240001",
+          "task_id": "task-debug",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787818523.8999317,
+          "topics": [
+            "2.1.1"
+          ],
+          "content": "",
+          "reference": "f7147dd4e88a099ee6e40bf5f65743915e5ac27c41e7194a488f54e89897c250",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-9583ef14b477698b",
+          "learner_id": "DY20240001",
+          "task_id": "task-debug",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787818791.8638785,
+          "topics": [
+            "2.1.1"
+          ],
+          "content": "",
+          "reference": "333d22acc58fd3ebe87aff459e3c648ad7c9a79b45b056a5434b2643314141b7",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-278bcdf15f66e9aa",
+          "learner_id": "DY20240001",
+          "task_id": "task-7266cd9652cc4b2f8d85bdd3cc2ccc8c",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787819238.9763813,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "XRD 测荧光粉物相的操作步骤",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-d4e2a3c8f8e4383a",
+          "learner_id": "DY20240001",
+          "task_id": "task-7266cd9652cc4b2f8d85bdd3cc2ccc8c",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787819238.9764,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "",
+          "reference": "ba2655eba14c72558ba4524e9b347905bd86d78457f628e81dee8ed21ef95332",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-32f3c0e4ea052b91",
+          "learner_id": "DY20240001",
+          "task_id": "task-7266cd9652cc4b2f8d85bdd3cc2ccc8c",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787819238.9764106,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "确认该事实对应的证据来源",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-5faa5ab4a2460944",
+          "learner_id": "DY20240001",
+          "task_id": "task-bc8d2cec62a74ac8b146689d7eb5e9e6",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787819257.6375506,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "XRD 测荧光粉物相的操作步骤",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-1fd1dce544f69fba",
+          "learner_id": "DY20240001",
+          "task_id": "task-bc8d2cec62a74ac8b146689d7eb5e9e6",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787819257.6375751,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "",
+          "reference": "e8cd578ff981c47debd5a321025f788e4d586dc3f44de04798a93282811e7cdc",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-9dcef91ea1304eb8",
+          "learner_id": "DY20240001",
+          "task_id": "task-bc8d2cec62a74ac8b146689d7eb5e9e6",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787819257.63759,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "确认该事实对应的证据来源",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-f12eab8e53e01a0d",
+          "learner_id": "DY20240001",
+          "task_id": "task-d3420a02d6694853aeff6471a9291465",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787819471.7857172,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "XRD 测荧光粉物相的操作步骤",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-b16913a1ea414368",
+          "learner_id": "DY20240001",
+          "task_id": "task-d3420a02d6694853aeff6471a9291465",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787819471.7857351,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "",
+          "reference": "b3e900445572a32190bdb695fe760fce7cac4098735f15afbe20b4831d034fb6",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-9a61967b6d36b51c",
+          "learner_id": "DY20240001",
+          "task_id": "task-d3420a02d6694853aeff6471a9291465",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787819471.7857454,
+          "topics": [
+            "5.1.1"
+          ],
+          "content": "确认该事实对应的证据来源",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-13d883d46cc4acef",
+          "learner_id": "DY20240001",
+          "task_id": "task-49d89799754b454985a6f6717083ef7c",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787819606.637947,
+          "topics": [
+            "3.4.1"
+          ],
+          "content": "如何提高上转换量子产率",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-64b34d22d1cff4a5",
+          "learner_id": "DY20240001",
+          "task_id": "task-49d89799754b454985a6f6717083ef7c",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787819606.6379652,
+          "topics": [
+            "3.4.1"
+          ],
+          "content": "",
+          "reference": "012ea1fc0231993cb11e3427c573223426cd48262b83f1fc7f875e84b5f2a42c",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-b44c9ef4fed488b8",
+          "learner_id": "DY20240001",
+          "task_id": "task-49d89799754b454985a6f6717083ef7c",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787819606.6379752,
+          "topics": [
+            "3.4.1"
+          ],
+          "content": "确认该事实对应的证据来源",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-e1815a2a96bbe2c3",
+          "learner_id": "DY20240001",
+          "task_id": "task-5bec7fe2a6504abcbb82ec3319e4ab57",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787845817.330976,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-7a1b34177b537b99",
+          "learner_id": "DY20240001",
+          "task_id": "task-5bec7fe2a6504abcbb82ec3319e4ab57",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787845817.3309932,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "6510939cffe2e62bf5de5cba62659e04f39d51034b7620296aed9fb37bd60862",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-7163870fdd9fd3bf",
+          "learner_id": "DY20240001",
+          "task_id": "task-5bec7fe2a6504abcbb82ec3319e4ab57",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787845817.3310015,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-7f4c3a165f41acd9",
+          "learner_id": "DY20240001",
+          "task_id": "task-5bec7fe2a6504abcbb82ec3319e4ab57",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787845817.33101,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-a9e1c2d91824f35a",
+          "learner_id": "DY20240001",
+          "task_id": "task-051d63324fea456a83778cbcc52cb444",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787845833.8605998,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-136b1901873fefa7",
+          "learner_id": "DY20240001",
+          "task_id": "task-051d63324fea456a83778cbcc52cb444",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787845833.8606133,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "72c710f9f877fd19c033b4bc8c3edb7b863ac8f2d45f5595b3b892c6711def10",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-1e34a29d7cacc909",
+          "learner_id": "DY20240001",
+          "task_id": "task-051d63324fea456a83778cbcc52cb444",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787845833.8606207,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-b600519054d76365",
+          "learner_id": "DY20240001",
+          "task_id": "task-051d63324fea456a83778cbcc52cb444",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787845833.8606293,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-d5001c8ca54a96f5",
+          "learner_id": "DY20240001",
+          "task_id": "task-faa4626f85d74d52abd333282e6ef61e",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787845920.3760955,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-18fe724aca3530b7",
+          "learner_id": "DY20240001",
+          "task_id": "task-faa4626f85d74d52abd333282e6ef61e",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787845920.37611,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "b70e30c3a9d950ac8e4e170a0e0ae07abd089d323952527a27bdc6dcaa97f16b",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-06af0d207135d389",
+          "learner_id": "DY20240001",
+          "task_id": "task-faa4626f85d74d52abd333282e6ef61e",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787845920.3761175,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-369c5520f5de13a2",
+          "learner_id": "DY20240001",
+          "task_id": "task-faa4626f85d74d52abd333282e6ef61e",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787845920.376126,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-6244f51fdd0a258d",
+          "learner_id": "DY20240001",
+          "task_id": "task-cea366f28ddc45d1b1f01a162c946907",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787845978.7384677,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-53cc15d8c74136db",
+          "learner_id": "DY20240001",
+          "task_id": "task-cea366f28ddc45d1b1f01a162c946907",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787845978.7384872,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "b96bd2fd564edf5879ea7b9f969254696597760e4cb6c653986236e18173082c",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-3e9eaf58c006a22d",
+          "learner_id": "DY20240001",
+          "task_id": "task-cea366f28ddc45d1b1f01a162c946907",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787845978.7384982,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-d76691205ca4ecfa",
+          "learner_id": "DY20240001",
+          "task_id": "task-cea366f28ddc45d1b1f01a162c946907",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787845978.7385108,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-4fad8f8a4618068f",
+          "learner_id": "DY20240001",
+          "task_id": "task-608ff376dc2d4e9aaa4c60726cd8d3ab",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787846133.7881105,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-ab1f0043dc0af1d4",
+          "learner_id": "DY20240001",
+          "task_id": "task-608ff376dc2d4e9aaa4c60726cd8d3ab",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787846133.7881258,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "24ce4f7eac6e995e6a5ecfce2feae0ef988834577b25b71d8cfa9428880625b8",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-ab6907b434872eac",
+          "learner_id": "DY20240001",
+          "task_id": "task-608ff376dc2d4e9aaa4c60726cd8d3ab",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787846133.7881334,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-de4a574c3b0c13bf",
+          "learner_id": "DY20240001",
+          "task_id": "task-608ff376dc2d4e9aaa4c60726cd8d3ab",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787846133.788142,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-aa72478c7d75fb79",
+          "learner_id": "DY20240001",
+          "task_id": "task-66552c21ac6e4c3c89922202c3b75dce",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787846148.2905824,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-6ecf9910ca320f3f",
+          "learner_id": "DY20240001",
+          "task_id": "task-66552c21ac6e4c3c89922202c3b75dce",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787846148.2905977,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "346425db3053b08694b452d38d52e20eefe952fc76bb5dddb9c4b1ed8c85242e",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-f5a258d9b25c9037",
+          "learner_id": "DY20240001",
+          "task_id": "task-66552c21ac6e4c3c89922202c3b75dce",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787846148.2906077,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-c1cadde04726284d",
+          "learner_id": "DY20240001",
+          "task_id": "task-66552c21ac6e4c3c89922202c3b75dce",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787846148.2906158,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-eefd2aa982d6da4b",
+          "learner_id": "DY20240001",
+          "task_id": "task-7c4379ff74d9466295bf868f0493a852",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787846239.2756507,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-c1f055135da1d947",
+          "learner_id": "DY20240001",
+          "task_id": "task-7c4379ff74d9466295bf868f0493a852",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787846239.2756736,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "d0d8173e5ea4b871f2fbcc97f42450bdcf8beb87905c76193e8c26439ae9d127",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-1c3e05510bee7af2",
+          "learner_id": "DY20240001",
+          "task_id": "task-7c4379ff74d9466295bf868f0493a852",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787846239.2756872,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-1be6f7579b9dbdbe",
+          "learner_id": "DY20240001",
+          "task_id": "task-7c4379ff74d9466295bf868f0493a852",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787846239.275701,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-25a269242962686d",
+          "learner_id": "DY20240001",
+          "task_id": "task-20d02e6c66af409dac2ad4ecb66de73e",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787846329.643621,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-e7be22372a3e159a",
+          "learner_id": "DY20240001",
+          "task_id": "task-20d02e6c66af409dac2ad4ecb66de73e",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787846329.6436768,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "c0473829bd482684828fa0708bb4a2f3241728207f261e2baaa6edb5e0d645ce",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-6a041a4a86627709",
+          "learner_id": "DY20240001",
+          "task_id": "task-20d02e6c66af409dac2ad4ecb66de73e",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787846329.6436973,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-13da2af4dd36fdbe",
+          "learner_id": "DY20240001",
+          "task_id": "task-20d02e6c66af409dac2ad4ecb66de73e",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787846329.6437345,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-ee7e71c044cb11b6",
+          "learner_id": "DY20240001",
+          "task_id": "task-74a7ac851bf74a80b9ce8b1253d0d303",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787847113.5486856,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-e3413e852e1959a7",
+          "learner_id": "DY20240001",
+          "task_id": "task-74a7ac851bf74a80b9ce8b1253d0d303",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787847113.5487187,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "bdf3c68b348cee5692bef92b4a6da3ccaf8496b76cb016205eca1a24fa065971",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-6354cf3cda321cb3",
+          "learner_id": "DY20240001",
+          "task_id": "task-74a7ac851bf74a80b9ce8b1253d0d303",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787847113.5487363,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-3a2ca102dd04733d",
+          "learner_id": "DY20240001",
+          "task_id": "task-74a7ac851bf74a80b9ce8b1253d0d303",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787847113.5487533,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-9ad045906f20f0ff",
+          "learner_id": "DY20240001",
+          "task_id": "task-af7676f1c4bc40e18ac73bf9b606b1ce",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787847127.2404337,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-02f0893a577a3574",
+          "learner_id": "DY20240001",
+          "task_id": "task-af7676f1c4bc40e18ac73bf9b606b1ce",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787847127.240456,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "672ede12049a5cfad0fbd3dcbab03780efe432882797b71077c08bc257caabe3",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-c5f6662f205331f5",
+          "learner_id": "DY20240001",
+          "task_id": "task-af7676f1c4bc40e18ac73bf9b606b1ce",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787847127.2404687,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-15f83344b06e63c1",
+          "learner_id": "DY20240001",
+          "task_id": "task-af7676f1c4bc40e18ac73bf9b606b1ce",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787847127.2404823,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-65729b15c6e2d287",
+          "learner_id": "DY20240001",
+          "task_id": "task-6406f65d62724f2b8219ba721335d276",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787920311.7281055,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-a9c7cfbfa7258a3e",
+          "learner_id": "DY20240001",
+          "task_id": "task-6406f65d62724f2b8219ba721335d276",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787920311.728123,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "22bacaf8c780aa0f24bfc64caa678ef1f5b43bab6d46822bb4e0156ce683f0c9",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-d8aa861b972833f0",
+          "learner_id": "DY20240001",
+          "task_id": "task-6406f65d62724f2b8219ba721335d276",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787920311.7281313,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-c1c5908e9351183f",
+          "learner_id": "DY20240001",
+          "task_id": "task-6406f65d62724f2b8219ba721335d276",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787920311.7281392,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-704e4d8cbfd65bbe",
+          "learner_id": "DY20240001",
+          "task_id": "task-67281074f4a044e291ca1f998594d115",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787920325.019605,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "蓝光危害评价为什么不能只看相关色温？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-4c656ca0de2a292f",
+          "learner_id": "DY20240001",
+          "task_id": "task-67281074f4a044e291ca1f998594d115",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787920325.019618,
+          "topics": [
+            "6.2.1",
+            "6.1.2"
+          ],
+          "content": "",
+          "reference": "9b53a8936832a1ec134e3d02c433254b7199fd071a6f1694d2191d2879f23198",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-bac17e120833debd",
+          "learner_id": "DY20240001",
+          "task_id": "task-67281074f4a044e291ca1f998594d115",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787920325.0196245,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-58e4faf3aaf58c30",
+          "learner_id": "DY20240001",
+          "task_id": "task-67281074f4a044e291ca1f998594d115",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787920325.019632,
+          "topics": [
+            "6.3.2"
+          ],
+          "content": "复核当前不确定主张",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-349b9a71a51238cc",
+          "learner_id": "DY20240001",
+          "task_id": "task-d345264a76b54e3a853d5e6a18aa13c2",
+          "event_type": "query",
+          "classification": "OBSERVED",
+          "source": "user_interaction",
+          "timestamp": 1787991378.4750416,
+          "topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "content": "Dy³⁺为什么具有黄蓝双发射？",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-4e310cc74ffc5c3d",
+          "learner_id": "DY20240001",
+          "task_id": "task-d345264a76b54e3a853d5e6a18aa13c2",
+          "event_type": "topic_explained",
+          "classification": "DERIVED",
+          "source": "reviewed_final_collaboration_result",
+          "timestamp": 1787991378.4750626,
+          "topics": [
+            "2.1.1",
+            "5.2.1"
+          ],
+          "content": "",
+          "reference": "5117af2a9d78a404715d78e635acac5d8309e6b5d4e4680659f747272bdceff9",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-923b5df1d08ed61e",
+          "learner_id": "DY20240001",
+          "task_id": "task-d345264a76b54e3a853d5e6a18aa13c2",
+          "event_type": "knowledge_gap",
+          "classification": "DERIVED",
+          "source": "teaching_interpretation",
+          "timestamp": 1787991378.4750736,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "",
+          "reference": "",
+          "outcome": "NONE"
+        },
+        {
+          "event_id": "learning-event-726649843b271b2b",
+          "learner_id": "DY20240001",
+          "task_id": "task-d345264a76b54e3a853d5e6a18aa13c2",
+          "event_type": "learning_recommendation",
+          "classification": "DERIVED",
+          "source": "guidance_decision",
+          "timestamp": 1787991378.475083,
+          "topics": [
+            "1.3.1",
+            "2.2.1",
+            "2.2.2",
+            "2.3.1"
+          ],
+          "content": "先学习 Dy3+蓝光发射，再推进当前问题",
+          "reference": "",
+          "outcome": "NONE"
+        }
+      ],
+      "error_patterns": [],
+      "misconceptions": [],
+      "evidence_sources": [
+        "c-eb3642b99af2",
+        "c-3d996c7dfcb8",
+        "c-f3cb2afc8b51",
+        "thesis-MinerU_markdown_白光LED用稀土钽磷酸盐荧光粉的制备与发光性能的研究_2087427897084366850",
+        "c-1d24aa538fe6",
+        "thesis-MinerU_markdown_稀土离子掺杂硅酸铋发光材料的可控制备与性能研究_2087441202897244175",
+        "c-ccc5eccadcd4",
+        "thesis-MinerU_markdown_稀土发光材料的研究进展_2087441202897244161",
+        "c-curated:47ea47d5035d5b2fc673",
+        "curated-concept-evidence:blue-light-hazard-not-cct",
+        "c-curated:b2f75a7b5b4ea6b6d8eb",
+        "curated-concept-evidence:white-light-color-metrics",
+        "c-curated:2f30171130c019e7d4ae",
+        "curated-concept-evidence:white-phosphor-performance-set",
+        "c-curated:6220aead78807f5e70bc",
+        "curated-concept-evidence:dy3-yellow-blue-transitions",
+        "c-curated:d02d8d4fe5c12a3ccd25",
+        "curated-concept-evidence:host-local-environment",
+        "c-curated:59ea5556cc408a52b538",
+        "curated-concept-evidence:excitation-emission-spectrum-distinction"
+      ],
+      "updated_at": 1787991378.4751275,
+      "teaching_memory": {
+        "version": "r07b-v1",
+        "concept_learning": [
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "learning_attempts": 1,
+            "first_seen": 1787991379.233451,
+            "last_seen": 1787991379.233451,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "learning_attempts": 1,
+            "first_seen": 1787991379.233451,
+            "last_seen": 1787991379.233451,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "learning_attempts": 1,
+            "first_seen": 1787991379.233451,
+            "last_seen": 1787991379.233451,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "learning_attempts": 1,
+            "first_seen": 1787991379.233451,
+            "last_seen": 1787991379.233451,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "learning_attempts": 1,
+            "first_seen": 1787991379.233451,
+            "last_seen": 1787991379.233451,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "teaching_effect": "delivered_reviewed_unverified",
+            "confidence": 0.95
+          }
+        ],
+        "misconceptions": [],
+        "strategies": [
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "strategy": "explanation",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "strategy": "concept_introduction",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-blue-emission",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:dy3-yellow-emission",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:emission-spectrum",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:excitation-spectrum",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          },
+          {
+            "learner_id": "DY20240001",
+            "concept_id": "concept:dy3:photoluminescence-spectroscopy",
+            "strategy": "evidence_based_learning",
+            "attempts": 1,
+            "learning_event_ids": [
+              "teaching-event-489d286f4d336ca9b3c2"
+            ],
+            "effect": "delivered_reviewed_unverified",
+            "confidence": 0.95,
+            "last_used": 1787991379.233451,
+            "effect_status": "TRIED",
+            "validated_outcomes": 0
+          }
+        ],
+        "experiences": [
+          {
+            "experience_id": "experience-teaching-event-489d286f4d336ca9b3c2",
+            "learner_id": "DY20240001",
+            "event_id": "teaching-event-489d286f4d336ca9b3c2",
+            "task_id": "task-d345264a76b54e3a853d5e6a18aa13c2",
+            "concept_ids": [
+              "concept:dy3:dy3-blue-emission",
+              "concept:dy3:dy3-yellow-emission",
+              "concept:dy3:emission-spectrum",
+              "concept:dy3:excitation-spectrum",
+              "concept:dy3:photoluminescence-spectroscopy"
+            ],
+            "strategies": [
+              "explanation",
+              "concept_introduction",
+              "evidence_based_learning"
+            ],
+            "outcome": "reviewed_delivery",
+            "next_learning_target": "concept:dy3:dy3-blue-emission",
+            "timestamp": 1787991379.233451
+          }
+        ],
+        "resource_interactions": [],
+        "practice_validations": [],
+        "updated_at": 1787991379.233451
+      }
+    }
+  },
+  "version": 4355,
+  "dimensions": {
+    "A": 0.3139,
+    "B": 0.3258,
+    "C": 0.3592,
+    "D": 0.3195,
+    "E": 1.0
+  }
+}

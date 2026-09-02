@@ -1,0 +1,95 @@
+{
+  "learner_id": "DY20248888",
+  "snapshot_ts": 1786758811.6658473,
+  "kp_mastery": {},
+  "theta": null,
+  "level": "beginner",
+  "learning_style": "reading",
+  "bloom_target": "understand",
+  "weak_kps": [],
+  "confidence": 0.0,
+  "extras": {
+    "interaction_log": [
+      {
+        "ts": 1786758811.6659954,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786758812.6476994,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786759384.0598993,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786759385.0430195,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786759635.2330124,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786759636.1992083,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786759803.292651,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786759804.2746298,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786760671.073522,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786760672.1072378,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786761221.7353797,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      },
+      {
+        "ts": 1786761222.7645574,
+        "event_type": "view",
+        "detail": "overview-recs",
+        "session_id": ""
+      }
+    ]
+  },
+  "version": 12,
+  "dimensions": {
+    "A": 0.0,
+    "B": 0.0,
+    "C": 0.0,
+    "D": 0.0,
+    "E": 0.0
+  }
+}

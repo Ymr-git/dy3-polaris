@@ -1,0 +1,424 @@
+{
+  "version": "1.2.0",
+  "scope": "Reviewed source-bounded summaries for the Dy3+ green healthy lighting curriculum",
+  "entries": [
+    {
+      "entry_id": "dy3-yellow-blue-transitions",
+      "concept_ids": [
+        "concept:dy3:dy3-energy-level-structure",
+        "concept:dy3:four-f-four-f-transition",
+        "concept:dy3:dy3-blue-emission",
+        "concept:dy3:dy3-yellow-emission"
+      ],
+      "content": "Dy3+的主要可见发射来自4F9/2激发态：向6H15/2的4f-4f跃迁产生蓝光发射，向6H13/2的跃迁产生黄光发射；两个发射分量的相对强度可共同形成近白光。",
+      "source_title": "Combustion assisted spectroscopic investigation of Dy activated SrYAl3O7 phosphor for LED and TLD applications",
+      "source_uri": "kb://dy3/chunks/c-3b281811114c",
+      "source_chunk_ids": ["c-3b281811114c"],
+      "claim_scope": "Dy3+ yellow and blue transition assignments"
+    },
+    {
+      "entry_id": "four-f-shielded-line-spectrum",
+      "concept_ids": [
+        "concept:dy3:rare-earth-electron-configuration",
+        "concept:dy3:four-f-shell",
+        "concept:dy3:four-f-four-f-transition",
+        "concept:dy3:emission-spectrum"
+      ],
+      "content": "稀土离子电子构型中的4f壳层电子受外层5s和5p子层屏蔽，所以4f-4f跃迁能级相对不易被宿主配体强烈扰动，通常表现为较窄、线状的激发或发射光谱；局域晶体场仍可造成Stark加宽和相对强度变化。",
+      "source_title": "Thermally robust and valence-variation-induced white-light emission of Sr3Al10SnO20:Dy",
+      "source_uri": "kb://dy3/chunks/c-938b5d1f81fb",
+      "source_chunk_ids": ["c-938b5d1f81fb", "c-7a064229a8ff"],
+      "claim_scope": "4f-shell shielding and line-shaped 4f-4f spectra"
+    },
+    {
+      "entry_id": "dy3-concentration-quenching",
+      "concept_ids": [
+        "concept:dy3:doping-concentration",
+        "concept:dy3:energy-transfer",
+        "concept:dy3:cross-relaxation",
+        "concept:dy3:concentration-quenching"
+      ],
+      "content": "Dy3+掺杂浓度升高会缩短平均离子间距；超过某一体系的临界值后，相邻Dy3+之间的共振能量迁移和交叉弛豫等非辐射通道可以增强，使4F9/2能级相关发射被浓度猝灭。临界浓度与主导传递机制依赖具体宿主。",
+      "source_title": "Multiwavelength excited white-emitting Dy-doped Sr3Bi(PO4)3 phosphor",
+      "source_uri": "kb://dy3/chunks/c-45ef036b3062",
+      "source_chunk_ids": ["c-45ef036b3062", "c-3f940ffe4585"],
+      "claim_scope": "Host-bounded Dy3+ concentration-quenching mechanism"
+    },
+    {
+      "entry_id": "host-local-environment",
+      "concept_ids": [
+        "concept:dy3:host-lattice",
+        "concept:dy3:local-coordination",
+        "concept:dy3:crystal-field",
+        "concept:dy3:stark-splitting",
+        "concept:dy3:emission-spectrum"
+      ],
+      "content": "宿主晶格决定Dy3+的局域配位、对称性和晶体场；不同格位的晶体场差异会改变Stark劈裂、谱线展宽和跃迁相对强度，从而影响Dy3+发射光谱的带宽与结构。",
+      "source_title": "Exploring the Impact of Structure-Sensitivity Factors on Thermographic Properties of Dy-Doped Oxide Crystals",
+      "source_uri": "kb://dy3/chunks/c-5396d48d5c57",
+      "source_chunk_ids": ["c-5396d48d5c57", "c-047b698df784"],
+      "claim_scope": "Host and local-structure effects on Dy3+ spectra"
+    },
+    {
+      "entry_id": "defect-trap-dual-role",
+      "concept_ids": [
+        "concept:dy3:defects-traps",
+        "concept:dy3:nonradiative-relaxation",
+        "concept:dy3:thermal-quenching"
+      ],
+      "content": "缺陷和陷阱态对发光并非只有单一作用：在所引文献讨论的体系中，非辐射缺陷态可使被俘获载流子通过非辐射复合耗散而削弱发光；合适深度的陷阱也可能在热扰动下释放载流子并补偿发光中心。具体影响取决于缺陷类型、陷阱深度以及俘获—释放过程，需要结合热释光和变温发光证据判断。",
+      "source_title": "缺陷态对LED用荧光材料热稳定性的影响",
+      "source_uri": "kb://dy3/chunks/c-3da28d710ddb",
+      "source_chunk_ids": ["c-3da28d710ddb", "c-a6d459dae2a4"],
+      "claim_scope": "Source-bounded dual roles of radiative and non-radiative defect states"
+    },
+    {
+      "entry_id": "thermal-quenching-routes",
+      "concept_ids": [
+        "concept:dy3:thermal-quenching",
+        "concept:dy3:nonradiative-relaxation",
+        "concept:dy3:thermal-stability-measurement"
+      ],
+      "content": "热猝灭是温度升高时激发态通过非辐射通道失活而导致发光强度下降的现象。多声子弛豫、向猝灭中心的能量迁移、位形坐标交叉和电荷转移都是文献中区分的可能路径，具体材料需依据变温光谱等证据判断。",
+      "source_title": "Thermal quenching of lanthanide luminescence via charge transfer states",
+      "source_uri": "https://doi.org/10.1039/D2TC04439K",
+      "source_chunk_ids": [],
+      "claim_scope": "Review-level classification of thermal-quenching routes"
+    },
+    {
+      "entry_id": "phonon-nonradiative-rate",
+      "concept_ids": [
+        "concept:dy3:phonon-energy",
+        "concept:dy3:nonradiative-relaxation",
+        "concept:dy3:thermal-quenching"
+      ],
+      "content": "在多声子非辐射弛豫模型中，所需声子数由发光能级间隔与宿主有效声子能量共同决定；较高声子能量可以用更少的声子满足能量差，因而可能提高非辐射弛豫速率并削弱发光。",
+      "source_title": "Thermal quenching of lanthanide luminescence via charge transfer states",
+      "source_uri": "https://doi.org/10.1039/D2TC04439K",
+      "source_chunk_ids": [],
+      "claim_scope": "Multiphonon-relaxation dependence on phonon energy and energy gap"
+    },
+    {
+      "entry_id": "qe-integrating-sphere",
+      "concept_ids": [
+        "concept:dy3:quantum-efficiency",
+        "concept:dy3:integrating-sphere"
+      ],
+      "content": "发光量子效率的绝对测量可在积分球中分别记录激发光与发射光，以样品吸收的激发光子和产生的发射光子进行光子收支计算；测量时需保留激发条件、空白参照与系统校准。",
+      "source_title": "An improved experimental determination of external photoluminescence quantum efficiency",
+      "source_uri": "https://doi.org/10.1002/adma.19970090308",
+      "source_chunk_ids": ["c-afe486f98207", "c-9c6e6728e0e7"],
+      "claim_scope": "Absolute photoluminescence quantum-efficiency measurement"
+    },
+    {
+      "entry_id": "excitation-emission-spectrum-distinction",
+      "concept_ids": [
+        "concept:dy3:excitation-spectrum",
+        "concept:dy3:emission-spectrum",
+        "concept:dy3:photoluminescence-spectroscopy"
+      ],
+      "content": "激发光谱是在固定并监测某一发射波长时，扫描激发波长得到的响应，用于识别哪些激发通道能有效布居发光态；发射光谱则在固定激发条件下扫描发射波长，表征发射峰位置、强度和光谱分布。",
+      "source_title": "Combustion assisted spectroscopic investigation of Dy activated SrYAl3O7 phosphor for LED and TLD applications",
+      "source_uri": "kb://dy3/chunks/c-3b281811114c",
+      "source_chunk_ids": ["c-3b281811114c", "c-428511a267ef"],
+      "claim_scope": "Operational distinction between excitation and emission spectra"
+    },
+    {
+      "entry_id": "lifetime-decay-analysis",
+      "concept_ids": [
+        "concept:dy3:fluorescence-lifetime",
+        "concept:dy3:lifetime-measurement"
+      ],
+      "content": "荧光寿命测量需在明确的激发波长和监测发射波长下记录强度随时间的衰减。拟合时应根据衰减曲线选择单指数或多指数模型，报告快慢组分、平均寿命及拟合质量，而不能只给出一个脱离测量条件的数值。",
+      "source_title": "Investigation on Luminescence Properties of Dy Ions Doped NaBaB9O15 Phosphors for Optoelectronic Applications",
+      "source_uri": "kb://dy3/chunks/c-616e5c5f6c1e",
+      "source_chunk_ids": ["c-616e5c5f6c1e", "c-489baa32663f"],
+      "claim_scope": "Decay measurement conditions and exponential fitting"
+    },
+    {
+      "entry_id": "solid-state-experimental-workflow",
+      "concept_ids": [
+        "concept:dy3:solid-state-synthesis",
+        "concept:dy3:calcination-temperature-crystallinity",
+        "concept:dy3:xrd",
+        "concept:dy3:photoluminescence-spectroscopy"
+      ],
+      "content": "Dy3+荧光材料的高温固相实验应把化学计量配料、充分混合研磨、焙烧或烧结温度与时间、气氛、冷却和再研磨记录为可复现条件，再用XRD核对物相与结晶度，用固定测量条件的激发/发射光谱和寿命评价发光。文献中的具体温度、保温时间和气氛只适用于其材料体系，不能当作所有Dy3+宿主的固定工艺。",
+      "source_title": "Synthesis and optical properties of Ba3Bi2(PO4)4:Dy phosphors for white light emitting diodes",
+      "source_uri": "kb://dy3/chunks/c-afe486f98207",
+      "source_chunk_ids": ["c-afe486f98207"],
+      "claim_scope": "Source-bounded solid-state preparation and characterization workflow"
+    },
+    {
+      "entry_id": "white-light-color-metrics",
+      "concept_ids": [
+        "concept:dy3:cie-chromaticity",
+        "concept:dy3:correlated-color-temperature",
+        "concept:dy3:color-rendering-index",
+        "concept:dy3:white-led"
+      ],
+      "content": "CIE色坐标表征白光在色度图中的位置，相关色温CCT表达与黑体轨迹最接近的光色冷暖，显色指数CRI表征光源对物体颜色的再现能力。这些指标评价的是不同维度，不能用单一色坐标替代CCT或CRI。",
+      "source_title": "Spectroscopy of Mn ions for solid-state lighting",
+      "source_uri": "kb://dy3/chunks/c-8cb5ba2590f7",
+      "source_chunk_ids": ["c-8cb5ba2590f7", "c-a87cf9cf5803"],
+      "claim_scope": "Distinct meanings of CIE chromaticity, CCT, and CRI"
+    },
+    {
+      "entry_id": "white-phosphor-performance-set",
+      "concept_ids": [
+        "concept:dy3:single-phase-white-phosphor",
+        "concept:dy3:white-led",
+        "concept:dy3:cie-chromaticity",
+        "concept:dy3:quantum-efficiency",
+        "concept:dy3:color-rendering-index",
+        "concept:dy3:correlated-color-temperature",
+        "concept:dy3:thermal-stability-measurement"
+      ],
+      "content": "Dy3+单基质白光荧光粉用于LED时，材料层面需评价色度（CIE色坐标）、量子效率和变温发光所反映的热稳定性；器件层面还需在真实驱动条件下联合报告光效、CCT和CRI，分别检验能量转换、光色位置与颜色再现。",
+      "source_title": "Synthesis and optical properties of Ba3Bi2(PO4)4:Dy phosphors for white light emitting diodes",
+      "source_uri": "kb://dy3/chunks/c-3a63bfd82381",
+      "source_chunk_ids": ["c-3a63bfd82381", "c-a87cf9cf5803"],
+      "claim_scope": "Multi-metric evaluation dimensions reported for Dy3+ white phosphors"
+    },
+    {
+      "entry_id": "yellow-blue-ratio-color-position",
+      "concept_ids": [
+        "concept:dy3:dy3-blue-emission",
+        "concept:dy3:dy3-yellow-emission",
+        "concept:dy3:yellow-blue-ratio",
+        "concept:dy3:cie-chromaticity",
+        "concept:dy3:correlated-color-temperature"
+      ],
+      "content": "Dy3+黄光与蓝光发射强度比（Y/B）改变了综合色谱中两个可见发射分量的相对权重，因此会移动CIE色坐标并改变综合色貌；相关色温CCT应由综合色度位置计算，不能只凭某一个发射峰判断。",
+      "source_title": "Structural, thermal, optical and luminescence properties of Dy ions doped Zinc Potassium Alumino Borate glasses for optoelectronics applications",
+      "source_uri": "kb://dy3/chunks/c-bffd55fed023",
+      "source_chunk_ids": ["c-bffd55fed023", "c-a87cf9cf5803"],
+      "claim_scope": "Dy3+ yellow-blue intensity balance and white-light chromaticity"
+    },
+    {
+      "entry_id": "four-f-bandwidth-comparison",
+      "concept_ids": [
+        "concept:dy3:four-f-shell",
+        "concept:dy3:four-f-four-f-transition",
+        "concept:dy3:four-f-five-d-transition",
+        "concept:dy3:emission-spectrum"
+      ],
+      "content": "4f轨道受外层5s、5p轨道屏蔽，4f-4f跃迁通常呈较窄的锐线状光谱；5d轨道暴露在外并更易受晶体场和周围化学环境影响，所以4f-5d跃迁通常呈较宽的带状光谱。这里的窄带与宽带是典型差异，具体带宽仍取决于材料体系。",
+      "source_title": "稀土氟化物纳微米材料的水热合成形成机理和发光性质",
+      "source_uri": "kb://dy3/chunks/c-a8ff2210f2ca",
+      "source_chunk_ids": ["c-a8ff2210f2ca"],
+      "claim_scope": "Typical spectral-bandwidth distinction between 4f-4f and 4f-5d transitions"
+    },
+    {
+      "entry_id": "ls-coupling-selection-rule-reading",
+      "concept_ids": [
+        "concept:dy3:rare-earth-electron-configuration",
+        "concept:dy3:ls-coupling-selection-rules",
+        "concept:dy3:four-f-four-f-transition",
+        "concept:dy3:dy3-energy-level-structure"
+      ],
+      "content": "L-S耦合用总自旋S、总轨道角动量L和总角动量J组织4fN多电子态与光谱项；跃迁选择定则再判断相应态之间的辐射或非辐射跃迁矩阵元是否允许。理解Dy3+光谱时，应先用2S+1LJ光谱项标识能级，再结合跃迁类型、格位对称性和选择定则解释哪些谱线出现及其相对强弱。",
+      "source_title": "稀土离子激活发光材料中能级跃迁的选择定则",
+      "source_uri": "kb://dy3/chunks/c-9b10e5391654",
+      "source_chunk_ids": ["c-9b10e5391654", "c-1402c9753e04"],
+      "claim_scope": "Use of LS-coupled spectral terms and selection rules in rare-earth spectroscopy"
+    },
+    {
+      "entry_id": "radiative-rate-lifetime-balance",
+      "concept_ids": [
+        "concept:dy3:judd-ofelt-theory",
+        "concept:dy3:radiative-transition-rate",
+        "concept:dy3:fluorescence-lifetime",
+        "concept:dy3:nonradiative-relaxation"
+      ],
+      "content": "Judd-Ofelt理论通过光谱强度参数计算稀土离子的发射跃迁几率、辐射寿命和分支比；同一发光上能级各辐射跃迁几率A求和可得到辐射寿命τrad=1/ΣA。实验荧光寿命还同时受非辐射速率Wnr影响，可写成1/τobs=ΣA+Wnr，因此二者需结合量子效率和衰减数据区分。",
+      "source_title": "Judd-Ofelt模型及其应用",
+      "source_uri": "kb://dy3/chunks/c-411467e8b130",
+      "source_chunk_ids": ["c-411467e8b130"],
+      "claim_scope": "Radiative transition probability, radiative lifetime, and nonradiative-rate separation"
+    },
+    {
+      "entry_id": "charge-compensation-defect-balance",
+      "concept_ids": [
+        "concept:dy3:charge-compensation",
+        "concept:dy3:defects-traps",
+        "concept:dy3:local-coordination"
+      ],
+      "content": "异价离子进入晶格时必须满足整体电中性，材料可通过空位、间隙缺陷、价态变化或共掺杂离子实现电荷补偿。补偿方式会改变发光中心附近的缺陷与陷阱数量以及局部配位，所以可能增强或削弱发光；不能把某一种补偿方式视为所有宿主的固定最优方案。",
+      "source_title": "宽禁带发光材料中的自补偿效应和避免自补偿的一些途径",
+      "source_uri": "kb://dy3/chunks/c-c706ce9e748d",
+      "source_chunk_ids": ["c-c706ce9e748d", "c-47c24511eb22", "c-c8be4abfaff0"],
+      "claim_scope": "Charge neutrality and defect-mediated compensation in doped luminescent materials"
+    },
+    {
+      "entry_id": "coprecipitation-uniform-precursor",
+      "concept_ids": [
+        "concept:dy3:coprecipitation-synthesis",
+        "concept:dy3:calcination-temperature-crystallinity",
+        "concept:dy3:process-defect-control"
+      ],
+      "content": "共沉淀法把多种金属离子置于同一溶液，并通过沉淀剂、pH、浓度、加料与混合速率共同控制均匀多组分前驱体的形成；各组分在溶液尺度共同沉淀，因而有利于缩短后续固相扩散距离。沉淀仍需清洗、干燥和焙烧晶化，局部偏析风险取决于沉淀条件。",
+      "source_title": "稀土纳米发光材料的液相法合成",
+      "source_uri": "kb://dy3/chunks/c-1c24af32a094",
+      "source_chunk_ids": ["c-1c24af32a094", "c-612d75bc3e0c"],
+      "claim_scope": "Solution-scale coprecipitation and multicomponent precursor uniformity"
+    },
+    {
+      "entry_id": "sol-gel-structural-evolution",
+      "concept_ids": [
+        "concept:dy3:sol-gel-synthesis",
+        "concept:dy3:calcination-temperature-crystallinity",
+        "concept:dy3:process-defect-control"
+      ],
+      "content": "溶胶-凝胶法通常从前驱体溶液开始，经水解、聚合或脱水缩合形成溶胶，再由胶粒聚合形成凝胶网络，随后经历老化、除去溶剂、干燥固化，并通过热处理或焙烧去除有机组分和完成氧化物结晶。前驱体可在溶液中实现分子尺度分散，但最终结构仍受水解、干燥和焙烧条件控制。",
+      "source_title": "稀土掺杂的高稳定性钼酸盐荧光粉合成及其发光特性研究",
+      "source_uri": "kb://dy3/chunks/c-612d75bc3e0c",
+      "source_chunk_ids": ["c-612d75bc3e0c", "c-cc3e34bed37a"],
+      "claim_scope": "Sol-gel precursor-to-network evolution and subsequent thermal treatment"
+    },
+    {
+      "entry_id": "hydrothermal-solvothermal-medium",
+      "concept_ids": [
+        "concept:dy3:hydrothermal-solvothermal-synthesis",
+        "concept:dy3:electron-microscopy",
+        "concept:dy3:process-defect-control"
+      ],
+      "content": "水热法以水溶液为反应介质，在密闭高压釜中利用升温产生的高温高压环境促进溶解、迁移和结晶；溶剂热法沿用类似密闭反应条件，但以有机或其他非水溶剂替代水，溶剂同时承担传压和矿化作用。介质差异会改变可溶前驱体、反应窗口与颗粒团聚行为，产物形貌需由SEM或TEM验证。",
+      "source_title": "稀土纳米发光材料的液相法合成",
+      "source_uri": "kb://dy3/chunks/c-1c24af32a094",
+      "source_chunk_ids": ["c-1c24af32a094"],
+      "claim_scope": "Reaction-medium and sealed-condition distinction between hydrothermal and solvothermal synthesis"
+    },
+    {
+      "entry_id": "reducing-atmosphere-valence-defects",
+      "concept_ids": [
+        "concept:dy3:reducing-atmosphere-valence",
+        "concept:dy3:defects-traps",
+        "concept:dy3:charge-compensation"
+      ],
+      "content": "还原气氛会降低体系的氧化性并改变发光中心可稳定的氧化价态；为维持电荷平衡，晶格中的空位、共掺杂补偿和其他缺陷状态也可能随之改变。因此价态和缺陷必须通过XPS、EPR或结构与光谱证据核对，不能仅凭使用了还原气氛就断言得到某一价态。",
+      "source_title": "白光LED用Mn激活红光荧光粉中锰离子价态表征研究进展",
+      "source_uri": "kb://dy3/chunks/c-c8be4abfaff0",
+      "source_chunk_ids": ["c-c8be4abfaff0"],
+      "claim_scope": "Reducing-atmosphere effects on activator valence and charge-compensating defects"
+    },
+    {
+      "entry_id": "flux-grain-growth-morphology",
+      "concept_ids": [
+        "concept:dy3:flux-grain-morphology",
+        "concept:dy3:electron-microscopy",
+        "concept:dy3:calcination-temperature-crystallinity"
+      ],
+      "content": "助熔剂在烧结温度下形成熔融或半流动环境，可促进反应离子的扩散和产物结晶，从而改变晶粒生长、粒度分布及颗粒形貌；助熔剂种类和用量不当也可能引起团聚或残留。应结合XRD判断物相与结晶度，并用SEM或TEM核对颗粒尺寸和形貌。",
+      "source_title": "白光LED用稀土钽磷酸盐荧光粉的制备与发光性能的研究",
+      "source_uri": "kb://dy3/chunks/c-5c309e8904c3",
+      "source_chunk_ids": ["c-5c309e8904c3", "c-572cceb2c569"],
+      "claim_scope": "Flux-assisted ion diffusion, grain growth, and particle morphology"
+    },
+    {
+      "entry_id": "xrd-calcination-phase-crystallinity",
+      "concept_ids": [
+        "concept:dy3:xrd",
+        "concept:dy3:calcination-temperature-crystallinity"
+      ],
+      "content": "判断焙烧温度的影响时，应比较不同温度样品的XRD衍射峰位置、杂相峰、峰强和峰宽：标准卡匹配及杂相峰反映物相变化，峰变强变窄通常表示结晶度提高；具体最适温度仍受材料体系和高温副相限制。",
+      "source_title": "Hydrothermal synthesis and luminescent properties of Ca3(PO4)2:Dy white-emitting phosphors",
+      "source_uri": "kb://dy3/chunks/c-6222d3bcd209",
+      "source_chunk_ids": ["c-6222d3bcd209", "c-620f1bc54008"],
+      "claim_scope": "XRD comparison of phase composition and crystallinity across calcination temperatures"
+    },
+    {
+      "entry_id": "sem-tem-complementary-characterization",
+      "concept_ids": [
+        "concept:dy3:electron-microscopy",
+        "concept:dy3:nanomaterial-core-shell"
+      ],
+      "content": "SEM主要提供颗粒表面形貌、晶粒形状、团聚和微米尺度尺寸分布；TEM可进一步观察纳米颗粒尺寸与内部微结构，高分辨图可显示晶格条纹，选区电子衍射可辅助判断晶体结构。两者观察尺度和信息深度不同，应结合使用。",
+      "source_title": "Luminescence properties of tricalcium phosphate doped with dysprosium",
+      "source_uri": "kb://dy3/chunks/c-ac6f77a49bcf",
+      "source_chunk_ids": ["c-ac6f77a49bcf", "c-27908af0f2ba"],
+      "claim_scope": "Complementary morphology and microstructure information from SEM and TEM"
+    },
+    {
+      "entry_id": "temperature-dependent-pl-t50",
+      "concept_ids": [
+        "concept:dy3:thermal-stability-measurement",
+        "concept:dy3:thermal-quenching",
+        "concept:dy3:emission-spectrum"
+      ],
+      "content": "变温发光测试在一致激发与采集条件下记录发射光谱或积分强度随温度的变化，用于观察热猝灭过程。T50是发光强度下降到初始值50%时对应的温度，是热稳定性指标之一；评价时还应报告温度范围、归一化基准及可能的热猝灭激活能。",
+      "source_title": "Near-UV-pumped yellow-emitting Ca3TeO6:Dy phosphor for white light-emitting diodes",
+      "source_uri": "kb://dy3/chunks/c-fab8998b97af",
+      "source_chunk_ids": ["c-fab8998b97af", "c-510d2aa06372"],
+      "claim_scope": "Temperature-dependent luminescence and T50 thermal-stability index"
+    },
+    {
+      "entry_id": "nanoparticle-surface-core-shell",
+      "concept_ids": [
+        "concept:dy3:nanomaterial-core-shell",
+        "concept:dy3:nonradiative-relaxation",
+        "concept:dy3:quantum-efficiency"
+      ],
+      "content": "纳米发光颗粒表面的断键和晶格缺陷会形成表面态，增加非辐射弛豫并造成发光损失或表面猝灭。包覆晶格匹配的保护壳层可把发光中心与表面猝灭中心隔离，减少非辐射损失；核壳界面的晶格失配仍可能产生新缺陷，因此需要结构和效率数据共同验证。",
+      "source_title": "稀土掺杂纳米晶体荧光发射性质的调控",
+      "source_uri": "kb://dy3/chunks/c-ecb4b4a52c43",
+      "source_chunk_ids": ["c-ecb4b4a52c43", "c-8f150b305d3a", "c-b77adcedbe88"],
+      "claim_scope": "Surface-state nonradiative loss and core-shell passivation boundary"
+    },
+    {
+      "entry_id": "healthy-lighting-multi-axis-evaluation",
+      "concept_ids": [
+        "concept:dy3:green-healthy-lighting",
+        "concept:dy3:white-led",
+        "concept:dy3:color-rendering-index",
+        "concept:dy3:correlated-color-temperature",
+        "concept:dy3:blue-light-hazard"
+      ],
+      "content": "绿色健康照明不能由单一参数代表：能效关注输入能量转化与光效，光品质需要结合光谱分布、相关色温和显色性能，光生物安全则需按暴露条件评价蓝光等风险。三类指标分别约束节能、视觉质量和安全边界，必须并行报告而不能互相替代。",
+      "source_title": "稀土发光材料亟需技术和应用双驱协同创新",
+      "source_uri": "kb://dy3/chunks/c-2a9c5ecbbfa0",
+      "source_chunk_ids": ["c-2a9c5ecbbfa0", "c-81435f5b9e3b"],
+      "claim_scope": "Energy efficiency, light quality, and photobiological safety as distinct lighting dimensions"
+    },
+    {
+      "entry_id": "scale-up-batch-consistency-controls",
+      "concept_ids": [
+        "concept:dy3:scale-up-batch-consistency",
+        "concept:dy3:solid-state-synthesis",
+        "concept:dy3:process-defect-control"
+      ],
+      "content": "发光材料从小试放大到批量或规模化制备时，原料纯度与称量、混合均匀度、炉内温度场、气氛、保温和后处理波动会放大为物相、粒径、价态和发光性能差异。因此需要固定关键工艺窗口、记录批次原料与温度曲线，并用XRD、粒度和光谱指标验证批次一致性。",
+      "source_title": "稀土发光材料的研究进展",
+      "source_uri": "kb://dy3/chunks/c-8ee06870d8fe",
+      "source_chunk_ids": ["c-8ee06870d8fe", "c-9979bbe7079e"],
+      "claim_scope": "Process controls and batch consistency during luminescent-material scale-up"
+    },
+    {
+      "entry_id": "spectrum-lifetime-nonradiative-diagnosis",
+      "concept_ids": [
+        "concept:dy3:emission-spectrum",
+        "concept:dy3:fluorescence-lifetime",
+        "concept:dy3:lifetime-measurement",
+        "concept:dy3:nonradiative-relaxation"
+      ],
+      "content": "发射光谱给出峰位、谱形和积分强度，荧光寿命给出激发态布居的时间衰减；在相同测量条件下，强度或量子效率下降并伴随寿命缩短，通常提示总衰减速率中的非辐射分量增加。单看光谱强度或单看寿命都不能唯一归因，还需结合吸收、量子效率和辐射寿命排除激发与浓度差异。",
+      "source_title": "Judd-Ofelt模型及其应用",
+      "source_uri": "kb://dy3/chunks/c-411467e8b130",
+      "source_chunk_ids": ["c-411467e8b130", "c-616e5c5f6c1e", "c-489baa32663f"],
+      "claim_scope": "Joint use of emission spectra and fluorescence lifetime to diagnose nonradiative losses"
+    },
+    {
+      "entry_id": "blue-light-hazard-not-cct",
+      "concept_ids": [
+        "concept:dy3:blue-light-hazard",
+        "concept:dy3:correlated-color-temperature",
+        "concept:dy3:green-healthy-lighting"
+      ],
+      "content": "蓝光危害是按波长加权的视网膜光化学风险，需结合光谱辐亮度或辐照度、视场与暴露时间等真实暴露条件评估。相关色温CCT只描述光色，不能单独证明3000 K或其他低色温光源没有蓝光风险。",
+      "source_title": "CIE Position Statement on the Blue Light Hazard",
+      "source_uri": "https://www.cie.co.at/publications/position-statement-blue-light-hazard-april-23-2019",
+      "source_chunk_ids": [],
+      "claim_scope": "CIE blue-light hazard assessment boundary"
+    }
+  ]
+}

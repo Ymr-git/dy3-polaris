@@ -36,9 +36,30 @@ build/
 .DS_Store
 Thumbs.db
 
-# 知识库向量化/图构建快照 (体积膨胀源，见 _膨胀点标注-向量化快照.md)
-**/data/snapshots/
-**/data/
+# 运行时状态数据（不提交）：仓库根 data/ 下为审计/画像/任务等运行时产物
+/data/
+src/dy3_polaris/l0/data/
+src/dy3_polaris/l5/data/
+
+# 知识资产（必须提交）：src/dy3_polaris/l3/data/ 下的知识快照
+# （实体/文本切片/向量/三元组，竞赛"专业知识库切片"测试数据；单文件 <100MB，GitHub 可容纳）
+!src/dy3_polaris/l3/data/
+!src/dy3_polaris/l3/data/curated/
+!src/dy3_polaris/l3/data/domain_packages/
+!src/dy3_polaris/l3/data/snapshots/
+!src/dy3_polaris/l3/data/snapshots/snapshot_final/
+!src/dy3_polaris/l3/data/snapshots/snapshot_final/*.jsonl
+!src/dy3_polaris/l3/data/snapshots/snapshot_final/*.json
+!src/dy3_polaris/l3/data/curated/*.json
+!src/dy3_polaris/l3/data/domain_packages/*.json
+
+# 演示种子画像（差异化学习者初始学情数据，竞赛测试数据要求；运行时会被更新，属正常现象）
+src/dy3_polaris/l2/data/learners/*
+!src/dy3_polaris/l2/data/learners/DY20240001.json
+!src/dy3_polaris/l2/data/learners/DY20240002.json
+!src/dy3_polaris/l2/data/learners/DY20240003.json
+!src/dy3_polaris/l2/data/learners/DY20240004.json
+!src/dy3_polaris/l2/data/learners/DY20248888.json
 
 # 密钥与本地配置 (绝不提交/随文件复制泄漏)
 .env
