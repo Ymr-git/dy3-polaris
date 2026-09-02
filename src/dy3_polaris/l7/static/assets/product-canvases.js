@@ -96,6 +96,16 @@
       CONTRADICTS: '存在冲突', CANDIDATE: '候选证据'
     }[state] || value || '尚未知';
   }
+  // 发布门拒绝时展示"具体审核原因"优先（如：问题核心覆盖门要求修订/证据不足），
+  // 而非仅展示通用发布消息，帮助学习者理解为什么没有公开回答。
+  function withheldReason(quality, review, verdict) {
+    var specific = String((review && review.reason) || '').trim();
+    var generic = String((quality && quality.message) || '').trim();
+    var verdictKey = String(verdict || '').toLowerCase();
+    var isReviewDriven = verdictKey === 'needs_review' || verdictKey === 'rejected';
+    if (specific && isReviewDriven && generic.indexOf(specific) < 0) return specific;
+    return generic || specific || '系统不会展示未经审核的内容。';
+  }
   function eventLabel(value) {
     var key = String(value || '').replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
     return {
@@ -683,7 +693,7 @@
     var releaseLabel = quality.status || 'WITHHELD';
     container.innerHTML = '<article class="pc-page pc-task-page">' +
       '<header class="pc-task-header"><div><h1>' + esc(question) + '</h1><p>' + esc(teachingLabel(teaching.content_depth || learner.lifecycle_stage || 'UNKNOWN')) + ' · ' + esc(teachingLabel(data.question_type || data.task_mode || 'UNKNOWN')) + '</p></div><span class="pc-status ' + statusClass(data.task_state) + '">' + esc(prettyState(data.task_state)) + '</span></header>' +
-      (answer ? '<section class="pc-direct-answer"><span>教学讲解</span><p>' + esc(firstAnswer(answer)) + '</p></section>' : '<section class="pc-withheld"><strong>当前草稿未通过发布门</strong><p>' + esc(quality.message || review.reason || '系统不会展示未经审核的内容。') + '</p></section>') +
+      (answer ? '<section class="pc-direct-answer"><span>教学讲解</span><p>' + esc(firstAnswer(answer)) + '</p></section>' : '<section class="pc-withheld"><strong>当前草稿未通过发布门</strong><p>' + esc(withheldReason(quality, review, verdict)) + '</p></section>') +
       '<section class="pc-mechanism-strip"><div class="pc-panel-head"><div><h2>' + (hasConceptRelations ? '概念与机制关系' : '任务知识定位') + '</h2><p>' + (hasConceptRelations ? '连线只使用当前任务公开的 Concept Relation' : '只列出当前检索结果绑定的知识点，不补造科学关系') + '</p></div></div>' + renderMechanism(data) + '</section>' +
       '<div class="pc-task-grid"><main>' +
       '<section class="pc-panel pc-task-resource-panel"><div class="pc-panel-head pc-resource-panel-head"><div><h2>学习资源</h2><p>由本次任务、审核结论和当前学习证据生成或分发</p></div><small>' + resources.length + ' 种形态</small></div>' + resourcesHtml + '</section>' +

@@ -9207,16 +9207,27 @@ def run_guidance(
             "contribution": "scientific_quality_decision",
         },
     ]
+    # Public review reason: keep the reviewer's SPECIFIC reason when the
+    # result was withheld by a review verdict (needs_review/rejected), so the
+    # front end can explain to the learner WHY nothing was published (e.g.
+    # "问题核心覆盖门要求修订：回答遗漏了...").  Only fall back to the
+    # generic release message when the reviewer approved but the release gate
+    # failed for other (artifact/identity) reasons, where the reviewer reason
+    # would be misleading.
+    _review_reason = str(review.get("reason") or "").strip()
+    _public_review_reason = (
+        _review_reason
+        if quality_release.eligible
+        else _review_reason
+        if quality_release.review_verdict in {"needs_review", "rejected"}
+        else quality_release.message
+    )
     guidance_carrier["review"] = {
         "agent_id": REVIEW_AGENT_ID,
         "status": quality_release.review_status or "not_completed",
         "verdict": quality_release.review_verdict or "not_available",
         "confidence": float(review.get("confidence", 0.0) or 0.0),
-        "reason": (
-            str(review.get("reason") or "")
-            if quality_release.eligible
-            else quality_release.message
-        ),
+        "reason": _public_review_reason,
     }
     guidance_carrier["candidates"] = []
     guidance_carrier["divergence_matrix"] = []
