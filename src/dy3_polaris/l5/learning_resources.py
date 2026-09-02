@@ -144,11 +144,13 @@ def _guided_questions(
             "question_id": "self-explain",
             "prompt": f"请用自己的话解释“{focus}”的核心机制，并区分事实与推断。",
             "purpose": "SELF_EXPLANATION",
+            "source_class": "RELATION_BACKED_PROMPT",
         },
         {
             "question_id": "evidence-boundary",
             "prompt": "当前证据能支持到什么程度？还有哪些条件或不确定性不能忽略？",
             "purpose": "EVIDENCE_BOUNDARY",
+            "source_class": "RELATION_BACKED_PROMPT",
         },
     ]
     if prerequisite_names:
@@ -156,6 +158,7 @@ def _guided_questions(
             "question_id": "prerequisite-check",
             "prompt": f"在继续前，请先说明“{prerequisite_names[0]}”与当前问题的关系。",
             "purpose": "PREREQUISITE_CHECK",
+            "source_class": "RELATION_BACKED_PROMPT",
         })
     return tuple(questions)
 
@@ -237,6 +240,7 @@ def build_learning_resource_plan(
     final_result: FinalCollaborationResult | None,
     quality_release: QualityReleaseDecision,
     reviewed_long_form: Mapping[str, Any] | None = None,
+    reviewed_guided_questions: Mapping[str, Any] | None = None,
 ) -> LearningResourcePlan:
     """Build three usable resource families without inventing content."""
 
@@ -315,7 +319,28 @@ def build_learning_resource_plan(
         if isinstance(final_result, FinalCollaborationResult)
         else ()
     )
-    guided_questions = _guided_questions(concept_names, prerequisite_names)
+    question_review = dict(reviewed_guided_questions or {})
+    model_questions = tuple(
+        {
+            "question_id": str(item.get("question_id") or f"model-guided-{index}"),
+            "prompt": str(item.get("prompt") or "").strip(),
+            "purpose": str(item.get("purpose") or "SOCRATIC_MECHANISM"),
+            "source_class": "GENERATION_REVIEWED_GUIDANCE",
+        }
+        for index, item in enumerate(question_review.get("questions") or (), 1)
+        if isinstance(item, Mapping) and str(item.get("prompt") or "").strip()
+    )
+    model_questions_approved = bool(
+        model_questions
+        and bool(question_review.get("model_used", False))
+        and bool(question_review.get("reviewer_executed", False))
+        and str(question_review.get("review_verdict") or "").lower() == "approved"
+    )
+    guided_questions = (
+        model_questions
+        if model_questions_approved
+        else _guided_questions(concept_names, prerequisite_names)
+    )
     guided_document = _guided_document(
         goal=goal,
         reviewed_answer=reviewed_answer,
@@ -420,6 +445,33 @@ def build_learning_resource_plan(
             "knowledge_gap": knowledge_gaps,
             "guided_document": guided_document,
             "guided_questions": guided_questions,
+            "guided_question_mode": (
+                "llm_reviewed_socratic"
+                if model_questions_approved
+                else "relation_backed_fallback"
+            ),
+            "guided_question_review": (
+                {
+                    "model_used": True,
+                    "reviewer_executed": True,
+                    "review_verdict": "approved",
+                    "review_reason": str(question_review.get("review_reason") or ""),
+                    "source_passage_count": int(
+                        question_review.get("source_passage_count") or 0
+                    ),
+                    "collaboration_path": str(
+                        question_review.get("collaboration_path")
+                        or "Generation → Reviewer → Guidance"
+                    ),
+                }
+                if model_questions_approved
+                else {
+                    "model_used": False,
+                    "reviewer_executed": False,
+                    "review_verdict": "not_applicable",
+                    "collaboration_path": "R06 Concept Relation → Guidance",
+                }
+            ),
             "recommended": recommended_family is ResourceFamily.KNOWLEDGE,
             "distribution_reason": (
                 "当前需要先建立可审核的概念和机制理解。"

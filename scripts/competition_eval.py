@@ -18,7 +18,7 @@ from typing import Any, Iterable, Mapping
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _SRC = _PROJECT_ROOT / "src"
-_BENCHMARK_PATH = _PROJECT_ROOT / "data" / "competition_benchmark.json"
+_BENCHMARK_PATH = _PROJECT_ROOT / "evals" / "competition_benchmark.json"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
@@ -42,6 +42,16 @@ def benchmark_case_count(benchmark: Mapping[str, Any]) -> int:
         * len(benchmark.get("adaptation_topics") or ())
         + len(benchmark.get("job_scenarios") or ())
         + len(benchmark.get("feedback_actions") or ())
+    )
+
+
+def scientific_domain_case_count(benchmark: Mapping[str, Any]) -> int:
+    """Count actual domain questions, excluding the out-of-domain refusal guard."""
+
+    return sum(
+        str(case.get("behavior") or "") != "honest_refusal"
+        for case in benchmark.get("scientific_cases") or ()
+        if isinstance(case, Mapping)
     )
 
 
@@ -574,21 +584,83 @@ def evaluate_real_knowledge_coverage(
     }
 
 
+def evaluate_scientific_case_grounding(
+    builder: Any,
+    cases: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Verify that every domain case names real, source-mapped canonical concepts.
+
+    This is a benchmark-authenticity check, not an answer correctness shortcut.
+    The runtime still has to retrieve evidence, pass Reviewer and satisfy the
+    per-case scientific assertions independently.
+    """
+
+    from dy3_polaris.l3.concept_foundation import build_concept_foundation
+
+    store = getattr(getattr(builder, "_l3_router", None), "_store", None)
+    if store is None:
+        raise RuntimeError("loaded L3 store is unavailable")
+    foundation = build_concept_foundation(store)
+    source_backed = {
+        mapping.concept_id for mapping in foundation.evidence_mappings
+    }
+    details: list[dict[str, Any]] = []
+    for case in cases:
+        behavior = str(case.get("behavior") or "")
+        concept_ids = [str(item) for item in case.get("concept_ids") or ()]
+        missing = [item for item in concept_ids if item not in foundation.concepts]
+        without_source = [
+            item for item in concept_ids
+            if item in foundation.concepts and item not in source_backed
+        ]
+        if behavior == "honest_refusal":
+            passed = not concept_ids
+        else:
+            passed = bool(concept_ids and not missing and not without_source)
+        details.append({
+            "case_id": str(case.get("case_id") or ""),
+            "behavior": behavior,
+            "concept_ids": concept_ids,
+            "missing_concept_ids": missing,
+            "concept_ids_without_source_candidates": without_source,
+            "pass": passed,
+        })
+    passed = sum(bool(item["pass"]) for item in details)
+    return {
+        "semantics": (
+            "each in-domain benchmark question is bound to canonical concepts "
+            "that have real DocumentChunk evidence candidates; this does not "
+            "pre-approve the answer"
+        ),
+        "total_cases": len(details),
+        "domain_cases": sum(
+            item["behavior"] != "honest_refusal" for item in details
+        ),
+        "grounded_cases": passed,
+        "pass": passed == len(details) and bool(details),
+        "details": details,
+    }
+
+
 def evaluate_case_volume(
     benchmark: Mapping[str, Any],
     contract: Mapping[str, Any],
 ) -> dict[str, Any]:
     count = benchmark_case_count(benchmark)
     minimum = int(contract["minimum_case_count"])
+    domain_count = scientific_domain_case_count(benchmark)
+    minimum_domain = int(contract.get("minimum_scientific_case_count", minimum))
     return {
         "case_count": count,
         "minimum": minimum,
         "scientific_cases": len(benchmark["scientific_cases"]),
+        "scientific_domain_cases": domain_count,
+        "minimum_scientific_domain_cases": minimum_domain,
         "adaptation_cases": len(benchmark["learner_profiles"])
         * len(benchmark["adaptation_topics"]),
         "job_task_cases": len(benchmark["job_scenarios"]),
         "feedback_loop_cases": len(benchmark["feedback_actions"]),
-        "pass": count >= minimum,
+        "pass": count >= minimum and domain_count >= minimum_domain,
     }
 
 
@@ -629,6 +701,9 @@ def main() -> int:
         )
         feedback = evaluate_feedback_loop(client, feedback_cases)
         coverage = evaluate_real_knowledge_coverage(builder, contract)
+        benchmark_grounding = evaluate_scientific_case_grounding(
+            builder, scientific_cases
+        )
     finally:
         client.close()
         temporary.cleanup()
@@ -642,6 +717,7 @@ def main() -> int:
         and job_fit["pass"]
         and feedback["pass"]
         and coverage["pass"]
+        and benchmark_grounding["pass"]
     )
     report = {
         "benchmark_id": benchmark["benchmark_id"],
@@ -657,9 +733,13 @@ def main() -> int:
             "job_task_fit": job_fit,
             "feedback_decision_loop": feedback,
             "knowledge_coverage": coverage,
+            "scientific_case_grounding": benchmark_grounding,
         },
         "limitations": [
             "Concept source coverage means a real chunk mentions the term; it is not direct claim support.",
+            "The 3 learner profiles are synthetic teaching priors, not real people or observed mastery.",
+            "The 50 in-domain questions are real domain tasks; the additional refusal case is an out-of-domain safety guard.",
+            "Automated hallucination rate measures unsafe public release; expert scientific adjudication is still required.",
             "Declared background is a low-confidence prior and does not masquerade as demonstrated mastery.",
             "Resource self-report changes future teaching strategy but never updates BKT/IRT mastery.",
             "A quick run is smoke evidence only and cannot satisfy the 50-case requirement.",
@@ -673,7 +753,9 @@ def main() -> int:
     print(json.dumps({
         "official_full_run": official,
         "case_count": official_volume["case_count"],
+        "scientific_domain_cases": official_volume["scientific_domain_cases"],
         "scientific_pass": scientific["pass"],
+        "scientific_case_grounding": benchmark_grounding["pass"],
         "learner_resource_fit": adaptation["learner_resource_fit_accuracy"],
         "feedback_loop_pass": feedback["pass"],
         "curriculum_source_coverage": coverage["curriculum_source_candidate_coverage"],

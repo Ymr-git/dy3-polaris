@@ -19,10 +19,16 @@ def test_benchmark_contains_three_profiles_and_at_least_fifty_real_cases() -> No
 
     assert len(benchmark["learner_profiles"]) >= 3
     assert competition_eval.benchmark_case_count(benchmark) >= 50
-    assert len(benchmark["scientific_cases"]) >= 20
+    assert competition_eval.scientific_domain_case_count(benchmark) >= 50
+    assert len(benchmark["scientific_cases"]) >= 51
     assert len(benchmark["adaptation_topics"]) >= 8
     assert len(benchmark["job_scenarios"]) >= 3
     assert len(benchmark["feedback_actions"]) >= 4
+    for case in benchmark["scientific_cases"]:
+        if case["behavior"] == "honest_refusal":
+            assert case["concept_ids"] == []
+        else:
+            assert case["concept_ids"]
 
 
 def test_refuse_everything_cannot_pass_scientific_readiness() -> None:
@@ -84,6 +90,13 @@ def test_coverage_uses_loaded_chunks_and_new_curriculum_not_placeholder_nodes() 
     assert result["source_backed_curriculum_kps"] == 45
     assert result["curriculum_source_candidate_coverage"] >= 0.90
     assert "placeholder" in result["coverage_semantics"]
+
+    grounding = competition_eval.evaluate_scientific_case_grounding(
+        builder, benchmark["scientific_cases"]
+    )
+    assert grounding["domain_cases"] >= 50
+    assert grounding["grounded_cases"] == len(benchmark["scientific_cases"])
+    assert grounding["pass"] is True
 
 
 def test_job_task_fit_requires_real_four_agent_public_trace() -> None:

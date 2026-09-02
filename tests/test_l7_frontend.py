@@ -71,13 +71,43 @@ class TestStaticFrontend:
         assert "LEARNER_NAV" in resp.text or "LN=" in resp.text or "var LN=" in resp.text  # 角色导航
 
     def test_model_settings_use_current_deepseek_ids_and_do_not_persist_secrets(self, client):
+        html = client.get("/").text
+        app_js = client.get("/static/assets/app.js").text
         js = client.get("/static/assets/mf6-features.js").text
+        canvases = client.get("/static/assets/product-canvases.js").text
 
-        assert "deepseek-v4-flash" in js
+        assert 'id="settingsBtn"' in html
+        assert "模型配置" in html
+        assert "aria-haspopup=\"dialog\"" in html
+        assert "deepseek-v4-pro" in js
         assert "deepseek-chat" not in js
         assert "deepseek-r1" not in js
         assert "localStorage.setItem('dy3_api_key'" not in js
         assert "localStorage.getItem('dy3_api_key'" not in js
+        for provider in ("DeepSeek", "通义千问", "智谱 GLM", "Kimi"):
+            assert provider in js
+        assert "/api/llm/config/test" in js
+        assert "fetch(form.base_url" not in js
+        assert "'Authorization': 'Bearer ' + form.api_key" not in js
+        assert "dy3-open-model-config" in app_js
+        assert "dy3-open-model-config" in js
+        assert "dy3-open-model-config" in canvases
+
+    def test_model_config_api_reports_four_routes_without_cleartext_keys(self, client):
+        response = client.get("/api/llm/config")
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert set(data["providers"]) == {"deepseek", "qwen", "zhipu", "kimi"}
+        assert data["role_routes"] == {
+            "semantic_fast": "qwen",
+            "generation_fast": "qwen",
+            "generation_long": "kimi",
+            "generation_deep": "deepseek",
+            "review": "zhipu",
+        }
+        rendered = response.text.lower()
+        assert '"api_key"' not in rendered
+        assert "authorization" not in rendered
 
     def test_sidebar_width_ratio_css(self, client):
         """侧栏 ≤ 1/5 屏宽约束: 检查 CSS 变量或宽度约束."""
@@ -534,6 +564,13 @@ class TestStaticFrontend:
         assert "dy3_pending_query" in canvas
         assert "/api/learning/resources/interact" in features
 
+    def test_task_canvas_formats_structured_guidance_and_independent_relations(self, client):
+        canvas = client.get("/static/assets/product-canvases.js").text
+        assert "function recommendedStepLabel" in canvas
+        assert "String(path[0])" not in canvas
+        assert "pc-mechanism-relation" in canvas
+        assert "independent branches cannot become a false mechanism chain" in canvas
+
     def test_growth_canvas_does_not_invent_personal_path_for_unknown_learner(self, client):
         canvas = client.get("/static/assets/product-canvases.js").text
         assert "hasLearnerEvidence" in canvas
@@ -577,7 +614,8 @@ class TestStaticFrontend:
         assert "guided.lesson_sequence" in js
         assert "t1-lesson-sequence" in js
         assert "t1-lesson-appendix" in js
-        assert "检查理解" in js
+        assert "启发式追问" in js
+        assert "llm_reviewed_socratic" in js
         assert ".t1-lesson-sequence" in css
         assert ".t1-lesson-appendix" in css
 
@@ -666,6 +704,23 @@ class TestStaticFrontend:
         assert "DELETE" in workspace
         assert "/api/user-understanding/profile?learner_id=" in workspace
         assert "不会创建默认背景" in workspace
+
+    def test_factual_overview_uses_authoritative_unknown_and_profile_plan_loop(self, client):
+        canvas = client.get("/static/assets/product-canvases.js").text
+        css = client.get("/static/assets/app.css").text
+        assert "hasModelState" in canvas
+        assert "profile.level" in canvas
+        assert "hasModelState ? profile.level" in canvas
+        assert "initial_profile_analysis" in canvas
+        assert "初始教学方案比较" in canvas
+        assert "data-pc-profile-editor" in canvas
+        assert "/api/user-understanding/answer" in canvas
+        assert "/api/user-understanding/profile?learner_id=" in canvas
+        assert "dy3_practice_attempt_purpose" in canvas
+        assert "DIAGNOSTIC" in canvas
+        assert "data-pc-route=\"settings\">编辑" not in canvas
+        assert ".pc-profile-dialog" in css
+        assert ".pc-plan-grid" in css
 
     def test_t1_task_fact_flow_never_counts_non_agent_trace_actors(self, client):
         js = client.get("/static/assets/mf6-features.js").text

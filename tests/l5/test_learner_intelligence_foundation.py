@@ -22,6 +22,7 @@ from dy3_polaris.l5.learner_foundation import (
     LearnerLifecycleStage,
     LearnerPersonaPrototype,
     PersonalLearnerModel,
+    build_initial_teaching_profile_candidates,
     build_persona_prototype,
 )
 from dy3_polaris.l5.learner_intelligence import build_learner_intelligence_view
@@ -114,6 +115,41 @@ def test_unknown_learner_has_no_fake_persona_or_mastery() -> None:
     assert model.model_state_available is False
     assert model.diagnostic.needed is True
     assert decision.content_depth == "foundation"
+    assert view.models["mastery"].value == {}
+
+    candidates = build_initial_teaching_profile_candidates(model, decision)
+    assert len(candidates) == 3
+    selected = next(item for item in candidates if item.selected)
+    assert selected.candidate_id == "foundation_scaffold"
+    assert selected.evidence_basis == "UNKNOWN"
+    assert selected.diagnostic_required is True
+    assert all(item.fit_score < 1.0 for item in candidates)
+    assert all("mastery" not in item.evidence_basis.lower() for item in candidates)
+
+
+def test_declared_research_prior_selects_a_plan_without_claiming_mastery() -> None:
+    understanding = UserUnderstandingService()
+    _declare(
+        understanding,
+        "r09-plan-research",
+        learning_stage="科研人员",
+        professional_background="材料科学",
+        domain_experience="有科研经历",
+        learning_goal="阅读科研证据",
+        representation_preference="论文证据",
+    )
+    view = _view(
+        {"learner_id": "r09-plan-research", "query": "解释Dy³⁺浓度猝灭机制"},
+        AgentDependencies(user_understanding_service=understanding),
+    )
+    model = view.value("derived_context", "personal_learner_model")
+    decision = view.value("derived_context", "adaptive_teaching_decision")
+    candidates = build_initial_teaching_profile_candidates(model, decision)
+
+    selected = next(item for item in candidates if item.selected)
+    assert selected.candidate_id == "research_evidence"
+    assert selected.evidence_basis == "DECLARED_PRIOR"
+    assert model.model_state_available is False
     assert view.models["mastery"].value == {}
 
 

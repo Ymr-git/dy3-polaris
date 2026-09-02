@@ -85,7 +85,10 @@
   function prettyState(value) {
     var state = String(value || 'UNKNOWN').toUpperCase();
     return {
-      COMPLETED: '已完成', RUNNING: '进行中', UNKNOWN: '尚未知',
+       COMPLETED: '已完成', RUNNING: '进行中', UNKNOWN: '尚未知',
+       UNKNOWN_LEARNER: '尚未完成诊断', INITIAL_UNDERSTANDING: '初步认识中',
+       INITIAL_LEARNER_MODEL: '初始模型', ADAPTIVE_UNDERSTANDING: '动态理解中',
+       PERSONALIZED_TEACHING: '个性化教学中', LONG_TERM_COMPANION: '持续学习中',
       EVIDENCE_BACKED: '证据充分', MODEL_ONLY: '模型推断',
       MASTERED: '已掌握', LEARNING: '学习中', LEARNING_GAP: '待学习',
       FULL_RELEASE: '完整发布', LIMITED_RELEASE: '限制发布', APPROVED: '通过',
@@ -135,7 +138,9 @@
   function sourceClassLabel(value) {
     var key = String(value || '').toUpperCase();
     return {
-      OBSERVED: '真实作答', MODEL_INFERRED: '模型推断', DERIVED: '系统计算',
+       OBSERVED: '真实作答', MODEL_INFERRED: '模型推断', DERIVED: '系统计算',
+       OBSERVED_AND_MODEL_INFERRED: '真实作答与模型状态',
+       DECLARED_PRIOR: '自愿声明先验',
       AUTHORED_PRACTICE_BANK: '已编写题库',
       'MODEL_INFERRED+AUTHORED_PRACTICE_BANK': '模型判断与已编写题库',
       UNKNOWN: '尚无数据'
@@ -173,6 +178,17 @@
     if (!key || key === 'NONE' || key === 'UNKNOWN') return '';
     return prettyState(value);
   }
+  function recommendedStepLabel(step) {
+    if (!step) return '';
+    if (typeof step === 'string') return step;
+    var item = object(step);
+    var action = {
+      learn: '学习', review: '复习', practice: '练习', diagnose: '诊断',
+      deepen: '深入', challenge: '挑战', remediate: '补足'
+    }[String(item.action || '').toLowerCase()] || '';
+    var target = item.topic || item.title || item.concept_name || item.kp_name || item.kp_id || item.next_action || '';
+    return [action, target].filter(Boolean).join('：');
+  }
   function contributionSummary(agentId, entries, data) {
     if (!entries.length) return '本次没有公开贡献';
     if (agentId === 'agent.learning.diagnosis') {
@@ -189,7 +205,8 @@
       return review.reason || review.message || ('审核结果：' + prettyState(review.verdict || review.status));
     }
     var path = array(data.recommended_path);
-    return path.length ? '形成下一步学习建议：' + String(path[0]) : '形成下一步教学决策';
+    var nextStep = path.length ? recommendedStepLabel(path[0]) : '';
+    return nextStep ? '下一步：' + nextStep : '形成下一步教学决策';
   }
   function statusClass(value) {
     var state = String(value || '').toUpperCase();
@@ -296,17 +313,157 @@
       var lid = learnerId();
       role.innerHTML = icon('agents') + '<span><small>当前学习者</small><strong>' + esc(shortId(lid)) + '</strong></span>';
       if (!role.getAttribute('data-pc-bound')) {
-        role.setAttribute('data-pc-bound', '1');
-        role.addEventListener('click', function () {
-          if (window.S && window.S.tk) { if (window.sv) window.sv('settings'); }
-          else if (window.olv) window.olv();
-        });
+       role.setAttribute('data-pc-bound', '1');
+       role.addEventListener('click', function () {
+          if (window.sv) window.sv('overview');
+          setTimeout(function () {
+            d.dispatchEvent(new CustomEvent('dy3-open-learner-profile'));
+          }, 20);
+       });
       }
+    }
+    var modelConfig = d.getElementById('settingsBtn');
+    if (modelConfig && !modelConfig.getAttribute('data-pc-bound')) {
+      modelConfig.setAttribute('data-pc-bound', '1');
+      modelConfig.addEventListener('click', function () {
+        modelConfig.setAttribute('aria-expanded', 'true');
+        d.dispatchEvent(new CustomEvent('dy3-open-model-config'));
+      });
     }
     var navIcons = { overview: 'overview', query: 'task', 'agents-chain': 'agents', kb: 'knowledge', 'learn-weak': 'growth' };
     d.querySelectorAll('.topnav-item[data-view]').forEach(function (button) {
       var holder = button.querySelector('.td-icon');
       if (holder && navIcons[button.getAttribute('data-view')]) holder.innerHTML = icon(navIcons[button.getAttribute('data-view')]);
+    });
+  }
+
+  function canonicalDeclared(value, type) {
+    var text = String(value || '').trim().toLowerCase();
+    if (type === 'stage') {
+      if (/本科|undergraduate/.test(text)) return '本科阶段';
+      if (/研究生|硕士|graduate|master/.test(text)) return '研究生阶段';
+      if (/博士|phd/.test(text)) return '博士阶段';
+      if (/科研|researcher/.test(text)) return '科研人员';
+      if (/行业|professional/.test(text)) return '行业从业者';
+    }
+    if (type === 'experience') {
+      if (/刚开始|introductory/.test(text)) return '刚开始了解';
+      if (/课程|coursework/.test(text)) return '修过相关课程';
+      if (/实验|lab/.test(text)) return '有实验经历';
+      if (/科研|research/.test(text)) return '有科研经历';
+      if (/行业|industry/.test(text)) return '有行业经历';
+    }
+    if (type === 'representation') {
+      if (/visual|图/.test(text)) return '图示与关系';
+      if (/evidence|论文|证据/.test(text)) return '论文证据';
+      if (/practice|实验|案例/.test(text)) return '实践案例';
+      if (/structured|文字|结构/.test(text)) return '结构化文字';
+    }
+    return value || '';
+  }
+
+  function option(value, label, current) {
+    return '<option value="' + attr(value) + '"' + (String(current || '') === String(value) ? ' selected' : '') + '>' + esc(label) + '</option>';
+  }
+
+  function startRealDiagnostic(ctx, close) {
+    var ws = object(ctx.workspace);
+    var practice = array(ws.quick_actions).filter(function (item) {
+      return item && item.action_type === 'PRACTICE' && item.status === 'AVAILABLE';
+    })[0] || {};
+    var context = object(practice.context);
+    var kpIds = String(context.kp_ids || '').split(',').filter(Boolean);
+    try {
+      sessionStorage.setItem('dy3_practice_attempt_purpose', 'DIAGNOSTIC');
+      if (kpIds.length) sessionStorage.setItem('dy3_practice_target_kps', JSON.stringify(kpIds));
+    } catch (ignore) {}
+    if (close) close();
+    if (window.sv) window.sv('practice');
+  }
+
+  function openLearnerProfileDialog(ctx, onChanged) {
+    var old = d.getElementById('pcLearnerProfileDialog');
+    if (old) old.remove();
+    var summary = object(object(ctx.workspace).learner_summary);
+    var declared = object(summary.declared_background);
+    var stage = canonicalDeclared(declared.learning_stage, 'stage');
+    var experience = canonicalDeclared(declared.domain_experience, 'experience');
+    var representation = canonicalDeclared(declared.representation_preference, 'representation');
+    var overlay = d.createElement('div');
+    overlay.id = 'pcLearnerProfileDialog';
+    overlay.className = 'pc-profile-dialog';
+    overlay.innerHTML = '<section role="dialog" aria-modal="true" aria-labelledby="pcProfileTitle"><header><div><span>初始学情</span><h2 id="pcProfileTitle">完善学习背景</h2></div><button type="button" data-pc-dialog-close aria-label="关闭">×</button></header>' +
+      '<p class="pc-dialog-intro">字段均可跳过；这里保存的是声明先验，掌握度只由真实作答和模型对齐产生。</p>' +
+      '<div class="pc-profile-form"><label><span>学习或工作阶段</span><select id="pcProfileStage">' + option('', '不填写', stage) + option('本科阶段', '本科阶段', stage) + option('研究生阶段', '研究生阶段', stage) + option('博士阶段', '博士阶段', stage) + option('科研人员', '科研人员', stage) + option('行业从业者', '行业从业者', stage) + '</select></label>' +
+      '<label><span>专业背景</span><input id="pcProfileMajor" maxlength="120" value="' + attr(declared.professional_background || '') + '" placeholder="如：材料科学、物理/光学、光电照明"></label>' +
+      '<label><span>领域经历</span><select id="pcProfileExperience">' + option('', '不填写', experience) + option('刚开始了解', '刚开始了解', experience) + option('修过相关课程', '修过相关课程', experience) + option('有实验经历', '有实验经历', experience) + option('有科研经历', '有科研经历', experience) + option('有行业经历', '有行业经历', experience) + '</select></label>' +
+      '<label><span>当前学习目标</span><input id="pcProfileGoal" maxlength="120" value="' + attr(declared.learning_goal || '') + '" placeholder="如：理解Dy³⁺白光调控与健康照明评价"></label>' +
+      '<label class="pc-profile-wide"><span>偏好的学习呈现</span><select id="pcProfileRepresentation">' + option('', '不填写', representation) + option('结构化文字', '结构化文字', representation) + option('图示与关系', '图示与关系', representation) + option('论文证据', '论文证据', representation) + option('实践案例', '实践案例', representation) + '</select></label></div>' +
+      '<div id="pcProfileFeedback" class="pc-profile-feedback" aria-live="polite"></div>' +
+      '<footer><button type="button" class="pc-danger-link" id="pcProfileClear">清除自愿信息</button><div><button type="button" class="pc-secondary" id="pcProfileDiagnostic">开始真实诊断</button><button type="button" class="pc-primary" id="pcProfileSave">保存并生成初始方案</button></div></footer></section>';
+    d.body.appendChild(overlay);
+    function close() { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+    overlay.querySelector('[data-pc-dialog-close]').addEventListener('click', close);
+    overlay.addEventListener('click', function (event) { if (event.target === overlay) close(); });
+    var diagnostic = overlay.querySelector('#pcProfileDiagnostic');
+    diagnostic.addEventListener('click', function () { startRealDiagnostic(ctx, close); });
+    var save = overlay.querySelector('#pcProfileSave');
+    save.addEventListener('click', function () {
+      var fields = [
+        ['learning_stage', overlay.querySelector('#pcProfileStage').value],
+        ['professional_background', overlay.querySelector('#pcProfileMajor').value],
+        ['domain_experience', overlay.querySelector('#pcProfileExperience').value],
+        ['learning_goal', overlay.querySelector('#pcProfileGoal').value],
+        ['representation_preference', overlay.querySelector('#pcProfileRepresentation').value]
+      ].filter(function (item) { return String(item[1] || '').trim(); });
+      var feedback = overlay.querySelector('#pcProfileFeedback');
+      if (!fields.length) { feedback.textContent = '没有填写内容；系统会继续保持未知状态。'; return; }
+      save.disabled = true;
+      feedback.textContent = '正在保存…';
+      Promise.all(fields.map(function (item) {
+        return apiReq('POST', '/api/user-understanding/answer', {
+          learner_id: ctx.learnerId,
+          payload: { slot_key: item[0], value: String(item[1]).trim() }
+        });
+      })).then(function () {
+        invalidate();
+        feedback.textContent = '已保存。初始方案将由Learner Intelligence重新比较。';
+        setTimeout(function () { close(); if (onChanged) onChanged(); }, 260);
+      }).catch(function (error) {
+        feedback.textContent = (error && error.message) || '保存失败。';
+        save.disabled = false;
+      });
+    });
+    var clear = overlay.querySelector('#pcProfileClear');
+    clear.addEventListener('click', function () {
+      var feedback = overlay.querySelector('#pcProfileFeedback');
+      clear.disabled = true;
+      apiReq('DELETE', '/api/user-understanding/profile?learner_id=' + encodeURIComponent(ctx.learnerId)).then(function () {
+        invalidate();
+        feedback.textContent = '自愿信息已清除；真实任务与作答记录未删除。';
+        setTimeout(function () { close(); if (onChanged) onChanged(); }, 260);
+      }).catch(function (error) {
+        feedback.textContent = (error && error.message) || '清除失败。';
+        clear.disabled = false;
+      });
+    });
+  }
+
+  function renderInitialProfileAnalysis(analysis) {
+    var data = object(analysis);
+    var candidates = array(data.candidates);
+    if (!candidates.length) return '';
+    var basis = sourceClassLabel(data.evidence_basis || 'UNKNOWN');
+    var cards = candidates.map(function (item) {
+      var rationale = array(item.rationale)[0] || '等待更多学习者证据';
+      return '<article class="pc-plan-candidate' + (item.selected ? ' is-selected' : '') + '"><header><span>' + esc(teachingLabel(item.content_depth)) + '</span>' + (item.selected ? '<em>当前采用</em>' : '') + '</header><strong>' + esc(item.label) + '</strong><p>' + esc(rationale) + '</p><div><i style="--fit:' + Math.round(clamp(item.fit_score, 0, 1) * 100) + '%"></i></div><small>方案匹配 ' + Math.round(clamp(item.fit_score, 0, 1) * 100) + '%</small></article>';
+    }).join('');
+    return '<section class="pc-panel pc-initial-plans"><div class="pc-panel-head"><div><h2>初始教学方案比较</h2><p>同一事实边界下比较解释深度与呈现方式</p></div><span class="pc-status ' + (data.evidence_basis === 'UNKNOWN' ? 'is-unknown' : 'is-learning') + '">' + esc(basis) + '</span></div><div class="pc-plan-grid">' + cards + '</div><footer><span>' + (data.status === 'DIAGNOSTIC_REQUIRED' ? '需用真实题库校准' : '已随真实学习证据调整') + '</span><button data-pc-profile-editor>调整背景</button></footer></section>';
+  }
+
+  function bindLearnerProfileEntry(root, ctx, rerender) {
+    root.querySelectorAll('[data-pc-profile-editor]').forEach(function (button) {
+      button.addEventListener('click', function () { openLearnerProfileDialog(ctx, rerender); });
     });
   }
 
@@ -355,20 +512,22 @@
       var ws = object(ctx.workspace);
       var profile = object(ctx.profile);
       var match = object(ctx.match);
-      var report = object(match.report);
-      var summary = object(ws.learner_summary);
-      var declared = object(summary.declared_background);
-      var coverage = array(ws.capability_coverage);
-      var groups = groupConcepts(coverage, profile);
-      var findings = array(report.findings);
-      var mastery = object(profile.kp_mastery);
+       var report = object(match.report);
+       var summary = object(ws.learner_summary);
+       var declared = object(summary.declared_background);
+       var hasModelState = Number(summary.modelled_kp_count || 0) > 0;
+       var stateProfile = hasModelState ? profile : { kp_mastery: {}, kp_names: {} };
+       var coverage = array(ws.capability_coverage);
+       var groups = groupConcepts(coverage, stateProfile);
+       var findings = array(report.findings);
+       var mastery = hasModelState ? object(profile.kp_mastery) : {};
       var masteryValues = Object.keys(mastery).map(function (key) { return Number(mastery[key]); });
       var counts = {
         mastered: masteryValues.filter(function (value) { return value >= 0.75; }).length,
         learning: masteryValues.filter(function (value) { return value > 0 && value < 0.75; }).length,
         unknown: Math.max(0, coverage.length - masteryValues.length)
       };
-      var level = declared.learning_stage || profile.level || (summary.evidence_status === 'UNKNOWN' ? '尚未完成诊断' : '未标注');
+       var level = declared.learning_stage || (hasModelState ? profile.level : '') || prettyState(ws.lifecycle_stage || 'UNKNOWN_LEARNER');
       var goal = declared.learning_goal || '尚未填写学习目标';
       var next = object(report.next_action);
       var nextLabel = next.reason || object(ws.current_challenge_decision).reason || '完成一次真实作答后生成下一步建议';
@@ -385,20 +544,25 @@
       if (!declared.learning_goal) missing.push('学习目标');
       var resume = ctx.taskData ? '<button class="pc-primary" data-pc-route="query">继续上次任务 ' + icon('arrow') + '</button>' : '<button class="pc-primary" data-pc-route="query">开始学习 ' + icon('arrow') + '</button>';
 
-      container.innerHTML = '<article class="pc-page pc-overview-page">' +
-        '<header class="pc-page-title"><div><h1>学习总览</h1></div></header>' +
-        '<div class="pc-overview-grid"><main>' +
-        '<section class="pc-profile-strip"><div class="pc-avatar">' + esc(String(ctx.learnerId).slice(0, 1).toUpperCase()) + '</div><div class="pc-profile-name"><strong>' + esc(shortId(ctx.learnerId)) + '</strong><span>' + esc(level) + '</span></div><div class="pc-profile-goal"><span>' + icon('target') + '</span><div><small>当前学习目标</small><strong>' + esc(goal) + '</strong></div></div>' + resume + '</section>' +
-        '<section class="pc-panel pc-mastery-map"><div class="pc-panel-head"><div><h2>概念掌握图谱</h2></div><div class="pc-legend"><span class="mastered">已掌握</span><span class="learning">学习中</span><span class="gap">需补强</span><span class="unknown">待诊断</span></div></div>' + renderConceptOverview(groups) + '</section>' +
+       container.innerHTML = '<article class="pc-page pc-overview-page">' +
+         '<header class="pc-page-title"><div><h1>学习总览</h1></div></header>' +
+         '<div class="pc-overview-grid"><main>' +
+         '<section class="pc-profile-strip"><button class="pc-avatar" data-pc-profile-editor aria-label="完善学习背景">' + esc(String(ctx.learnerId).slice(0, 1).toUpperCase()) + '</button><div class="pc-profile-name"><strong>' + esc(shortId(ctx.learnerId)) + '</strong><span>' + esc(level) + '</span></div><div class="pc-profile-goal"><span>' + icon('target') + '</span><div><small>当前学习目标</small><strong>' + esc(goal) + '</strong></div></div>' + resume + '</section>' +
+         renderInitialProfileAnalysis(ws.initial_profile_analysis) +
+         '<section class="pc-panel pc-mastery-map"><div class="pc-panel-head"><div><h2>概念掌握图谱</h2></div><div class="pc-legend"><span class="mastered">已掌握</span><span class="learning">学习中</span><span class="gap">需补强</span><span class="unknown">待诊断</span></div></div>' + renderConceptOverview(groups) + '</section>' +
         '<section class="pc-panel pc-recent-table"><div class="pc-panel-head"><div><h2>最近学习</h2></div></div><div class="pc-table-wrap"><table><thead><tr><th>时间</th><th>任务 / 问题</th><th>结果</th><th></th></tr></thead><tbody>' + taskRows + '</tbody></table></div></section>' +
         '</main><aside class="pc-overview-rail">' +
         '<section class="pc-panel"><div class="pc-panel-head"><h2>当前学习状态</h2></div><div class="pc-state-sources"><div><span class="pc-round is-ok">' + icon('check') + '</span><p><strong>已掌握</strong><small>模型记录达到阈值</small></p><em>' + counts.mastered + ' 个</em></div><div><span class="pc-round is-learning">' + icon('growth') + '</span><p><strong>学习中</strong><small>已有模型记录但未稳定</small></p><em>' + counts.learning + ' 个</em></div><div><span class="pc-round is-unknown">?</span><p><strong>尚未知</strong><small>没有足够真实作答</small></p><em>' + counts.unknown + ' 个</em></div></div></section>' +
         '<section class="pc-panel"><div class="pc-panel-head"><h2>薄弱点</h2><small>' + findings.length + ' 项判断</small></div><ul class="pc-weak-list">' + weaknesses + '</ul></section>' +
         '<section class="pc-panel pc-next-card"><div class="pc-panel-head"><h2>下一步</h2></div><span>推荐行动</span><strong>' + esc(next.type || object(ws.current_challenge_decision).decision || 'DIAGNOSE_FIRST') + '</strong><p>' + esc(nextLabel) + '</p><button class="pc-primary" data-pc-route="' + (next.type === 'PRACTICE' ? 'practice' : 'query') + '">进入学习 ' + icon('arrow') + '</button></section>' +
-        '<section class="pc-panel pc-missing-card"><div class="pc-panel-head"><h2>需要确认的信息</h2><button data-pc-route="settings">编辑</button></div>' + (missing.length ? '<ul>' + missing.map(function (item) { return '<li><span>' + esc(item) + '</span><em>尚未填写</em></li>'; }).join('') + '</ul>' : '<p class="pc-success-copy">自愿背景字段已填写；仍会与真实作答分开解释。</p>') + '</section>' +
-        '</aside></div></article>';
-      normalizeScientificText(container);
-      bindRoutes(container);
+         '<section class="pc-panel pc-missing-card"><div class="pc-panel-head"><h2>需要确认的信息</h2><button data-pc-profile-editor>编辑</button></div>' + (missing.length ? '<ul>' + missing.map(function (item) { return '<li><span>' + esc(item) + '</span><em>尚未填写</em></li>'; }).join('') + '</ul>' : '<p class="pc-success-copy">自愿背景已填写</p>') + '<button class="pc-secondary pc-diagnostic-button" data-pc-diagnostic>真实题库诊断</button></section>' +
+         '</aside></div></article>';
+       normalizeScientificText(container);
+       bindRoutes(container);
+       bindLearnerProfileEntry(container, ctx, function () { renderOverview(container); });
+       container.querySelectorAll('[data-pc-diagnostic]').forEach(function (button) {
+         button.addEventListener('click', function () { startRealDiagnostic(ctx); });
+       });
     }).catch(function (error) {
       container.innerHTML = '<div class="pc-page pc-error"><h1>学习总览</h1><p>' + esc(error.message || '学习状态暂不可用') + '</p><button class="pc-primary" data-pc-route="query">仍可发起任务</button></div>';
       bindRoutes(container);
@@ -440,10 +604,13 @@
       array(data.sources).forEach(function (source) { array(source.kp_names).forEach(function (name) { if (names.indexOf(name) < 0) names.push(name); }); });
       return names.length ? '<div class="pc-related-concepts">' + names.slice(0, 5).map(function (name) { return '<span>' + esc(name) + '</span>'; }).join('') + '</div>' : '<div class="pc-empty-state">当前任务没有可公开的机制关系。</div>';
     }
-    return '<div class="pc-mechanism-flow">' + edges.slice(0, 4).map(function (edge, index) {
+    /* A Concept Relation payload is a graph, not an implicit sequence.  Each
+       edge is rendered as its own source-relation-target statement so that
+       independent branches cannot become a false mechanism chain. */
+    return '<div class="pc-mechanism-flow">' + edges.slice(0, 4).map(function (edge) {
       var source = byId[String(edge.source)] || {};
       var target = byId[String(edge.target)] || {};
-      return (index ? '' : '<article><span>起点</span><strong>' + esc(source.name || edge.source) + '</strong></article>') + '<div class="pc-relation-arrow"><em>' + esc(edge.relation_type || 'related') + '</em>' + icon('arrow') + '</div><article><span>' + esc(target.role || 'Concept') + '</span><strong>' + esc(target.name || edge.target) + '</strong></article>';
+      return '<article class="pc-mechanism-relation"><div><span>Concept</span><strong>' + esc(source.name || edge.source) + '</strong></div><div class="pc-relation-arrow"><em>' + esc(edge.relation_type || 'related') + '</em>' + icon('arrow') + '</div><div><span>' + esc(target.role || 'Concept') + '</span><strong>' + esc(target.name || edge.target) + '</strong></div></article>';
     }).join('') + '</div>';
   }
   function publicClaims(data) {
@@ -781,6 +948,14 @@
 
   d.addEventListener('sidebar-rebuilt', function () { setTimeout(bindShell, 0); });
   d.addEventListener('view-rendered', function () { setTimeout(bindShell, 0); });
+  d.addEventListener('dy3-open-learner-profile', function () {
+    loadTruth(true).then(function (ctx) {
+      openLearnerProfileDialog(ctx, function () {
+        var content = d.getElementById('content');
+        if (content && content.querySelector('.pc-overview-page')) renderOverview(content);
+      });
+    });
+  });
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', bindShell);
   else bindShell();
 })();

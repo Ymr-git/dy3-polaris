@@ -1,0 +1,148 @@
+{
+  "benchmark_id": "dy3-polaris-competition-v3",
+  "version": "3.0.0",
+  "metric_contract": {
+    "hallucination_rate_target": 0.05,
+    "answer_availability_target": 0.85,
+    "learner_resource_fit_target": 0.85,
+    "job_task_fit_target": 0.85,
+    "curriculum_source_coverage_target": 0.90,
+    "minimum_case_count": 50,
+    "minimum_scientific_case_count": 50
+  },
+  "learner_profiles": [
+    {
+      "profile_id": "foundation_cross_domain",
+      "declared": {
+        "learning_stage": "本科阶段",
+        "learning_goal": "理解基础概念",
+        "professional_background": "跨专业",
+        "domain_experience": "刚开始了解",
+        "representation_preference": "structured_text"
+      },
+      "allowed_depths": ["foundation", "beginner"],
+      "required_representation": "structured_text"
+    },
+    {
+      "profile_id": "graduate_materials",
+      "declared": {
+        "learning_stage": "研究生阶段",
+        "learning_goal": "分析材料机理",
+        "professional_background": "材料科学",
+        "domain_experience": "修过相关课程",
+        "representation_preference": "concept_path"
+      },
+      "allowed_depths": ["intermediate"],
+      "required_representation": "concept_path"
+    },
+    {
+      "profile_id": "research_evidence",
+      "declared": {
+        "learning_stage": "科研人员",
+        "learning_goal": "阅读科研证据",
+        "professional_background": "材料科学",
+        "domain_experience": "有科研经历",
+        "representation_preference": "evidence"
+      },
+      "allowed_depths": ["intermediate", "advanced"],
+      "required_representation": "evidence"
+    }
+  ],
+  "scientific_cases": [
+    {"case_id": "SQ-01", "query": "Dy³⁺为什么具有黄蓝双发射？", "behavior": "answer", "concept_ids": ["concept:dy3:dy3-blue-emission", "concept:dy3:dy3-yellow-emission", "concept:dy3:four-f-four-f-transition"], "required_any_groups": [["4F9/2", "4f9/2"], ["6H15/2", "6h15/2"], ["6H13/2", "6h13/2"]]},
+    {"case_id": "SQ-02", "query": "Dy³⁺黄蓝发射强度比会影响什么？", "behavior": "answer", "concept_ids": ["concept:dy3:yellow-blue-ratio", "concept:dy3:cie-chromaticity"], "required_any_groups": [["黄蓝", "Y/B", "y/b"], ["色坐标", "CIE", "色温", "颜色", "光色", "白光", "luminous colors", "white light"]]},
+    {"case_id": "SQ-03", "query": "稀土离子的4f-4f跃迁为什么通常呈窄带？", "behavior": "answer", "concept_ids": ["concept:dy3:four-f-four-f-transition", "concept:dy3:four-f-shell"], "required_any_groups": [["4f", "屏蔽"], ["窄带", "谱线", "狭窄", "线状"]]},
+    {"case_id": "SQ-04", "query": "晶体场如何影响Dy³⁺发射光谱？", "behavior": "answer", "concept_ids": ["concept:dy3:crystal-field", "concept:dy3:stark-splitting", "concept:dy3:emission-spectrum"], "required_any_groups": [["晶体场", "crystal field"], ["Stark", "劈裂", "黄光", "蓝光", "强度", "对称", "yellow", "blue", "symmetry"], ["发射", "光谱", "emission", "spectrum"]]},
+    {"case_id": "SQ-05", "query": "Stark劈裂与Dy³⁺发射峰有什么关系？", "behavior": "answer", "concept_ids": ["concept:dy3:stark-splitting", "concept:dy3:emission-spectrum"], "required_any_groups": [["Stark", "劈裂"], ["发射峰", "光谱", "emission peak", "emission spectra", "spectral"]]},
+    {"case_id": "SQ-06", "query": "Dy³⁺浓度猝灭为什么发生？", "behavior": "answer", "concept_ids": ["concept:dy3:concentration-quenching", "concept:dy3:cross-relaxation", "concept:dy3:energy-transfer"], "required_any_groups": [["浓度猝灭"], ["交叉弛豫", "能量迁移", "非辐射"]]},
+    {"case_id": "SQ-07", "query": "交叉弛豫如何影响Dy³⁺发光效率？", "behavior": "answer", "concept_ids": ["concept:dy3:cross-relaxation", "concept:dy3:energy-transfer", "concept:dy3:quantum-efficiency"], "required_any_groups": [["交叉弛豫"], ["效率", "非辐射", "能量"]]},
+    {"case_id": "SQ-08", "query": "热猝灭的物理机制是什么？", "behavior": "answer", "concept_ids": ["concept:dy3:thermal-quenching", "concept:dy3:nonradiative-relaxation", "concept:dy3:phonon-energy"], "required_any_groups": [["热猝灭"], ["非辐射", "温度"]]},
+    {"case_id": "SQ-09", "query": "基质声子能量为什么会影响稀土发光？", "behavior": "answer", "concept_ids": ["concept:dy3:phonon-energy", "concept:dy3:nonradiative-relaxation"], "required_any_groups": [["声子"], ["非辐射", "多声子"]]},
+    {"case_id": "SQ-10", "query": "宿主晶格如何影响Dy³⁺发光性能？", "behavior": "answer", "concept_ids": ["concept:dy3:host-lattice", "concept:dy3:local-coordination", "concept:dy3:crystal-field"], "required_any_groups": [["宿主", "晶格"], ["配位", "晶体场", "缺陷"]]},
+    {"case_id": "SQ-11", "query": "电荷补偿为什么会改变稀土掺杂材料的发光？", "behavior": "answer", "concept_ids": ["concept:dy3:charge-compensation", "concept:dy3:defects-traps"], "required_any_groups": [["电荷补偿"], ["缺陷", "价态"]]},
+    {"case_id": "SQ-12", "query": "缺陷和陷阱态对发光有哪些影响？", "behavior": "answer", "concept_ids": ["concept:dy3:defects-traps", "concept:dy3:nonradiative-relaxation"], "required_any_groups": [["缺陷", "陷阱"], ["非辐射", "能量", "发光"]]},
+    {"case_id": "SQ-13", "query": "发光量子效率应如何测量？", "behavior": "answer", "concept_ids": ["concept:dy3:quantum-efficiency", "concept:dy3:integrating-sphere"], "required_any_groups": [["量子效率", "quantum efficiency"], ["积分球", "integrating sphere", "绝对法"]]},
+    {"case_id": "SQ-14", "query": "激发光谱和发射光谱分别说明什么？", "behavior": "answer", "concept_ids": ["concept:dy3:excitation-spectrum", "concept:dy3:emission-spectrum", "concept:dy3:photoluminescence-spectroscopy"], "required_any_groups": [["激发光谱"], ["发射光谱"]]},
+    {"case_id": "SQ-15", "query": "荧光寿命测试和衰减拟合应关注什么？", "behavior": "answer", "concept_ids": ["concept:dy3:fluorescence-lifetime", "concept:dy3:lifetime-measurement", "concept:dy3:radiative-transition-rate"], "required_any_groups": [["寿命", "衰减"], ["拟合", "时间"]]},
+    {"case_id": "SQ-16", "query": "如何用XRD分析Dy³⁺掺杂发光材料的物相和结晶度？", "behavior": "answer", "concept_ids": ["concept:dy3:xrd", "concept:dy3:calcination-temperature-crystallinity"], "required_any_groups": [["XRD", "衍射", "X-ray diffraction"], ["物相", "结晶度", "phase composition", "crystallinity"]]},
+    {"case_id": "SQ-17", "query": "CIE色坐标在白光发光材料评价中有什么作用？", "behavior": "answer", "concept_ids": ["concept:dy3:cie-chromaticity", "concept:dy3:single-phase-white-phosphor"], "required_any_groups": [["CIE", "色坐标", "chromaticity"], ["白光", "色度", "emission color", "chromatic purity", "white"]]},
+    {"case_id": "SQ-18", "query": "显色指数CRI能说明白光照明的什么性质？", "behavior": "answer", "concept_ids": ["concept:dy3:color-rendering-index", "concept:dy3:white-led"], "required_any_groups": [["CRI", "显色指数", "color rendering index"], ["颜色", "再现", "color rendering", "colour rendering"]]},
+    {"case_id": "SQ-19", "query": "蓝光危害评价为什么不能只看相关色温？", "behavior": "answer", "concept_ids": ["concept:dy3:green-healthy-lighting", "concept:dy3:correlated-color-temperature", "concept:dy3:white-led"], "required_any_groups": [["蓝光", "光生物"], ["光谱", "辐亮度", "暴露"], ["色温", "CCT"]]},
+    {"case_id": "SQ-20", "query": "Dy³⁺单基质白光荧光粉用于LED时需要评价哪些指标？", "behavior": "answer", "concept_ids": ["concept:dy3:single-phase-white-phosphor", "concept:dy3:white-led", "concept:dy3:quantum-efficiency", "concept:dy3:thermal-stability-measurement"], "required_any_groups": [["白光", "LED"], ["CIE", "色坐标", "CCT", "CRI"], ["量子效率", "热稳定"]]},
+    {"case_id": "SQ-21", "query": "3000K低色温照明是否一定没有蓝光风险？", "behavior": "boundary", "concept_ids": ["concept:dy3:correlated-color-temperature", "concept:dy3:green-healthy-lighting", "concept:dy3:white-led"], "required_any_groups": [["不能", "不一定", "取决于"], ["光谱", "辐亮度", "暴露"]], "forbidden_phrases": ["3000K一定安全", "完全没有蓝光风险"]},
+    {"case_id": "SQ-22", "query": "一种Dy³⁺发光材料是否一定优于另一种材料？", "behavior": "boundary", "concept_ids": ["concept:dy3:host-lattice", "concept:dy3:quantum-efficiency", "concept:dy3:thermal-stability-measurement"], "required_any_groups": [["不能", "不一定", "取决于"], ["基质", "条件", "指标"]], "forbidden_phrases": ["一定优于", "绝对更好"]},
+    {"case_id": "SQ-23", "query": "所有Dy³⁺材料是否存在同一个最佳掺杂浓度？", "behavior": "boundary", "concept_ids": ["concept:dy3:doping-concentration", "concept:dy3:concentration-quenching"], "required_any_groups": [["不能", "不存在", "取决于"], ["基质", "工艺", "条件"]], "forbidden_phrases": ["统一最佳浓度", "所有材料都是"]},
+    {"case_id": "SQ-24", "query": "请预测明天上海的降雨概率。", "behavior": "honest_refusal", "concept_ids": [], "required_any_groups": []},
+    {"case_id": "SQ-25", "query": "稀土离子电子构型和4f壳层屏蔽如何影响发光光谱？", "behavior": "answer", "concept_ids": ["concept:dy3:rare-earth-electron-configuration", "concept:dy3:four-f-shell"], "required_any_groups": [["电子构型", "4f"], ["屏蔽", "光谱", "谱线"]]},
+    {"case_id": "SQ-26", "query": "L-S耦合与跃迁选择定则如何用于理解Dy³⁺光谱项？", "behavior": "answer", "concept_ids": ["concept:dy3:ls-coupling-selection-rules", "concept:dy3:four-f-four-f-transition"], "required_any_groups": [["L-S", "LS", "耦合"], ["选择定则", "跃迁"], ["光谱", "能级"]]},
+    {"case_id": "SQ-27", "query": "4f-4f跃迁与4f-5d跃迁在光谱带宽上有什么典型差异？", "behavior": "answer", "concept_ids": ["concept:dy3:four-f-four-f-transition", "concept:dy3:four-f-five-d-transition"], "required_any_groups": [["4f-4f"], ["4f-5d"], ["窄", "宽", "带宽"]]},
+    {"case_id": "SQ-28", "query": "Judd-Ofelt理论在稀土发光分析中用于判断什么？", "behavior": "answer", "concept_ids": ["concept:dy3:judd-ofelt-theory", "concept:dy3:radiative-transition-rate"], "required_any_groups": [["Judd", "J-O"], ["强度", "辐射", "跃迁"]]},
+    {"case_id": "SQ-29", "query": "辐射跃迁速率与荧光寿命之间有什么关系？", "behavior": "answer", "concept_ids": ["concept:dy3:radiative-transition-rate", "concept:dy3:fluorescence-lifetime"], "required_any_groups": [["辐射", "跃迁速率"], ["寿命"], ["非辐射", "速率"]]},
+    {"case_id": "SQ-30", "query": "局部配位环境为什么会改变晶体场和Stark劈裂？", "behavior": "answer", "concept_ids": ["concept:dy3:local-coordination", "concept:dy3:crystal-field", "concept:dy3:stark-splitting"], "required_any_groups": [["配位", "对称"], ["晶体场"], ["Stark", "劈裂"]]},
+    {"case_id": "SQ-31", "query": "异价掺杂时电荷补偿会怎样改变缺陷与陷阱态？", "behavior": "answer", "concept_ids": ["concept:dy3:charge-compensation", "concept:dy3:defects-traps"], "required_any_groups": [["电荷补偿"], ["缺陷", "陷阱"], ["电中性", "价态", "共掺杂"]]},
+    {"case_id": "SQ-32", "query": "固相烧结法制备Dy³⁺发光材料时应控制哪些关键步骤？", "behavior": "answer", "concept_ids": ["concept:dy3:solid-state-synthesis", "concept:dy3:calcination-temperature-crystallinity"], "required_any_groups": [["固相", "烧结"], ["混合", "温度", "焙烧"], ["物相", "结晶"]]},
+    {"case_id": "SQ-33", "query": "共沉淀法为什么有利于多组分发光材料前驱体的均匀混合？", "behavior": "answer", "concept_ids": ["concept:dy3:coprecipitation-synthesis", "concept:dy3:calcination-temperature-crystallinity"], "required_any_groups": [["共沉淀"], ["溶液", "前驱体"], ["均匀", "组分"]]},
+    {"case_id": "SQ-34", "query": "溶胶-凝胶法制备发光材料通常经历哪些结构演化和热处理步骤？", "behavior": "answer", "concept_ids": ["concept:dy3:sol-gel-synthesis", "concept:dy3:calcination-temperature-crystallinity"], "required_any_groups": [["溶胶", "凝胶"], ["网络", "前驱体"], ["热处理", "焙烧"]]},
+    {"case_id": "SQ-35", "query": "水热法与溶剂热法在反应介质和条件上有什么区别？", "behavior": "answer", "concept_ids": ["concept:dy3:hydrothermal-solvothermal-synthesis", "concept:dy3:electron-microscopy"], "required_any_groups": [["水热", "溶剂热"], ["水", "溶剂", "介质"], ["密闭", "温度", "压力"]]},
+    {"case_id": "SQ-36", "query": "如何利用XRD判断焙烧温度对物相和结晶度的影响？", "behavior": "answer", "concept_ids": ["concept:dy3:calcination-temperature-crystallinity", "concept:dy3:xrd"], "required_any_groups": [["XRD", "衍射"], ["焙烧温度"], ["物相", "结晶度"]]},
+    {"case_id": "SQ-37", "query": "还原气氛为什么可能改变发光中心价态和缺陷状态？", "behavior": "answer", "concept_ids": ["concept:dy3:reducing-atmosphere-valence", "concept:dy3:defects-traps"], "required_any_groups": [["还原气氛"], ["价态"], ["缺陷", "电荷"]]},
+    {"case_id": "SQ-38", "query": "助熔剂如何影响晶粒生长和颗粒形貌？", "behavior": "answer", "concept_ids": ["concept:dy3:flux-grain-morphology", "concept:dy3:electron-microscopy"], "required_any_groups": [["助熔剂"], ["晶粒", "颗粒"], ["形貌", "生长"]]},
+    {"case_id": "SQ-39", "query": "SEM与TEM在发光材料形貌和微结构表征中分别能提供什么信息？", "behavior": "answer", "concept_ids": ["concept:dy3:electron-microscopy", "concept:dy3:nanomaterial-core-shell"], "required_any_groups": [["SEM"], ["TEM"], ["形貌", "微结构", "尺寸"]]},
+    {"case_id": "SQ-40", "query": "T50和变温发光测试如何评价材料热稳定性？", "behavior": "answer", "concept_ids": ["concept:dy3:thermal-stability-measurement", "concept:dy3:thermal-quenching"], "required_any_groups": [["T50"], ["变温", "温度"], ["热稳定", "热猝灭"]]},
+    {"case_id": "SQ-41", "query": "积分球绝对法测量量子效率时需要比较哪些光子信号？", "behavior": "answer", "concept_ids": ["concept:dy3:integrating-sphere", "concept:dy3:quantum-efficiency"], "required_any_groups": [["积分球"], ["激发", "吸收"], ["发射", "光子", "量子效率"]]},
+    {"case_id": "SQ-42", "query": "Dy³⁺掺杂浓度如何通过离子间距影响能量迁移与交叉弛豫？", "behavior": "answer", "concept_ids": ["concept:dy3:doping-concentration", "concept:dy3:energy-transfer", "concept:dy3:cross-relaxation"], "required_any_groups": [["掺杂浓度"], ["离子间距"], ["能量迁移", "交叉弛豫"]]},
+    {"case_id": "SQ-43", "query": "上转换发光与量子剪裁的能量转换方向有什么不同？", "behavior": "answer", "concept_ids": ["concept:dy3:upconversion-quantum-cutting"], "required_any_groups": [["上转换"], ["量子剪裁"], ["光子", "能量"]]},
+    {"case_id": "SQ-44", "query": "纳米发光材料的表面态为什么会造成损失，核壳结构可以如何缓解？", "behavior": "answer", "concept_ids": ["concept:dy3:nanomaterial-core-shell", "concept:dy3:nonradiative-relaxation", "concept:dy3:quantum-efficiency"], "required_any_groups": [["表面", "表面态"], ["核壳"], ["非辐射", "损失", "猝灭"]]},
+    {"case_id": "SQ-45", "query": "评价单基质白光荧光粉时为什么要同时看色度和效率指标？", "behavior": "answer", "concept_ids": ["concept:dy3:single-phase-white-phosphor", "concept:dy3:cie-chromaticity", "concept:dy3:quantum-efficiency"], "required_any_groups": [["单基质", "白光荧光粉"], ["CIE", "色坐标", "色度"], ["量子效率", "效率"]]},
+    {"case_id": "SQ-46", "query": "白光荧光粉用于LED器件时，材料与器件性能应如何联合评价？", "behavior": "answer", "concept_ids": ["concept:dy3:single-phase-white-phosphor", "concept:dy3:white-led", "concept:dy3:thermal-stability-measurement"], "required_any_groups": [["白光", "LED"], ["效率", "光效", "量子效率"], ["热稳定", "色度", "显色"]]},
+    {"case_id": "SQ-47", "query": "绿色健康照明为什么需要同时考虑能效、光品质和光生物安全？", "behavior": "answer", "concept_ids": ["concept:dy3:green-healthy-lighting", "concept:dy3:color-rendering-index", "concept:dy3:white-led"], "required_any_groups": [["能效"], ["光品质", "显色", "色温"], ["光生物", "安全", "蓝光"]]},
+    {"case_id": "SQ-48", "query": "调节Dy³⁺黄蓝发射强度比为什么会改变CIE色坐标和相关色温？", "behavior": "answer", "concept_ids": ["concept:dy3:yellow-blue-ratio", "concept:dy3:cie-chromaticity", "concept:dy3:correlated-color-temperature"], "required_any_groups": [["黄蓝", "Y/B"], ["CIE", "色坐标"], ["色温", "CCT"]]},
+    {"case_id": "SQ-49", "query": "相关色温CCT与显色指数CRI分别评价白光的什么属性？", "behavior": "answer", "concept_ids": ["concept:dy3:correlated-color-temperature", "concept:dy3:color-rendering-index", "concept:dy3:green-healthy-lighting"], "required_any_groups": [["CCT", "相关色温"], ["CRI", "显色指数"], ["色貌", "颜色再现", "显色"]]},
+    {"case_id": "SQ-50", "query": "发光材料从小试放大到批量制备时为什么要关注批次一致性？", "behavior": "answer", "concept_ids": ["concept:dy3:scale-up-batch-consistency", "concept:dy3:solid-state-synthesis"], "required_any_groups": [["放大", "规模"], ["批次一致性"], ["工艺", "原料", "温度"]]},
+    {"case_id": "SQ-51", "query": "如何结合发射光谱与荧光寿命判断材料中的非辐射损失？", "behavior": "answer", "concept_ids": ["concept:dy3:emission-spectrum", "concept:dy3:fluorescence-lifetime", "concept:dy3:nonradiative-relaxation"], "required_any_groups": [["发射光谱"], ["寿命"], ["非辐射", "损失", "弛豫"]]}
+  ],
+  "adaptation_topics": [
+    {"case_id": "AD-01", "query": "Dy³⁺为什么具有黄蓝双发射？"},
+    {"case_id": "AD-02", "query": "Dy³⁺浓度猝灭为什么发生？"},
+    {"case_id": "AD-03", "query": "晶体场如何影响Dy³⁺发射光谱？"},
+    {"case_id": "AD-04", "query": "如何用XRD分析发光材料？"},
+    {"case_id": "AD-05", "query": "发光量子效率应如何测量？"},
+    {"case_id": "AD-06", "query": "CIE色坐标和色温如何评价白光？"},
+    {"case_id": "AD-07", "query": "热猝灭为什么会降低发光效率？"},
+    {"case_id": "AD-08", "query": "固相法制备Dy³⁺发光材料时应如何组织实验分析？"}
+  ],
+  "job_scenarios": [
+    {
+      "case_id": "JOB-01",
+      "role": "发光性能测试助理",
+      "profile_id": "research_evidence",
+      "query": "发光量子效率应如何测量？请说明积分球绝对法需要记录什么。",
+      "required_any_groups": [["量子效率", "效率"], ["积分球", "绝对法"], ["激发", "发射"]],
+      "required_resource_families": ["knowledge_understanding", "research_practice", "assessment_practice"]
+    },
+    {
+      "case_id": "JOB-02",
+      "role": "健康照明评价学习者",
+      "profile_id": "graduate_materials",
+      "query": "蓝光危害评价为什么不能只看相关色温？请给出评价时需要核对的光谱与暴露条件。",
+      "required_any_groups": [["蓝光", "光生物"], ["光谱", "辐亮度"], ["暴露"], ["色温", "CCT"]],
+      "required_resource_families": ["knowledge_understanding", "research_practice", "assessment_practice"]
+    },
+    {
+      "case_id": "JOB-03",
+      "role": "材料表征分析学习者",
+      "profile_id": "graduate_materials",
+      "query": "如何用XRD分析Dy³⁺掺杂发光材料的物相和结晶度，并形成可执行的检查步骤？",
+      "required_any_groups": [["XRD", "衍射"], ["物相"], ["结晶度"]],
+      "required_resource_families": ["knowledge_understanding", "research_practice", "assessment_practice"]
+    }
+  ],
+  "feedback_actions": [
+    {"case_id": "FB-01", "action": "open"},
+    {"case_id": "FB-02", "action": "still_confused", "expected_next_strategy": "repair_with_evidence"},
+    {"case_id": "FB-03", "action": "change_explanation", "expected_next_strategy": "repair_with_evidence"},
+    {"case_id": "FB-04", "action": "request_example", "expected_next_strategy": "example_then_mechanism"},
+    {"case_id": "FB-05", "action": "deepen", "expected_next_strategy": "evidence_first_mechanism"},
+    {"case_id": "FB-06", "action": "start_practice"}
+  ]
+}

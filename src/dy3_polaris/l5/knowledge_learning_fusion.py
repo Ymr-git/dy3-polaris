@@ -30,7 +30,8 @@ from dy3_polaris.l3.concept_relations import (
 _MASTERY_THRESHOLD = 0.7
 _GENERIC_TERMS = {
     "材料", "问题", "分析", "评价", "研究", "应用", "机制", "性能",
-    "影响", "方法", "基础", "知识", "概念", "发光", "照明", "dy3+",
+    "影响", "方法", "基础", "知识", "概念", "发光", "发射", "激发",
+    "光谱", "晶格", "掺杂", "照明", "dy3+",
 }
 
 
@@ -82,11 +83,15 @@ def _normalize(value: Any) -> str:
 
 
 def _terms(concept: KnowledgeConcept) -> tuple[str, ...]:
-    values = (*concept.aliases, *(NEW_KP_NAMES.get(kp_id, "") for kp_id in concept.related_kps))
+    values = (
+        concept.canonical_name,
+        *concept.aliases,
+        *(NEW_KP_NAMES.get(kp_id, "") for kp_id in concept.related_kps),
+    )
     terms: list[str] = []
     for value in values:
         normalized = _normalize(value)
-        if len(normalized) >= 2:
+        if len(normalized) >= 2 and normalized not in _GENERIC_TERMS:
             terms.append(normalized)
         for part in re.split(r"[\s、，,；;：:（）()\[\]/与和及]+", str(value or "")):
             normalized_part = _normalize(part)
@@ -105,19 +110,33 @@ def resolve_concepts(
     text = _normalize(" ".join(str(value or "") for value in values))
     if not text:
         return ()
-    scored: list[tuple[int, str]] = []
+    scored: list[tuple[int, bool, str]] = []
     for concept in network.foundation.concepts.values():
         matched = [term for term in _terms(concept) if term in text]
         if not matched:
             continue
         score = sum(min(len(term), 12) for term in matched)
-        exact = _normalize(concept.canonical_name) in text
-        scored.append((score + (12 if exact else 0), concept.concept_id))
-    scored.sort(key=lambda item: (-item[0], item[1]))
+        identity_terms = tuple(
+            term
+            for term in (
+                _normalize(concept.canonical_name),
+                *(_normalize(alias) for alias in concept.aliases),
+            )
+            if len(term) >= 2 and term not in _GENERIC_TERMS
+        )
+        exact = any(term in text for term in identity_terms)
+        scored.append((score + (12 if exact else 0), exact, concept.concept_id))
+    scored.sort(key=lambda item: (-item[0], item[2]))
     if not scored:
         return ()
     cutoff = max(2, int(scored[0][0] * 0.55))
-    return tuple(concept_id for score, concept_id in scored[:limit] if score >= cutoff)
+    exact_ids = [concept_id for _score, exact, concept_id in scored if exact]
+    inferred_ids = [
+        concept_id
+        for score, exact, concept_id in scored
+        if not exact and score >= cutoff
+    ]
+    return tuple(dict.fromkeys((*exact_ids, *inferred_ids)))[:limit]
 
 
 def project_concept_mastery(

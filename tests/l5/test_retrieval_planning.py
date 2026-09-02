@@ -406,7 +406,35 @@ def test_mechanism_question_is_not_reduced_by_definition_filter() -> None:
     assert "非辐射" in answer
 
 
-def test_reviewed_direct_concept_evidence_excludes_unreviewed_neighbours() -> None:
+def test_direct_query_phrase_precedes_neighbouring_mechanism_detail() -> None:
+    items = [
+        {
+            "chunk_id": "neighbour-detail",
+            "content": (
+                "不同格位的晶体场差异会改变Stark劈裂、谱线展宽和跃迁相对强度，"
+                "从而影响Dy3+发射光谱的结构。"
+            ),
+        },
+        {
+            "chunk_id": "direct-answer",
+            "content": (
+                "Dy3+的主要可见发射来自4F9/2激发态：向6H15/2的跃迁产生蓝光发射，"
+                "向6H13/2的跃迁产生黄光发射。"
+            ),
+        },
+    ]
+
+    candidates = agent_workers._collect_answer_candidates(
+        "Dy3+为什么具有黄蓝双发射？",
+        items,
+    )
+
+    assert candidates
+    assert "蓝光发射" in candidates[0]
+    assert "黄光发射" in candidates[0]
+
+
+def test_reviewed_direct_concept_evidence_excludes_unmapped_neighbours() -> None:
     direct = {
         "chunk_id": "reviewed-direct",
         "content": "缺陷态可通过非辐射复合削弱发光。",
@@ -437,10 +465,7 @@ def test_reviewed_direct_concept_evidence_excludes_unreviewed_neighbours() -> No
         ("concept:dy3:defects-traps",),
     )
 
-    assert [item["chunk_id"] for item in selected] == [
-        "reviewed-direct",
-        "reviewed-related",
-    ]
+    assert [item["chunk_id"] for item in selected] == ["reviewed-direct"]
 
 
 def test_reviewer_uses_generation_referenced_pack_evidence() -> None:

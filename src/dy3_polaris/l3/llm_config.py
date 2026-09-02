@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import RLock
@@ -133,12 +134,37 @@ _ROLE_MODEL_DEFAULTS: dict[str, dict[str, str]] = {
         "generation_deep": "gpt-5.6-terra",
         "review": "gpt-5.6-sol",
     },
+    "qwen": {
+        "semantic_fast": "qwen-max",
+        "generation_fast": "qwen-max",
+        "generation_long": "qwen-max",
+        "generation_deep": "qwen-max",
+        "review": "qwen-max",
+    },
+    "zhipu": {
+        "semantic_fast": "glm-5.1",
+        "generation_fast": "glm-5.1",
+        "generation_long": "glm-5.1",
+        "generation_deep": "glm-5.1",
+        "review": "glm-5.1",
+    },
+    "kimi": {
+        "semantic_fast": "kimi-k2.6",
+        "generation_fast": "kimi-k2.6",
+        "generation_long": "kimi-k2.6",
+        "generation_deep": "kimi-k2.6",
+        "review": "kimi-k2.6",
+    },
 }
 
 _ROLE_PROVIDER_PREFERENCE = {
-    "generation_long": "anthropic",
-    "generation_deep": "openai",
-    "review": "openai",
+    # 国产四模型职责路由。只有相应 provider 已配置真实密钥时才启用；
+    # 否则 load_llm_config 会回退到默认 provider，保持单密钥兼容。
+    "semantic_fast": "qwen",
+    "generation_fast": "qwen",
+    "generation_long": "kimi",
+    "generation_deep": "deepseek",
+    "review": "zhipu",
 }
 
 # 环境变量前缀
@@ -146,6 +172,24 @@ _ENV_PREFIX = "DY3_LLM_"
 
 #: 运行时配置 (由前端「API 配置」页 POST /api/llm/config 写入, 优先级高于 .env)
 _runtime_config: dict[str, str] = {}
+_runtime_provider_configs: dict[str, dict[str, str]] = {}
+_runtime_role_routes: dict[str, str] = {}
+
+_ROUTABLE_ROLES = (
+    "semantic_fast",
+    "generation_fast",
+    "generation_long",
+    "generation_deep",
+    "review",
+)
+_DOMESTIC_PROVIDERS = ("deepseek", "qwen", "zhipu", "kimi")
+_ROLE_FALLBACK_ORDER: dict[str, tuple[str, ...]] = {
+    "semantic_fast": ("qwen", "deepseek", "zhipu", "kimi"),
+    "generation_fast": ("qwen", "deepseek", "zhipu", "kimi"),
+    "generation_long": ("kimi", "qwen", "deepseek", "zhipu"),
+    "generation_deep": ("deepseek", "qwen", "kimi", "zhipu"),
+    "review": ("zhipu", "deepseek", "qwen", "kimi"),
+}
 
 
 def _env(name: str, default: str = "") -> str:
@@ -281,21 +325,145 @@ def set_runtime_config(
         "base_url": (base_url or "").strip(),
         "model": (model or "").strip(),
     }
+    normalized_provider = _runtime_config["provider"]
+    if normalized_provider:
+        _runtime_provider_configs[normalized_provider] = dict(_runtime_config)
     return _runtime_summary()
 
 
-def _runtime_summary() -> dict[str, str]:
+def _project_root() -> Path:
+    """Return the local code project root containing ``.env.example``."""
+
+    return Path(__file__).resolve().parents[3]
+
+
+def _persist_local_provider_configs() -> None:
+    """Persist explicitly supplied provider settings to ignored ``.env.local``.
+
+    The file never becomes an API response. Existing unrelated values and comments
+    are retained, and the replacement is atomic to avoid a half-written key file.
+    """
+
+    path = _project_root() / ".env.local"
+    existing = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
+    updates: dict[str, str] = {"DY3_MULTI_MODEL_ENABLED": "true"}
+    for provider, config in _runtime_provider_configs.items():
+        upper = provider.upper()
+        for field, suffix in (
+            ("api_key", "API_KEY"),
+            ("base_url", "BASE_URL"),
+            ("model", "MODEL"),
+        ):
+            value = str(config.get(field) or "").strip()
+            if value:
+                updates[f"DY3_LLM_{upper}_{suffix}"] = value
+    for role, provider in _runtime_role_routes.items():
+        updates[_role_env_name(role, "PROVIDER")] = provider
+
+    output: list[str] = []
+    consumed: set[str] = set()
+    for raw in existing:
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#") or "=" not in raw:
+            output.append(raw)
+            continue
+        key = raw.partition("=")[0].strip()
+        if key in updates:
+            output.append(f"{key}={updates[key]}")
+            consumed.add(key)
+        else:
+            output.append(raw)
+    if output and output[-1].strip():
+        output.append("")
+    if not existing:
+        output.extend([
+            "# DY3 Polaris local model credentials. Git ignored; never share this file.",
+            "",
+        ])
+    for key in sorted(updates):
+        if key not in consumed:
+            output.append(f"{key}={updates[key]}")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle, temp_name = tempfile.mkstemp(
+        prefix=".env.local.", suffix=".tmp", dir=str(path.parent), text=True
+    )
+    try:
+        with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as stream:
+            stream.write("\n".join(output).rstrip() + "\n")
+        try:
+            os.chmod(temp_name, 0o600)
+        except OSError:
+            pass
+        os.replace(temp_name, path)
+    finally:
+        if os.path.exists(temp_name):
+            os.unlink(temp_name)
+
+
+def set_multi_runtime_config(
+    providers: list[dict[str, Any]] | dict[str, dict[str, Any]],
+    *,
+    role_routes: dict[str, str] | None = None,
+    persist: bool = False,
+) -> dict[str, Any]:
+    """Configure several providers without ever returning cleartext credentials."""
+
+    if isinstance(providers, dict):
+        provider_items = [dict(value, provider=key) for key, value in providers.items()]
+    else:
+        provider_items = list(providers or [])
+    for item in provider_items:
+        provider = str(item.get("provider") or "").strip().lower()
+        if provider not in _PROVIDER_PRESETS:
+            raise ValueError(f"unsupported provider: {provider or '(empty)'}")
+        current = dict(_runtime_provider_configs.get(provider, {}))
+        api_key = str(item.get("api_key") or "").strip()
+        if api_key:
+            current["api_key"] = api_key
+        for field in ("base_url", "model"):
+            value = str(item.get(field) or "").strip()
+            if value:
+                current[field] = value
+        current["provider"] = provider
+        _runtime_provider_configs[provider] = current
+
+    if role_routes is not None:
+        for role, provider_value in role_routes.items():
+            normalized_role = str(role or "").strip().lower()
+            provider = str(provider_value or "").strip().lower()
+            if normalized_role not in _ROUTABLE_ROLES:
+                raise ValueError(f"unsupported role: {normalized_role or '(empty)'}")
+            if provider not in _PROVIDER_PRESETS:
+                raise ValueError(f"unsupported provider: {provider or '(empty)'}")
+            _runtime_role_routes[normalized_role] = provider
+    if persist:
+        _persist_local_provider_configs()
+    return multi_model_config_summary()
+
+
+def _runtime_summary() -> dict[str, Any]:
     """运行时配置脱敏摘要 (供 /api/llm/config GET 返回)."""
     if not _runtime_config:
-        return {"provider": "", "base_url": "", "model": "", "has_key": False, "masked_key": ""}
+        summary: dict[str, Any] = {
+            "provider": "",
+            "base_url": "",
+            "model": "",
+            "has_key": False,
+            "masked_key": "",
+        }
+        summary.update(multi_model_config_summary())
+        return summary
     key = _runtime_config.get("api_key", "")
-    return {
+    summary = {
         "provider": _runtime_config.get("provider", ""),
         "base_url": _runtime_config.get("base_url", ""),
         "model": _runtime_config.get("model", ""),
         "has_key": bool(key),
         "masked_key": _mask_key(key),
     }
+    summary.update(multi_model_config_summary())
+    return summary
 
 
 def _truthy(value: str, default: bool = True) -> bool:
@@ -317,6 +485,10 @@ def multi_model_enabled() -> bool:
 
 
 def _provider_api_key(provider: str, dotenv: dict[str, str]) -> str:
+    runtime = _runtime_provider_configs.get(provider.strip().lower(), {})
+    runtime_key = str(runtime.get("api_key") or "").strip()
+    if runtime_key:
+        return runtime_key
     upper = provider.strip().upper()
     for name in (
         f"DY3_LLM_{upper}_API_KEY",
@@ -327,6 +499,16 @@ def _provider_api_key(provider: str, dotenv: dict[str, str]) -> str:
         if value:
             return value.strip()
     return ""
+
+
+def _provider_setting(provider: str, name: str, dotenv: dict[str, str]) -> str:
+    normalized = provider.strip().lower()
+    runtime = _runtime_provider_configs.get(normalized, {})
+    runtime_value = str(runtime.get(name.lower()) or "").strip()
+    if runtime_value:
+        return runtime_value
+    env_name = f"DY3_LLM_{normalized.upper()}_{name.upper()}"
+    return str(os.environ.get(env_name) or dotenv.get(env_name, "")).strip()
 
 
 def _role_env_name(role: str, name: str) -> str:
@@ -361,7 +543,9 @@ def load_llm_config(role: str = "default") -> LLMConfig:
             env_name = _role_env_name(normalized_role, name)
             return str(os.environ.get(env_name) or dotenv.get(env_name, "")).strip()
 
-        explicit_provider = role_pick("PROVIDER").lower()
+        explicit_provider = (
+            _runtime_role_routes.get(normalized_role, "") or role_pick("PROVIDER")
+        ).lower()
         preferred_provider = _ROLE_PROVIDER_PREFERENCE.get(normalized_role, "")
         preferred_key = _provider_api_key(preferred_provider, dotenv)
         if explicit_provider:
@@ -382,12 +566,15 @@ def load_llm_config(role: str = "default") -> LLMConfig:
         role_base_url = role_pick("BASE_URL")
         if role_base_url:
             base_url = role_base_url
+        elif _provider_setting(provider, "base_url", dotenv):
+            base_url = _provider_setting(provider, "base_url", dotenv)
         elif provider != default_provider:
             base_url = ""
 
         role_model = role_pick("MODEL")
         model = (
             role_model
+            or _provider_setting(provider, "model", dotenv)
             or _ROLE_MODEL_DEFAULTS.get(provider, {}).get(normalized_role, "")
             or (model if provider == default_provider else "")
         )
@@ -406,6 +593,108 @@ def load_llm_config(role: str = "default") -> LLMConfig:
         enabled=enabled,
     )
     return config
+
+
+def provider_config_summary() -> dict[str, dict[str, Any]]:
+    """Return provider configuration facts with masked keys only."""
+
+    dotenv = _read_dotenv()
+    summary: dict[str, dict[str, Any]] = {}
+    for provider in _DOMESTIC_PROVIDERS:
+        key = _provider_api_key(provider, dotenv)
+        preset = _PROVIDER_PRESETS[provider]
+        summary[provider] = {
+            "provider": provider,
+            "configured": bool(key),
+            "has_key": bool(key),
+            "masked_key": _mask_key(key),
+            "base_url": _provider_setting(provider, "base_url", dotenv)
+            or preset["base_url"],
+            "model": _provider_setting(provider, "model", dotenv)
+            or preset["model"],
+        }
+    return summary
+
+
+def load_provider_config(
+    provider: str,
+    *,
+    api_key: str = "",
+    base_url: str = "",
+    model: str = "",
+) -> LLMConfig:
+    """Build one provider config for a server-side connection check."""
+
+    normalized = str(provider or "").strip().lower()
+    if normalized not in _PROVIDER_PRESETS:
+        raise ValueError(f"unsupported provider: {normalized or '(empty)'}")
+    dotenv = _read_dotenv()
+    preset = _PROVIDER_PRESETS[normalized]
+    resolved_key = str(api_key or "").strip() or _provider_api_key(normalized, dotenv)
+    resolved_base_url = (
+        str(base_url or "").strip()
+        or _provider_setting(normalized, "base_url", dotenv)
+        or preset["base_url"]
+    )
+    resolved_model = (
+        str(model or "").strip()
+        or _provider_setting(normalized, "model", dotenv)
+        or preset["model"]
+    )
+    return LLMConfig(
+        provider=normalized,
+        api_key=resolved_key,
+        base_url=resolved_base_url,
+        model=resolved_model,
+        temperature=0.0,
+        max_tokens=16,
+        timeout_seconds=20.0,
+        enabled=bool(resolved_key) or normalized == "ollama",
+    )
+
+
+def load_fallback_llm_config(
+    role: str,
+    *,
+    exclude_provider: str = "",
+) -> LLMConfig | None:
+    """Select one differently sourced configured model for a bounded retry."""
+
+    normalized_role = str(role or "default").strip().lower()
+    excluded = str(exclude_provider or "").strip().lower()
+    dotenv = _read_dotenv()
+    default_cfg = load_llm_config("default")
+    order = _ROLE_FALLBACK_ORDER.get(normalized_role, _DOMESTIC_PROVIDERS)
+    for provider in order:
+        if provider == excluded:
+            continue
+        provider_key = _provider_api_key(provider, dotenv)
+        if not provider_key and provider == default_cfg.provider:
+            provider_key = default_cfg.api_key
+        if not provider_key:
+            continue
+        model = (
+            _provider_setting(provider, "model", dotenv)
+            or _ROLE_MODEL_DEFAULTS.get(provider, {}).get(normalized_role, "")
+            or _PROVIDER_PRESETS[provider]["model"]
+        )
+        return load_provider_config(provider, api_key=provider_key, model=model)
+    return None
+
+
+def multi_model_config_summary() -> dict[str, Any]:
+    """Return the complete non-secret configuration needed by the settings UI."""
+
+    return {
+        "multi_model_enabled": multi_model_enabled(),
+        "providers": provider_config_summary(),
+        "role_routes": {
+            role: _runtime_role_routes.get(role)
+            or _ROLE_PROVIDER_PREFERENCE.get(role, "deepseek")
+            for role in _ROUTABLE_ROLES
+        },
+        "routes": model_route_summary(),
+    }
 
 
 def chat_completion(
@@ -477,13 +766,20 @@ def chat_completion(
         }
     else:
         url = base_url + "/chat/completions"
+        request_temperature = temperature
+        # Moonshot Kimi K2.6 uses different fixed temperatures by thinking mode.
+        # These are provider protocol constraints, not teaching randomness.
+        if provider == "kimi" and model.startswith("kimi-k2.6"):
+            request_temperature = 0.6 if disable_thinking else 1.0
         payload = {
             "model": model,
             "messages": list(messages),
-            "temperature": temperature,
+            "temperature": request_temperature,
             "max_tokens": max_tokens,
         }
         if disable_thinking and provider == "deepseek":
+            payload["thinking"] = {"type": "disabled"}
+        elif disable_thinking and provider in {"kimi", "zhipu"}:
             payload["thinking"] = {"type": "disabled"}
         elif provider == "deepseek" and reasoning_effort:
             payload["thinking"] = {"type": "enabled"}

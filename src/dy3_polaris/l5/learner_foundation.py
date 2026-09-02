@@ -86,6 +86,28 @@ class AdaptiveTeachingDecision:
     confidence: float
 
 
+@dataclass(frozen=True, slots=True)
+class InitialTeachingProfileCandidate:
+    """One bounded cold-start teaching option, never a mastery label.
+
+    The three candidates make the initial teaching choice inspectable.  Their
+    scores describe relative fit for *presentation*, not learner ability.  No
+    candidate is persisted and declared information cannot become mastery.
+    """
+
+    candidate_id: str
+    label: str
+    content_depth: str
+    explanation_strategy: str
+    representation_modes: tuple[str, ...]
+    fit_score: float
+    selected: bool
+    evidence_basis: str
+    diagnostic_required: bool
+    rationale: tuple[str, ...]
+    source_refs: tuple[str, ...]
+
+
 _STAGE_PRIORS: dict[str, float] = {
     "secondary": 0.12,
     "high_school": 0.12,
@@ -576,13 +598,143 @@ def build_adaptive_teaching_decision(
     )
 
 
+def build_initial_teaching_profile_candidates(
+    model: PersonalLearnerModel,
+    decision: AdaptiveTeachingDecision,
+) -> tuple[InitialTeachingProfileCandidate, ...]:
+    """Compare three teaching plans against the same learner evidence.
+
+    This is deliberately a request-local comparison layer over the existing
+    PersonalLearnerModel and Diagnosis decision.  It does not create persona
+    identities or claim that a cold-start learner has demonstrated knowledge.
+    """
+
+    if not isinstance(model, PersonalLearnerModel):
+        raise TypeError("model must be PersonalLearnerModel")
+    if not isinstance(decision, AdaptiveTeachingDecision):
+        raise TypeError("decision must be AdaptiveTeachingDecision")
+
+    if model.observed_record_count > 0 or model.model_state_available:
+        evidence_basis = "OBSERVED_AND_MODEL_INFERRED"
+    elif model.persona_prior.source_refs:
+        evidence_basis = "DECLARED_PRIOR"
+    else:
+        evidence_basis = "UNKNOWN"
+
+    selected_id = (
+        "research_evidence"
+        if decision.content_depth == "advanced"
+        else "mechanism_application"
+        if decision.content_depth == "intermediate"
+        else "foundation_scaffold"
+    )
+    depth_index = {
+        "foundation": 0,
+        "beginner": 0,
+        "intermediate": 1,
+        "advanced": 2,
+    }
+    selected_depth = depth_index.get(decision.content_depth, 0)
+    research_values = tuple(model.persona_prior.research_priors.values())
+    research_prior = (
+        sum(research_values) / len(research_values)
+        if research_values else 0.0
+    )
+    observed_strength = min(
+        1.0,
+        0.2 * model.observed_record_count
+        + (0.45 if model.model_state_available else 0.0),
+    )
+
+    definitions = (
+        (
+            "foundation_scaffold",
+            "基础搭桥",
+            "foundation",
+            "prerequisite_scaffolding"
+            if model.prerequisite_gaps else "foundation_conceptual",
+            ("structured_text", "concept_path"),
+            0,
+        ),
+        (
+            "mechanism_application",
+            "机制研习",
+            "intermediate",
+            "mechanism_with_context",
+            ("mechanism_chain", "worked_example"),
+            1,
+        ),
+        (
+            "research_evidence",
+            "科研证据",
+            "advanced",
+            "evidence_first_mechanism",
+            ("evidence", "scientific_relation"),
+            2,
+        ),
+    )
+    candidates: list[InitialTeachingProfileCandidate] = []
+    for candidate_id, label, depth, strategy, modes, candidate_depth in definitions:
+        proximity = 1.0 - abs(candidate_depth - selected_depth) / 2.0
+        score = 0.24 + 0.26 * proximity
+        rationale: list[str] = []
+        if candidate_id == "foundation_scaffold":
+            if model.diagnostic.needed:
+                score += 0.16
+                rationale.append("真实诊断尚未完成，先保留基础搭桥方案")
+            if model.prerequisite_gaps or model.weak_knowledge:
+                score += 0.12
+                rationale.append("现有先修缺口或薄弱点需要教学支架")
+        elif candidate_id == "mechanism_application":
+            if model.target_concepts:
+                score += 0.08
+                rationale.append("当前任务已有可解释的目标 Concept")
+            if decision.content_depth == "intermediate":
+                score += 0.1
+                rationale.append("Diagnosis 当前选择机制层解释深度")
+        else:
+            score += 0.12 * research_prior
+            if "evidence" in decision.representation_modes:
+                score += 0.08
+                rationale.append("当前呈现策略要求显式证据")
+            if decision.content_depth == "advanced":
+                score += 0.1
+                rationale.append("Diagnosis 当前选择进阶科研深度")
+        if candidate_id == selected_id:
+            score += 0.12
+            rationale.insert(0, "与本次 Diagnosis 教学决策一致")
+        if evidence_basis == "OBSERVED_AND_MODEL_INFERRED":
+            score += 0.08 * observed_strength
+            rationale.append("包含真实作答或对齐模型状态")
+        elif evidence_basis == "DECLARED_PRIOR":
+            rationale.append("当前仅使用自愿声明作为低权重先验")
+        else:
+            rationale.append("当前没有学习者证据，匹配结果需经真实诊断修正")
+        candidates.append(InitialTeachingProfileCandidate(
+            candidate_id=candidate_id,
+            label=label,
+            content_depth=depth,
+            explanation_strategy=strategy,
+            representation_modes=modes,
+            fit_score=round(_clamp(score, 0.0, 0.92), 4),
+            selected=candidate_id == selected_id,
+            evidence_basis=evidence_basis,
+            diagnostic_required=model.diagnostic.needed,
+            rationale=tuple(dict.fromkeys(rationale)),
+            source_refs=tuple(model.source_refs),
+        ))
+    return tuple(candidates)
+
+
 __all__ = [
     "AdaptiveDiagnosticTarget",
     "AdaptiveTeachingDecision",
+    "InitialTeachingProfileCandidate",
     "LearnerLifecycleStage",
     "LearnerPersonaPrototype",
     "PersonalLearnerModel",
     "build_adaptive_teaching_decision",
+    "build_initial_teaching_profile_candidates",
     "build_persona_prototype",
     "build_personal_learner_model",
 ]

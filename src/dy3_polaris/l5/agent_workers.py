@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 import hashlib
 import logging
@@ -1714,6 +1715,18 @@ def _build_review_challenge(
         action = ResolutionAction.RE_RETRIEVE
         if not missing:
             missing = ("事实主张的直接支持证据",)
+    elif "问题核心覆盖门要求重新检索" in reason:
+        challenge_type = ChallengeType.EVIDENCE_INSUFFICIENT
+        severity = ChallengeSeverity.HIGH
+        action = ResolutionAction.RE_RETRIEVE
+        if not missing:
+            missing = (reason.split("：", 1)[-1][:180],)
+    elif "问题核心覆盖门要求修订" in reason:
+        challenge_type = ChallengeType.EVIDENCE_INSUFFICIENT
+        severity = ChallengeSeverity.MEDIUM
+        action = ResolutionAction.REVISE
+        if not missing:
+            missing = (reason.split("：", 1)[-1][:180],)
     elif "一定" in query or any(term in reason for term in ("安全", "绝对", "过度")):
         challenge_type = ChallengeType.SAFETY_OVERCLAIM
         severity = ChallengeSeverity.HIGH
@@ -2868,8 +2881,23 @@ def _detect_question_type(query: str) -> str:
     # “如何影响” asks for a causal mechanism, not an experimental procedure.
     # The previous generic “如何” rule routed these questions to a numbered
     # method template and produced scientifically irrelevant answers.
-    if re.search(r"(怎么|如何|怎样)影响", q):
+    if re.search(
+        r"(怎么|如何|怎样)(?:通过|经由|借助|利用)?[^？?。]{0,24}"
+        r"(?:影响|改变|导致|作用)",
+        q,
+    ):
         return "mechanism"
+    if "为什么" in q and re.search(r"怎么|如何|怎样", q):
+        return "mechanism"
+    # “如何用于理解/分析” asks how a scientific framework organises an
+    # interpretation, not for an experimental procedure.  Routing it through
+    # the method template drops the framework definition and keeps only an
+    # imperative sentence, which can omit half of a multi-dimension question.
+    if re.search(
+        r"(怎么|如何|怎样)用于(?:理解|解释|分析|判断|评价)",
+        q,
+    ):
+        return "other"
     # “有哪些影响/有什么作用” asks for an observed relationship.  Treating
     # the word “有哪些” as a definition caused the definition-only evidence
     # sorter to discard the exact Concept evidence and keep an unrelated
@@ -3281,6 +3309,20 @@ def _collect_answer_candidates(
                 query_terms.append(bg)
     if not query_terms:
         query_terms = raw_terms
+    # Chinese scientific questions often compress parallel concepts into one
+    # phrase (for example, “A/B双发射”), while evidence expands them into two
+    # separate clauses.  Bigram matching alone misses that equivalence.  Keep
+    # content-bearing Han characters as a secondary lexical signal; common
+    # interrogative/function characters are excluded to avoid generic matches.
+    _QUERY_FUNCTION_CHARS = frozenset(
+        "为什么怎么如何怎样什么哪些哪个是否能否可以请问具有的了吗呢"
+    )
+    query_content_chars = tuple(dict.fromkeys(
+        char
+        for char in str(query)
+        if "\u4e00" <= char <= "\u9fff"
+        and char not in _QUERY_FUNCTION_CHARS
+    ))
     normalized_focus_terms = tuple(
         dict.fromkeys(
             str(term).strip().lower()
@@ -3325,9 +3367,13 @@ def _collect_answer_candidates(
             for concept_id in metadata.get("concept_ids", ())
             if str(concept_id).strip()
         )
-        direct_concept_priority = int(bool(
+        # Preserve how many explicit target Concepts this evidence item
+        # covers.  A passage mapped to one neighbouring target must not rank
+        # equally with a passage that covers the complete multi-Concept
+        # question (for example, both yellow and blue emission branches).
+        direct_concept_priority = len(
             normalized_preferred_concept_ids.intersection(mapped_concept_ids)
-        ))
+        )
         source_priority = (
             2
             if source_type == "curated_source_summary"
@@ -3401,6 +3447,9 @@ def _collect_answer_candidates(
             for term in normalized_focus_terms
             if term.replace(" ", "") in compact
         )
+        character_coverage = sum(
+            1 for char in query_content_chars if char in sentence
+        )
         ion_match = int(bool(q_ions & _extract_ions(sentence)))
         mechanism_match = sum(
             1
@@ -3424,10 +3473,26 @@ def _collect_answer_candidates(
         # entity and states an observed relation.  This ranks retrieved facts;
         # it does not add a domain answer or infer a new scientific claim.
         directness = ion_match * 3 + relation_match * 2
-        intent_bonus = mechanism_match * 3 if question_type == "mechanism" else 0
+        # Explicit query coverage must outrank generic mechanism richness.
+        # Otherwise a neighbouring sentence containing several scientific
+        # mechanism words can precede the sentence that actually names the
+        # phenomenon asked by the learner.  This is general relevance ranking
+        # over retrieved evidence, not a domain-answer rule.
+        intent_bonus = (
+            min(mechanism_match, 3) * 2
+            if question_type == "mechanism"
+            else 0
+        )
         return (
             direct_concept_priority,
-            coverage + focus_coverage * 2 + directness + intent_bonus,
+            coverage * 3
+            + character_coverage * 3
+            # Upstream Concept/retrieval focus is a stronger semantic signal
+            # than character overlap.  It must remain dominant for bilingual
+            # questions whose best evidence is an English source sentence.
+            + focus_coverage * 20
+            + directness
+            + intent_bonus,
             source_priority,
             mechanism_match,
             -len(sentence),
@@ -3471,7 +3536,6 @@ def _prefer_reviewed_concept_evidence(
     )
     if not preferred:
         return items
-    reviewed: list[dict[str, Any]] = []
     direct: list[dict[str, Any]] = []
     for item in items:
         metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
@@ -3481,7 +3545,6 @@ def _prefer_reviewed_concept_evidence(
             and str(metadata.get("source_uri") or "").strip()
         ):
             continue
-        reviewed.append(item)
         concept_ids = frozenset(
             str(concept_id).strip()
             for concept_id in metadata.get("concept_ids", ())
@@ -3491,18 +3554,11 @@ def _prefer_reviewed_concept_evidence(
             direct.append(item)
     if not direct:
         return items
-    direct_keys = {
-        str(item.get("chunk_id") or item.get("content") or "")
-        for item in direct
-    }
-    return [
-        *direct,
-        *(
-            item for item in reviewed
-            if str(item.get("chunk_id") or item.get("content") or "")
-            not in direct_keys
-        ),
-    ]
+    # Reviewed provenance is not a relevance licence.  Once direct reviewed
+    # evidence exists, unrelated reviewed summaries must not be appended just
+    # because they are high quality in isolation; doing so let generic
+    # spectrum/host passages displace the actual question focus.
+    return direct
 
 
 def _compose_concise_answer(
@@ -3601,9 +3657,12 @@ def _compose_concise_answer(
     # This only groups retrieved sentences; it never writes a domain answer.
     if qtype == "mechanism":
         causal_terms = (
-            "原因", "因为", "由于", "导致", "引起", "能量传递",
-            "非辐射", "迁移", "耗散", "弛豫", "cause", "because",
-            "energy transfer", "nonradiative", "relaxation",
+            "原因", "因为", "由于", "所以", "因此", "因而", "导致", "引起", "能量传递",
+            "非辐射", "迁移", "耗散", "弛豫", "产生", "改变", "影响",
+            "从而", "促进", "决定", "使", "会", "可以", "可", "不能", "需要", "需", "减少", "增加",
+            "cause", "because", "affect",
+            "change", "produce", "determine",
+            "energy transfer", "nonradiative", "relaxation", "can", "cannot", "require",
         )
         bounded_observations = [
             sentence
@@ -5251,7 +5310,11 @@ def run_generation(
                 preferred_concept_ids=preferred_concept_ids,
             )
             if revision_sentences:
-                answer = "".join(revision_sentences[:2])
+                # A completeness revision must be allowed to cover several
+                # explicit question dimensions.  Two sentences were enough
+                # for single-mechanism questions but systematically dropped
+                # the second arm of comparisons and multi-factor questions.
+                answer = "".join(revision_sentences[:4])
                 confidence = max(confidence, 0.45)
 
     if planned_retrieval and compose_items:
@@ -5288,21 +5351,18 @@ def run_generation(
         and str(item["metadata"].get("source_uri") or "").strip()
         for item in compose_items
     )
-    try:
-        from dy3_polaris.l3.llm_config import multi_model_enabled
-
-        model_diversity_enabled = multi_model_enabled()
-    except Exception:  # noqa: BLE001
-        model_diversity_enabled = False
-    # In single-model compatibility mode, reviewed Concept summaries keep the
-    # deterministic representation.  In multi-model product mode they may be
-    # reorganized by role-specialized models, but only inside the same evidence
-    # boundary and every selected answer still crosses the real Reviewer.
+    # Reviewed Concept summaries are already compact, curated scientific
+    # artifacts.  Keep their extractive representation in both single- and
+    # multi-model modes instead of paying a model to paraphrase them and
+    # potentially widen a claim beyond its source.  Multi-model generation is
+    # still used for ordinary document chunks, deep analysis, reviewed long
+    # resources and Socratic questions; the trusted canonical path stays
+    # deterministic and still crosses the real Reviewer.
     if (
         answer
         and context_chunks
         and not review_feedback
-        and (not reviewed_concept_grounding or model_diversity_enabled)
+        and not reviewed_concept_grounding
     ):
         try:
             from dy3_polaris.l3.llm_synthesizer import LLMSynthesizer
@@ -5475,11 +5535,16 @@ def run_review(
         )
 
     review_content = _scientific_review_content(content)
+    guided_question_review = bool(input_data.get("guided_question_review"))
 
     fact_checked = 0
     fact_failed = 0
     fact_passed: bool | None = None
-    if deps.fact_checker is not None:
+    # 启发式追问是待审核的“问题列表”，不是对原问题的事实性回答。普通
+    # FactChecker/CC1 会把问句中的待探究命题当作已作出的事实断言，产生
+    # 假阳性。因此该显式私有模式交由独立 Reviewer 模型按证据边界审核；
+    # 模型不可用时不放行，调用方回退到已验证的 Concept 关系问题。
+    if not guided_question_review and deps.fact_checker is not None:
         try:
             report = deps.fact_checker.check(review_content)
             fact_passed = bool(getattr(report, "overall_passed", True))
@@ -5491,7 +5556,7 @@ def run_review(
     ah_action = ""
     ah_score = 1.0
     hallucination_detected = False
-    if deps.anti_hallucination_pipeline is not None:
+    if not guided_question_review and deps.anti_hallucination_pipeline is not None:
         try:
             from dy3_polaris.l0.cc1.models import VerificationRequest
 
@@ -5532,19 +5597,37 @@ def run_review(
     ).strip()
     if review_query and context_chunks:
         try:
-            from dy3_polaris.l3.llm_config import multi_model_enabled
-
-            if multi_model_enabled():
-                candidate_challenge = critique_answer(
-                    review_query,
-                    review_content,
-                    context_chunks,
-                )
-                if candidate_challenge.get("used_llm"):
-                    model_challenge = candidate_challenge
+            candidate_challenge = critique_answer(
+                review_query,
+                review_content,
+                context_chunks,
+            )
+            # Ordinary answers always cross the deterministic question-focus
+            # gate, even when no model key is configured.  Guided-question
+            # lists remain model-reviewed because they are not factual answer
+            # prose and the answer heuristic would misclassify them.
+            if not guided_question_review or candidate_challenge.get("used_llm"):
+                model_challenge = candidate_challenge
         except Exception as exc:  # noqa: BLE001
             logger.warning("独立模型交叉审核失败，保留确定性审核结果: %s", type(exc).__name__)
-    if ah_action == "refuse":
+    if guided_question_review and model_challenge is None:
+        verdict = "needs_review"
+        reason = "启发式追问未完成独立 Reviewer 模型审核"
+    elif (
+        guided_question_review
+        and model_challenge
+        and model_challenge.get("verdict") != "pass"
+    ):
+        verdict = "needs_review"
+        reason = "独立 Reviewer 认为追问超出证据边界：" + str(
+            model_challenge.get("reason") or model_challenge.get("verdict")
+        )[:180]
+    elif guided_question_review:
+        verdict = "approved"
+        reason = (
+            "启发式追问与原问题相关，并通过独立 Reviewer 的证据边界审核"
+        )
+    elif ah_action == "refuse":
         verdict = "rejected"
         reason = "防幻觉管道判定拒绝输出"
     elif blocking_grounding_issues:
@@ -5558,14 +5641,24 @@ def run_review(
     elif ah_action in ("degrade", "fix", "reask") or hallucination_detected:
         verdict = "needs_review"
         reason = "检测到潜在幻觉或需要人工复核"
-    elif model_challenge and model_challenge.get("verdict") != "pass":
+    elif (
+        model_challenge
+        and model_challenge.get("verdict") != "pass"
+    ):
         # The model is an additional challenger, never the sole approval
         # authority. A challenge can withhold/revise; a model PASS cannot
         # override FactChecker, CC1 or claim-evidence grounding.
         verdict = "needs_review"
-        reason = "独立模型交叉审核提出挑战：" + str(
-            model_challenge.get("reason") or model_challenge.get("verdict")
+        challenge_verdict = str(model_challenge.get("verdict") or "")
+        challenge_reason = str(
+            model_challenge.get("reason") or challenge_verdict
         )[:180]
+        if challenge_verdict in {"fix_relevance", "unanswerable"}:
+            reason = "问题核心覆盖门要求重新检索：" + challenge_reason
+        elif challenge_verdict == "fix_completeness":
+            reason = "问题核心覆盖门要求修订：" + challenge_reason
+        else:
+            reason = "独立模型交叉审核提出挑战：" + challenge_reason
     else:
         verdict = "approved"
         reason = "事实校验与防幻觉校验均通过"
@@ -5836,6 +5929,11 @@ def _build_reviewed_long_form_resource(
 
     if not quality_release.eligible or not quality_release.public_answer.strip():
         return None
+    # A several-thousand-character model call is an explicit learning resource,
+    # not mandatory overhead for every short Q&A. It remains inside the same
+    # evidence → generation → reviewer loop when the learner asks for it.
+    if not _long_form_resource_requested(query):
+        return None
     passages = _resource_evidence_passages(evidence_candidate, final_result)
     resource_focus_terms: tuple[str, ...] = ()
     resource_target_ids: tuple[str, ...] = ()
@@ -6084,6 +6182,177 @@ def _build_reviewed_long_form_resource(
     }
 
 
+def _build_reviewed_guided_questions(
+    *,
+    query: str,
+    task_id: str,
+    quality_release: QualityReleaseDecision,
+    final_result: FinalCollaborationResult,
+    evidence_candidate: _EvidenceCandidate | None,
+    teaching_decision: AdaptiveTeachingDecision | None,
+    knowledge_context: KnowledgeLearningContext | None,
+    deps: AgentDependencies,
+    event_callback: Callable[..., None] | None = None,
+) -> dict[str, Any] | None:
+    """Generation → Reviewer → Guidance loop for adaptive follow-up prompts."""
+
+    if not quality_release.eligible or not quality_release.public_answer.strip():
+        return None
+    passages = _resource_evidence_passages(evidence_candidate, final_result)
+    if not passages:
+        return None
+    concept_names: tuple[str, ...] = ()
+    prerequisite_names: tuple[str, ...] = ()
+    if isinstance(knowledge_context, KnowledgeLearningContext):
+        concept_names = tuple(
+            str(knowledge_context.concept_names.get(item, item))
+            for item in knowledge_context.target_concepts
+            if str(item)
+        )
+        prerequisite_names = tuple(
+            str(knowledge_context.concept_names.get(item, item))
+            for item in knowledge_context.learning_path.prerequisite_gap
+            if str(item)
+        )
+    depth = (
+        teaching_decision.content_depth
+        if isinstance(teaching_decision, AdaptiveTeachingDecision)
+        else "foundation"
+    )
+    strategy = (
+        {
+            "explanation_strategy": teaching_decision.explanation_strategy,
+            "representation_modes": list(teaching_decision.representation_modes),
+        }
+        if isinstance(teaching_decision, AdaptiveTeachingDecision)
+        else {}
+    )
+    if event_callback is not None:
+        event_callback(
+            "AgentStarted",
+            GENERATION_AGENT_ID,
+            agent_id=GENERATION_AGENT_ID,
+            phase="guided_question_generation",
+        )
+    try:
+        from dy3_polaris.l3.llm_synthesizer import LLMSynthesizer
+
+        questions, model_used = LLMSynthesizer().synthesize_guided_questions(
+            query=query,
+            reviewed_answer=quality_release.public_answer,
+            evidence=passages,
+            concept_names=concept_names,
+            prerequisite_names=prerequisite_names,
+            learner_level=depth,
+            teaching_strategy=strategy,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("启发式追问模型路径不可用: %s", type(exc).__name__)
+        if event_callback is not None:
+            event_callback(
+                "AgentFinished",
+                GENERATION_AGENT_ID,
+                agent_id=GENERATION_AGENT_ID,
+                phase="guided_question_generation",
+                generation_mode="model_unavailable",
+                question_count=0,
+            )
+        return None
+    if not model_used or not questions:
+        if event_callback is not None:
+            event_callback(
+                "AgentFinished",
+                GENERATION_AGENT_ID,
+                agent_id=GENERATION_AGENT_ID,
+                phase="guided_question_generation",
+                generation_mode="model_unavailable_or_invalid_json",
+                question_count=0,
+            )
+        return None
+    if event_callback is not None:
+        event_callback(
+            "AgentFinished",
+            GENERATION_AGENT_ID,
+            agent_id=GENERATION_AGENT_ID,
+            phase="guided_question_generation",
+            question_count=len(questions),
+        )
+        event_callback(
+            "AgentStarted",
+            REVIEW_AGENT_ID,
+            agent_id=REVIEW_AGENT_ID,
+            phase="guided_question_review",
+        )
+    review_text = "\n".join(
+        f"{index}. {item['prompt']}" for index, item in enumerate(questions, 1)
+    )
+    review = run_review(
+        {
+            "task_id": task_id,
+            "query": (
+                "审核任务：判断以下启发式追问是否与原始问题相关、能否由给定证据"
+                "继续讨论，以及是否暗含证据之外的既定事实。候选内容应当是问题列表，"
+                "不要求回答原始问题。原始问题：" + query
+            ),
+            "content": review_text,
+            "context_chunks": passages,
+            "guided_question_review": True,
+        },
+        deps,
+    )
+    verdict = str(review.get("verdict") or "").lower()
+    approved = bool(
+        str(review.get("status") or "") == "completed"
+        and verdict == "approved"
+        and str(review.get("agent_id") or "") == REVIEW_AGENT_ID
+    )
+    if event_callback is not None:
+        event_callback(
+            "ReviewCompleted",
+            REVIEW_AGENT_ID,
+            agent_id=REVIEW_AGENT_ID,
+            phase="guided_question_review",
+            verdict=verdict,
+            question_count=len(questions),
+        )
+        event_callback(
+            "AgentFinished",
+            REVIEW_AGENT_ID,
+            agent_id=REVIEW_AGENT_ID,
+            phase="guided_question_review",
+        )
+    return {
+        "questions": tuple(questions) if approved else (),
+        "model_used": model_used,
+        "reviewer_executed": str(review.get("status") or "") == "completed",
+        "review_verdict": verdict,
+        "review_reason": str(review.get("reason") or ""),
+        "source_passage_count": len(passages),
+        "collaboration_path": "Generation → Reviewer → Guidance",
+    }
+
+
+def _long_form_resource_requested(query: str) -> bool:
+    """Return whether the learner explicitly requested a long teaching artifact."""
+
+    normalized = re.sub(r"\s+", "", str(query or "")).lower()
+    if re.search(r"(?:[1-9]\d{3,4})字", normalized):
+        return True
+    return any(
+        marker in normalized
+        for marker in (
+            "几千字",
+            "长文",
+            "专题讲义",
+            "完整讲义",
+            "教学讲义",
+            "课程讲义",
+            "完整报告",
+            "详细报告",
+        )
+    )
+
+
 def _requested_resource_character_target(query: str, default_target: int) -> int:
     """Read an explicit long-form length request without confusing values such as 3000 K."""
 
@@ -6319,8 +6588,7 @@ def _run_multi_candidate_generation(
             "reasoning_effort": "high",
         },
     ]
-    candidates: list[dict[str, Any]] = []
-    for s in strategies:
+    def generate_one(s: dict[str, Any]) -> dict[str, Any]:
         cand_input = {
             **input_data,
             "strategy_id": s["candidate_id"],
@@ -6331,7 +6599,18 @@ def _run_multi_candidate_generation(
             "_llm_reasoning_effort": s["reasoning_effort"],
             "review_feedback": review_feedback,
         }
-        cand = run_generation(cand_input, deps)
+        return run_generation(cand_input, deps)
+
+    # The three candidates are independent retrieval/generation views. Execute
+    # their network-bound work concurrently, while consuming results below in
+    # deterministic A/B/C order so public output and selection stay stable.
+    with ThreadPoolExecutor(
+        max_workers=len(strategies), thread_name_prefix="dy3-candidate"
+    ) as executor:
+        generated_candidates = list(executor.map(generate_one, strategies))
+
+    candidates: list[dict[str, Any]] = []
+    for s, cand in zip(strategies, generated_candidates, strict=True):
         # 通俗讲解/推演结果都是终端答案: 直接返回, 不参与多候选交叉验证/辩论/自纠,
         # 避免被「改写 query → 重新生成」覆盖成学术/检索答案 (persona #29④ / 推演逻辑)
         if cand.get("plain_language") or cand.get("deduced") or cand.get("honest_unavailable"):
@@ -8981,6 +9260,25 @@ def run_guidance(
         deps=deps,
         event_callback=_task_event,
     )
+    reviewed_guided_questions = _build_reviewed_guided_questions(
+        query=str(input_data.get("query") or ""),
+        task_id=collaboration_context.task_id,
+        quality_release=quality_release,
+        final_result=final_collaboration_result,
+        evidence_candidate=(
+            evidence_candidate
+            if isinstance(evidence_candidate, _EvidenceCandidate)
+            else None
+        ),
+        teaching_decision=adaptive_teaching_decision,
+        knowledge_context=(
+            knowledge_learning_context
+            if isinstance(knowledge_learning_context, KnowledgeLearningContext)
+            else None
+        ),
+        deps=deps,
+        event_callback=_task_event,
+    )
     result["task_events"] = task_state_runtime.get_task_events(task_context)
     collaboration_trace = _build_collaboration_trace(
         context=collaboration_context,
@@ -9047,6 +9345,7 @@ def run_guidance(
         final_result=final_collaboration_result,
         quality_release=quality_release,
         reviewed_long_form=reviewed_long_form,
+        reviewed_guided_questions=reviewed_guided_questions,
     )
     guidance_carrier["learning_resources"] = public_resource_projection(
         learning_resource_plan

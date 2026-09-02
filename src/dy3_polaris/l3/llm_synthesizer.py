@@ -11,8 +11,10 @@
 """
 from __future__ import annotations
 
+import json
 import logging
 import time
+from dataclasses import replace
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -55,6 +57,20 @@ _LONG_RESOURCE_SYSTEM_PROMPT = (
     "面向进阶学习者时使用‘机制→条件权衡→证据限制’；\n"
     "10. 使用清晰的 Markdown 二级标题，正文优先使用完整段落；"
     "证据索引篇幅不得超过全文四分之一。"
+)
+
+
+_GUIDED_QUESTION_SYSTEM_PROMPT = (
+    "你是科研学习任务中的知识生成 Agent。请基于已审核回答、给定证据、"
+    "知识概念和教学策略生成 2 至 3 个启发式追问。你只生成问题，不回答问题。\n"
+    "严格约束：\n"
+    "1. 问题必须能够由给定证据继续讨论，不能暗含证据外事实；\n"
+    "2. 优先覆盖前置概念检查、机制推导、证据边界或迁移应用；\n"
+    "3. 难度与给定教学深度一致，不得把声明背景当成已掌握事实；\n"
+    "4. 不输出提示词、思维链、Agent私有推理或答案；\n"
+    "5. 仅输出 JSON：{\"questions\":[{\"prompt\":\"...\","
+    "\"purpose\":\"SOCRATIC_MECHANISM\"}]}；不得使用 Markdown 代码围栏，"
+    "不得在 JSON 前后增加说明。"
 )
 
 
@@ -130,6 +146,16 @@ class LLMSynthesizer:
 
         return load_llm_config(role)
 
+    def _fallback_config_for_role(self, role: str, current: Any) -> Any | None:
+        if self._config_override:
+            return None
+        from dy3_polaris.l3.llm_config import load_fallback_llm_config
+
+        return load_fallback_llm_config(
+            role,
+            exclude_provider=str(getattr(current, "provider", "") or ""),
+        )
+
     @property
     def enabled(self) -> bool:
         return self._config.is_ready()
@@ -175,6 +201,19 @@ class LLMSynthesizer:
                 reasoning_effort=reasoning_effort,
                 route_config=route_config,
             )
+            if not answer.strip():
+                fallback_config = self._fallback_config_for_role(model_role, route_config)
+                if fallback_config is not None:
+                    answer = self._call_llm(
+                        query,
+                        evidence,
+                        enable_thinking=enable_thinking,
+                        learner_level=learner_level,
+                        teaching_strategy=teaching_strategy,
+                        model_role=model_role,
+                        reasoning_effort=reasoning_effort,
+                        route_config=fallback_config,
+                    )
             if not answer.strip():
                 return self._fallback(query, evidence), False
             self._last_used_llm = True
@@ -247,12 +286,207 @@ class LLMSynthesizer:
                 config=route_config,
             )
             if not str(answer or "").strip():
+                fallback_config = self._fallback_config_for_role(
+                    "generation_long", route_config
+                )
+                if fallback_config is not None:
+                    answer = chat_completion(
+                        [
+                            {"role": "system", "content": _LONG_RESOURCE_SYSTEM_PROMPT},
+                            {"role": "user", "content": prompt},
+                        ],
+                        temperature=min(float(self._config.temperature), 0.3),
+                        max_tokens=6144,
+                        disable_thinking=True,
+                        role="generation_long",
+                        config=fallback_config,
+                    )
+            if not str(answer or "").strip():
                 return "", False
             self._last_used_llm = True
             return str(answer).strip(), True
         except Exception as exc:  # noqa: BLE001
             logger.warning("长文学习资源生成失败, 交由证据编排降级: %s", type(exc).__name__)
             return "", False
+
+    def synthesize_guided_questions(
+        self,
+        *,
+        query: str,
+        reviewed_answer: str,
+        evidence: list[str],
+        concept_names: tuple[str, ...] = (),
+        prerequisite_names: tuple[str, ...] = (),
+        learner_level: str = "intermediate",
+        teaching_strategy: dict[str, Any] | None = None,
+    ) -> tuple[tuple[dict[str, str], ...], bool]:
+        """Generate source-bounded Socratic prompts for Reviewer validation.
+
+        There is intentionally no model-prose fallback.  Callers either send a
+        valid JSON question set through the real Reviewer or retain the
+        deterministic Concept/relation-backed prompts.
+        """
+
+        self._last_used_llm = False
+        route_config = self._config_for_role("generation_fast")
+        if (
+            not route_config.is_ready()
+            or not str(reviewed_answer or "").strip()
+            or not evidence
+        ):
+            return (), False
+        strategy = dict(teaching_strategy or {})
+        evidence_lines = [
+            f"[{index}] {str(item or '').strip()[:700]}"
+            for index, item in enumerate(evidence[:8], 1)
+            if str(item or "").strip()
+        ]
+        if not evidence_lines:
+            return (), False
+        prompt = "\n".join((
+            f"原始问题：{query}",
+            f"教学深度：{learner_level or 'intermediate'}",
+            "目标概念：" + "、".join(concept_names[:6]),
+            "待检查前置概念：" + "、".join(prerequisite_names[:4]),
+            "解释策略：" + str(
+                strategy.get("explanation_strategy") or "baseline_explanation"
+            ),
+            "",
+            "【已审核回答】",
+            str(reviewed_answer).strip()[:2400],
+            "",
+            "【给定证据】",
+            *evidence_lines,
+        ))
+        try:
+            from dy3_polaris.l3.llm_config import chat_completion
+
+            try:
+                question_config = replace(
+                    route_config,
+                    timeout_seconds=max(
+                        float(getattr(route_config, "timeout_seconds", 0.0) or 0.0),
+                        20.0,
+                    ),
+                )
+            except (TypeError, ValueError):
+                question_config = route_config
+            raw = chat_completion(
+                [
+                    {"role": "system", "content": _GUIDED_QUESTION_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=min(float(route_config.temperature), 0.25),
+                max_tokens=min(int(route_config.max_tokens), 700),
+                disable_thinking=True,
+                role="generation_fast",
+                config=question_config,
+            )
+            parsed = self._parse_guided_questions(str(raw or ""))
+            if not parsed:
+                fallback_config = self._fallback_config_for_role(
+                    "generation_fast", route_config
+                )
+                if fallback_config is not None:
+                    try:
+                        fallback_config = replace(
+                            fallback_config,
+                            timeout_seconds=max(
+                                float(
+                                    getattr(
+                                        fallback_config, "timeout_seconds", 0.0
+                                    )
+                                    or 0.0
+                                ),
+                                20.0,
+                            ),
+                        )
+                    except (TypeError, ValueError):
+                        pass
+                    raw = chat_completion(
+                        [
+                            {"role": "system", "content": _GUIDED_QUESTION_SYSTEM_PROMPT},
+                            {"role": "user", "content": prompt},
+                        ],
+                        temperature=min(float(fallback_config.temperature), 0.25),
+                        max_tokens=min(int(fallback_config.max_tokens), 700),
+                        disable_thinking=True,
+                        role="generation_fast",
+                        config=fallback_config,
+                    )
+                    parsed = self._parse_guided_questions(str(raw or ""))
+            if not parsed:
+                return (), False
+            self._last_used_llm = True
+            return parsed, True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("启发式追问生成失败, 保留关系约束追问: %s", type(exc).__name__)
+            return (), False
+
+    @staticmethod
+    def _parse_guided_questions(raw: str) -> tuple[dict[str, str], ...]:
+        text = str(raw or "").strip()
+        if not text:
+            return ()
+
+        # Domestic OpenAI-compatible endpoints occasionally wrap otherwise
+        # valid JSON in a code fence or append one short natural-language
+        # sentence.  Accept only a syntactically valid JSON value from that
+        # envelope; never attempt to infer or repair question content.
+        candidates = [text]
+        if "```" in text:
+            fenced = text.split("```")
+            candidates.extend(
+                block.removeprefix("json").strip()
+                for index, block in enumerate(fenced)
+                if index % 2 == 1 and block.strip()
+            )
+        payload: Any = None
+        decoder = json.JSONDecoder()
+        for candidate in candidates:
+            try:
+                payload = json.loads(candidate)
+                break
+            except (TypeError, ValueError):
+                for marker in ("{", "["):
+                    start = candidate.find(marker)
+                    if start < 0:
+                        continue
+                    try:
+                        payload, _ = decoder.raw_decode(candidate[start:])
+                        break
+                    except (TypeError, ValueError):
+                        continue
+                if payload is not None:
+                    break
+        if payload is None:
+            return ()
+        items = payload.get("questions") if isinstance(payload, dict) else payload
+        if not isinstance(items, list):
+            return ()
+        allowed = {
+            "PREREQUISITE_CHECK",
+            "SOCRATIC_MECHANISM",
+            "EVIDENCE_BOUNDARY",
+            "TRANSFER_CHALLENGE",
+            "SELF_EXPLANATION",
+        }
+        result: list[dict[str, str]] = []
+        for index, item in enumerate(items[:3], 1):
+            if not isinstance(item, dict):
+                continue
+            question = str(item.get("prompt") or item.get("question") or "").strip()
+            purpose = str(item.get("purpose") or "SOCRATIC_MECHANISM").upper()
+            if not question or len(question) > 220:
+                continue
+            if purpose not in allowed:
+                purpose = "SOCRATIC_MECHANISM"
+            result.append({
+                "question_id": f"model-guided-{index}",
+                "prompt": question,
+                "purpose": purpose,
+            })
+        return tuple(result)
 
     def _call_llm(
         self,

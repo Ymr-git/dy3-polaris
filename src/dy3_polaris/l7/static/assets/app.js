@@ -176,7 +176,9 @@ function bindTopbar(){
   }
   if(loginBtn)loginBtn.addEventListener('click',function(){if(S.tk){auth.logout();syncTopbar()}else olv()});
   if(themeBtn)themeBtn.addEventListener('click',function(){tt();themeBtn.textContent=S.th==='dark'?'☀':'🌙'});
-  if(settingsBtn)settingsBtn.addEventListener('click',function(){sv('settings')});
+  if(settingsBtn)settingsBtn.addEventListener('click',function(){
+    d.dispatchEvent(new CustomEvent('dy3-open-model-config'));
+  });
   syncTopbar();probeHealth();
 }
 /* ---- 顶栏导航: 取消一级分组, 二级功能直接平铺到顶栏 ---- */

@@ -79,6 +79,25 @@ def _call_llm(messages: list[dict[str, str]], *, temperature: float, max_tokens:
             disable_thinking=True,
             role="review",
         )
+        if not raw:
+            from dy3_polaris.l3.llm_config import (
+                load_fallback_llm_config,
+                load_llm_config,
+            )
+
+            current = load_llm_config("review")
+            fallback = load_fallback_llm_config(
+                "review", exclude_provider=current.provider
+            )
+            if fallback is not None:
+                raw = chat_completion(
+                    messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    disable_thinking=True,
+                    role="review",
+                    config=fallback,
+                )
         return raw or None
     except Exception as exc:  # noqa: BLE001
         logger.debug("LLM critic 调用失败: %s", type(exc).__name__)
@@ -142,10 +161,340 @@ def _content_terms(text: str) -> set[str]:
     s = _QUERY_STOP.sub(" ", str(text or ""))
     terms: set[str] = set()
     for m in re.finditer(r"[一-鿿]{2,}|[A-Za-z][A-Za-z0-9+\-]{1,}", s):
-        terms.add(_norm_term(m.group(0).lower()))
+        value = _norm_term(m.group(0).lower())
+        terms.add(value)
+        if re.fullmatch(r"[一-鿿]+", value):
+            # Chinese scientific questions do not contain whitespace between
+            # concepts.  Treating a whole clause as one token made
+            # “共沉淀…均匀混合” appear covered when an answer only repeated
+            # “共沉淀”.  Bounded n-grams provide a deterministic focus signal
+            # without embedding benchmark answers or domain conclusions.
+            bounded = value[:120]
+            for width in range(2, min(4, len(bounded)) + 1):
+                terms.update(
+                    bounded[index : index + width]
+                    for index in range(len(bounded) - width + 1)
+                )
     for sym in _extract_ions(s):
         terms.add(sym.lower())
     return terms
+
+
+_FOCUS_GENERIC_TERMS = {
+    "dy", "dy3", "材料", "发光", "性能", "问题", "方面", "过程",
+    "情况", "通常", "可能", "进行", "用于", "利用", "理解", "分析",
+}
+
+
+def _normalise_focus(value: str) -> str:
+    text = str(value or "").casefold().replace("³⁺", "3+").replace("dy(iii)", "dy3+")
+    return re.sub(r"[\s\-–—_:/,，。；;！？?（）()\[\]]+", "", text)
+
+
+def _focus_term_present(
+    term: str,
+    *,
+    normalized_text: str,
+    text_terms: set[str],
+) -> bool:
+    """Match compact scientific aliases without ASCII substring collisions.
+
+    Short Latin aliases such as ``ratio`` must be standalone terms; otherwise
+    they incorrectly match unrelated words such as ``fabrication``.  Longer
+    compact aliases (for example ``yellowblue``) remain valid after notation
+    normalization.
+    """
+
+    if re.fullmatch(r"[a-z0-9+]+", term) and len(term) <= 5:
+        return term in text_terms
+    return term in normalized_text
+
+
+def _concept_focus_groups(question: str) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    """Resolve canonical Concept groups which the answer must address.
+
+    Concept aliases are used only as semantic identity and synonym data.  No
+    Concept description or relation is treated as answer evidence here.
+    """
+
+    try:
+        from dy3_polaris.l3.concept_relations import build_concept_relation_network
+        from dy3_polaris.l5.knowledge_learning_fusion import resolve_concepts
+
+        network = build_concept_relation_network()
+        concept_ids = resolve_concepts(network, question, limit=6)
+    except Exception:  # noqa: BLE001 - Reviewer must remain locally usable
+        return ()
+
+    groups: list[tuple[str, tuple[str, ...]]] = []
+    for concept_id in concept_ids:
+        concept = network.foundation.concepts.get(concept_id)
+        if concept is None:
+            continue
+        terms: list[str] = []
+        for value in (concept.canonical_name, *concept.aliases):
+            normalized = _normalise_focus(value)
+            if len(normalized) >= 2 and normalized not in _FOCUS_GENERIC_TERMS:
+                terms.append(normalized)
+            for han_part in re.findall(r"[一-鿿]{2,}", str(value or "")):
+                for width in range(2, min(4, len(han_part)) + 1):
+                    for index in range(len(han_part) - width + 1):
+                        ngram = han_part[index : index + width]
+                        if ngram not in _FOCUS_GENERIC_TERMS:
+                            terms.append(ngram)
+            for part in re.split(r"[\s、，,；;：:（）()\[\]/与和及]+", str(value or "")):
+                normalized_part = _normalise_focus(part)
+                if (
+                    len(normalized_part) >= 2
+                    and normalized_part not in _FOCUS_GENERIC_TERMS
+                ):
+                    terms.append(normalized_part)
+        unique = tuple(dict.fromkeys(terms))
+        if unique:
+            groups.append((concept.canonical_name, unique))
+    return tuple(groups)
+
+
+def _parallel_dimension_groups(question: str) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    """Extract explicit A/B/list dimensions from the user's own wording."""
+
+    raw = str(question or "").strip()
+    if not re.search(r"(?:与|和|及|、|分别)", raw):
+        return ()
+
+    # Prefer the explicit comparison/list span over every conjunction in the
+    # sentence.  Scientific questions often contain nested coordination, for
+    # example ``SEM与TEM在形貌和微结构表征中分别...``.  Splitting every
+    # ``和`` invents a third requested object (``微结构表征中...``) and makes
+    # a complete answer fail.  These selectors use only the user's wording;
+    # they neither encode an answer nor name benchmark cases.
+    candidate = raw
+    simultaneous = re.search(
+        r"同时(?:考虑|看|评价|关注|比较|报告)\s*(.+?)(?:[？?。]|$)",
+        raw,
+    )
+    if simultaneous:
+        candidate = simultaneous.group(1)
+    elif "分别" in raw:
+        before_context = re.split(r"(?:在|对|用于)", raw, maxsplit=1)[0]
+        if re.search(r"(?:与|和|及|、)", before_context):
+            candidate = before_context
+    elif "，" in raw or "," in raw:
+        tail = re.split(r"[，,]", raw)[-1]
+        if re.search(r"(?:与|和|及|、)", tail):
+            candidate = tail
+
+    cleaned = re.sub(
+        r"为什么|怎么|如何|怎样|有什么|有哪些|是什么|能否|是否|请问|"
+        r"分别|用于|理解|判断|评价|影响|改变|导致|之间|关系|区别|差异|"
+        r"同时|考虑|关注|比较|报告|应该|应当|需要|指标|性能|能提供|信息",
+        " ",
+        candidate,
+    )
+    parts = [
+        part.strip(" ，。；;：:！？?")
+        for part in re.split(r"(?:与|和|及|、)", cleaned)
+        if part.strip(" ，。；;：:！？?")
+    ]
+    if len(parts) < 2 or len(parts) > 5:
+        return ()
+    groups: list[tuple[str, tuple[str, ...]]] = []
+    for part in parts:
+        terms = tuple(
+            sorted(
+                (
+                    term
+                    for term in _content_terms(part)
+                    if len(term) >= 2 and term not in _FOCUS_GENERIC_TERMS
+                ),
+                key=lambda value: (-len(value), value),
+            )[:16]
+        )
+        if terms:
+            groups.append((part[:24], terms))
+    return tuple(groups) if len(groups) >= 2 else ()
+
+
+def _mechanism_linked_to_focus(
+    question: str,
+    text: str,
+    concept_groups: tuple[tuple[str, tuple[str, ...]], ...],
+) -> bool:
+    """Require an explanatory clause to name the question's actual Concept.
+
+    Global keyword coverage is insufficient for multi-source synthesis: one
+    sentence can name the requested method while a different sentence explains
+    a neighbouring method.  Such a response contains all expected words but
+    still does not answer the question.  This bounded clause-level check uses
+    only canonical Concept identity and causal language; it does not encode a
+    scientific answer or infer truth.
+    """
+
+    mechanism_question = bool(re.search(
+        r"为什么|原因|机理|机制|原理|(?:怎么|如何|怎样)影响|"
+        r"why|cause|mechanism|how does",
+        str(question or ""),
+        flags=re.IGNORECASE,
+    ))
+    if not mechanism_question:
+        return True
+
+    relation_re = re.compile(
+        r"因为|由于|所以|因此|因而|源于|来自|取决于|导致|引起|产生|形成|"
+        r"使得|使|会|可以|可|能够|不能|不可|需要|需|必须|约束|减少|增加|"
+        r"从而|意味着|决定|改变|影响|促进|通过|"
+        r"because|therefore|due to|result in|lead to|cause|affect|determine|"
+        r"depend|arise from|through|can|cannot|must|require|increase|reduce",
+        flags=re.IGNORECASE,
+    )
+    clauses = tuple(
+        part.strip()
+        for part in re.split(r"[。！？!?\n]+", str(text or ""))
+        if part.strip()
+    )
+    for clause in clauses:
+        if not relation_re.search(clause):
+            continue
+        normalized_clause = _normalise_focus(clause)
+        clause_terms = _content_terms(clause)
+        for label, aliases in concept_groups:
+            identity_terms = tuple(dict.fromkeys((
+                _normalise_focus(label),
+                *(
+                    term for term in aliases
+                    if len(term) >= 3
+                ),
+            )))
+            if any(
+                _focus_term_present(
+                    term,
+                    normalized_text=normalized_clause,
+                    text_terms=clause_terms,
+                )
+                for term in identity_terms
+                if len(term) >= 3
+            ):
+                return True
+    return False
+
+
+def _question_focus_coverage(question: str, text: str) -> dict[str, Any]:
+    """Measure whether ``text`` addresses the question's explicit focus.
+
+    This is a coverage gate, not a truth evaluator: facts still need evidence,
+    FactChecker and anti-hallucination review.
+    """
+
+    normalized_text = _normalise_focus(text)
+    text_terms = _content_terms(text)
+    query_terms = {
+        term
+        for term in _content_terms(question)
+        if len(term) >= 2 and term not in _FOCUS_GENERIC_TERMS
+    }
+    lexical_coverage = (
+        len(query_terms.intersection(text_terms)) / len(query_terms)
+        if query_terms else 0.5
+    )
+
+    concept_groups = _concept_focus_groups(question)
+    missing_concepts = tuple(
+        label
+        for label, terms in concept_groups
+        if not any(
+            _focus_term_present(
+                term,
+                normalized_text=normalized_text,
+                text_terms=text_terms,
+            )
+            for term in terms
+        )
+    )
+    concept_coverage = (
+        (len(concept_groups) - len(missing_concepts)) / len(concept_groups)
+        if concept_groups else None
+    )
+
+    dimension_groups = _parallel_dimension_groups(question)
+    missing_dimensions = tuple(
+        label
+        for label, terms in dimension_groups
+        if not any(
+            _focus_term_present(
+                _normalise_focus(term),
+                normalized_text=normalized_text,
+                text_terms=text_terms,
+            )
+            for term in terms
+        )
+    )
+    dimension_coverage = (
+        (len(dimension_groups) - len(missing_dimensions)) / len(dimension_groups)
+        if dimension_groups else None
+    )
+
+    mechanism_question = bool(re.search(
+        r"为什么|原因|机理|机制|原理|(?:怎么|如何|怎样)影响|"
+        r"why|cause|mechanism|how does",
+        str(question or ""),
+        flags=re.IGNORECASE,
+    ))
+    explanation_marker = bool(re.search(
+        r"因为|由于|所以|因此|说明|表明|意味着|不能|需要|导致|引起|产生|"
+        r"使得|使|会|可以|可|能够|不可|需|必须|约束|从而|决定|改变|影响|促进|"
+        r"增强|降低|减少|增加|依赖|通过|cause|because|therefore|affect|determine|"
+        r"lead to|result in|depend|can|cannot|must|require|increase|reduce",
+        str(text or ""),
+        flags=re.IGNORECASE,
+    ))
+    mechanism_linked = _mechanism_linked_to_focus(
+        question,
+        text,
+        concept_groups,
+    )
+    intent_covered = (
+        not mechanism_question
+        or (explanation_marker and mechanism_linked)
+    )
+
+    parts = [lexical_coverage]
+    if concept_coverage is not None:
+        parts.extend((concept_coverage, concept_coverage))
+    if dimension_coverage is not None:
+        parts.extend((dimension_coverage, dimension_coverage))
+    score = sum(parts) / len(parts)
+
+    concept_block = bool(
+        concept_coverage is not None
+        and concept_coverage < (1.0 if len(concept_groups) <= 3 else 0.75)
+    )
+    dimension_block = bool(
+        dimension_coverage is not None and dimension_coverage < 1.0
+    )
+    # A resolved canonical Concept is a stronger semantic identity signal than
+    # literal Chinese n-gram overlap.  The mechanism and explicit-dimension
+    # guards below still require an actual explanation; lexical overlap is a
+    # fallback only when the question cannot be resolved to the Concept layer.
+    # This prevents a correct sentence about “宿主有效声子能量” from failing
+    # merely because the question also contains the surface phrase “稀土发光”.
+    lexical_block = bool(
+        not concept_groups and lexical_coverage < 0.20
+    )
+    return {
+        "score": round(score, 4),
+        "lexical_coverage": round(lexical_coverage, 4),
+        "concept_coverage": (
+            round(concept_coverage, 4) if concept_coverage is not None else None
+        ),
+        "dimension_coverage": (
+            round(dimension_coverage, 4) if dimension_coverage is not None else None
+        ),
+        "missing_concepts": missing_concepts,
+        "missing_dimensions": missing_dimensions,
+        "intent_covered": intent_covered,
+        "mechanism_linked": mechanism_linked,
+        "blocking": concept_block or dimension_block or lexical_block or not intent_covered,
+    }
 
 
 def _heuristic(question: str, answer: str, context_chunks: list[str]) -> dict[str, Any]:
@@ -157,12 +506,25 @@ def _heuristic(question: str, answer: str, context_chunks: list[str]) -> dict[st
     q_ions = _extract_ions(question)
     a_ions = _extract_ions(answer)
     ev_ions = _extract_ions(ev_text)
+    answer_focus = _question_focus_coverage(question, answer)
+    evidence_focus = _question_focus_coverage(question, ev_text)
 
     # 1. 相关性: 问题内容词在「答案+证据」中的覆盖率
     if q_terms:
         relevance = len(q_terms & (a_terms | ev_terms)) / len(q_terms)
     else:
         relevance = 0.5
+    # Canonical Concept and explicit-dimension coverage is more robust than
+    # literal n-gram overlap when the question compresses notation and the
+    # answer expands it (for example “黄蓝双发射” into two transition lines).
+    relevance = max(
+        relevance,
+        min(
+            1.0,
+            0.7 * float(answer_focus["score"])
+            + 0.3 * float(evidence_focus["score"]),
+        ),
+    )
     # 离子特异性 (防"张冠李戴"): 问题点名某离子, 答案却只谈别的离子 → 相关性打折
     if q_ions:
         if a_ions and not (q_ions & a_ions):
@@ -183,7 +545,12 @@ def _heuristic(question: str, answer: str, context_chunks: list[str]) -> dict[st
         coverage = len(q_terms & a_terms) / len(q_terms)
     else:
         coverage = 0.5
-    completeness = 0.5 * length_ok + 0.5 * coverage
+    completeness = max(
+        0.3 * length_ok
+        + 0.25 * coverage
+        + 0.45 * float(answer_focus["score"]),
+        0.8 * float(answer_focus["score"]),
+    )
 
     score = round(0.4 * relevance + 0.4 * faithfulness + 0.2 * completeness, 4)
 
@@ -200,9 +567,32 @@ def _heuristic(question: str, answer: str, context_chunks: list[str]) -> dict[st
         verdict, reason = "fix_faithfulness", "答案含化学式/数值碎片(上下标丢失)"
     elif relevance < 0.35 and not ev_terms:
         verdict, reason = "unanswerable", "证据为空, 不足以回答"
+    elif answer_focus["blocking"]:
+        missing = tuple(dict.fromkeys((
+            *answer_focus["missing_concepts"],
+            *answer_focus["missing_dimensions"],
+            *(
+                ()
+                if answer_focus["intent_covered"]
+                else ("问题核心概念与因果机制的直接关联",)
+            ),
+        )))
+        missing_text = "、".join(missing[:5]) or "问题核心维度"
+        if ev_terms and not evidence_focus["blocking"]:
+            verdict, reason = (
+                "fix_completeness",
+                f"问题核心覆盖不足：回答缺少{missing_text}；现有证据可支持修订",
+            )
+        elif ev_terms:
+            verdict, reason = (
+                "fix_relevance",
+                f"检索焦点偏移：答案与证据均未覆盖{missing_text}",
+            )
+        else:
+            verdict, reason = "unanswerable", f"证据不足以覆盖{missing_text}"
     elif relevance < 0.35:
         verdict, reason = "fix_relevance", "答案与问题主题相关性不足, 检索可能偏离"
-    elif completeness < 0.3:
+    elif completeness < 0.5:
         verdict, reason = "fix_completeness", "答案过于简略, 未覆盖问题核心要点"
     else:
         verdict, reason = "pass", "相关且基本忠实"
@@ -297,9 +687,11 @@ def critique_answer(
     # 满血版 LLM 语义判断 (主)
     llm = _llm_critique(question, answer, context_chunks)
     if llm is not None:
-        # 安全网: 启发式检测到硬伤 (离子张冠李戴/碎片) 时, 强制降级为 fix_faithfulness
-        if h["verdict"] == "fix_faithfulness" and llm["verdict"] == "pass":
-            llm["verdict"] = "fix_faithfulness"
+        # Deterministic safety/completeness gates cannot be overridden by a
+        # permissive model PASS.  The model remains an additional challenger,
+        # while explicit question coverage is reproducible and testable.
+        if h["verdict"] != "pass" and llm["verdict"] == "pass":
+            llm["verdict"] = h["verdict"]
             llm["score"] = min(llm["score"], 0.5)
             llm["reason"] = h["reason"]
         llm["used_llm"] = True

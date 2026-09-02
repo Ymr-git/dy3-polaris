@@ -14,6 +14,11 @@ from typing import Any, Iterable, Mapping
 
 from dy3_polaris.l3.concept_foundation import canonical_concepts
 from dy3_polaris.l5.knowledge_learning_fusion import KnowledgeLearningContext
+from dy3_polaris.l5.learner_foundation import (
+    AdaptiveTeachingDecision,
+    PersonalLearnerModel,
+    build_initial_teaching_profile_candidates,
+)
 from dy3_polaris.l5.learner_intelligence import LearnerIntelligenceView
 
 
@@ -77,6 +82,7 @@ class LearningWorkspaceView:
     blocking_prerequisites: tuple[Mapping[str, str], ...]
     current_challenge_decision: Mapping[str, str]
     teaching_adaptation_summary: Mapping[str, Any]
+    initial_profile_analysis: Mapping[str, Any]
     capability_coverage: tuple[CapabilityCoverage, ...]
     learning_sequence: tuple[LearningSequenceStep, ...]
     recent_changes: tuple[Mapping[str, Any], ...]
@@ -292,6 +298,53 @@ def build_learning_workspace_view(
         "representation_modes": list(getattr(teaching, "representation_modes", ()) or ()),
         "source_class": "DECISION",
     }
+    personal_model = learner_view.value(
+        "derived_context", "personal_learner_model"
+    )
+    profile_candidates = (
+        build_initial_teaching_profile_candidates(personal_model, teaching)
+        if isinstance(personal_model, PersonalLearnerModel)
+        and isinstance(teaching, AdaptiveTeachingDecision)
+        else ()
+    )
+    selected_profile = next(
+        (item for item in profile_candidates if item.selected), None
+    )
+    initial_profile_analysis = {
+        "status": (
+            "DIAGNOSTIC_REQUIRED"
+            if bool(getattr(getattr(personal_model, "diagnostic", None), "needed", True))
+            else "EVIDENCE_ADAPTED"
+        ),
+        "evidence_basis": (
+            selected_profile.evidence_basis if selected_profile else "UNKNOWN"
+        ),
+        "selected_candidate_id": (
+            selected_profile.candidate_id if selected_profile else ""
+        ),
+        "diagnostic_target": str(
+            getattr(
+                getattr(personal_model, "diagnostic", None),
+                "target_concept",
+                "unknown",
+            )
+        ),
+        "candidates": tuple(
+            {
+                "candidate_id": item.candidate_id,
+                "label": item.label,
+                "content_depth": item.content_depth,
+                "explanation_strategy": item.explanation_strategy,
+                "representation_modes": tuple(item.representation_modes),
+                "fit_score": item.fit_score,
+                "selected": item.selected,
+                "evidence_basis": item.evidence_basis,
+                "diagnostic_required": item.diagnostic_required,
+                "rationale": tuple(item.rationale),
+            }
+            for item in profile_candidates
+        ),
+    }
 
     focus_coverage = coverage_by_id.get(next_concept)
     focus = {
@@ -388,6 +441,7 @@ def build_learning_workspace_view(
             "source_class": "DECISION",
         },
         teaching_adaptation_summary=teaching_summary,
+        initial_profile_analysis=initial_profile_analysis,
         capability_coverage=coverages,
         learning_sequence=tuple(sequence),
         recent_changes=timeline,
@@ -417,6 +471,20 @@ def public_learning_workspace_projection(view: LearningWorkspaceView) -> dict[st
         "blocking_prerequisites": [dict(item) for item in view.blocking_prerequisites],
         "current_challenge_decision": dict(view.current_challenge_decision),
         "teaching_adaptation_summary": dict(view.teaching_adaptation_summary),
+        "initial_profile_analysis": {
+            **dict(view.initial_profile_analysis),
+            "candidates": [
+                {
+                    **dict(item),
+                    "representation_modes": list(
+                        item.get("representation_modes") or ()
+                    ),
+                    "rationale": list(item.get("rationale") or ()),
+                }
+                for item in view.initial_profile_analysis.get("candidates", ())
+                if isinstance(item, Mapping)
+            ],
+        },
         "capability_coverage": [
             {
                 "concept_id": item.concept_id,

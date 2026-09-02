@@ -1769,7 +1769,7 @@ class _UnifiedHandlers:
         }))
 
     async def api_llm_config_get(self, request: Request) -> JSONResponse:
-        """GET /api/llm/config — 读取当前 LLM 配置 (脱敏, 不返回明文密钥)."""
+        """GET /api/llm/config — read all model routes without cleartext keys."""
         from dy3_polaris.l3.llm_config import _runtime_summary
         return JSONResponse(_ok(_runtime_summary()))
 
@@ -1782,18 +1782,80 @@ class _UnifiedHandlers:
             body = await request.json()
         except Exception:
             return JSONResponse(_err(-32700, "请求体必须是合法 JSON"), status_code=400)
-        provider = str(body.get("provider", "") or "").strip()
-        if not provider:
-            return JSONResponse(_err(-32700, "缺少必填参数: provider"), status_code=400)
-        from dy3_polaris.l3.llm_config import set_runtime_config
+        from dy3_polaris.l3.llm_config import set_multi_runtime_config, set_runtime_config
 
-        summary = set_runtime_config(
-            provider=provider,
-            api_key=str(body.get("api_key", "") or ""),
-            base_url=str(body.get("base_url", "") or ""),
-            model=str(body.get("model", "") or ""),
-        )
+        try:
+            if isinstance(body.get("providers"), (list, dict)):
+                summary = set_multi_runtime_config(
+                    body.get("providers") or [],
+                    role_routes=body.get("role_routes")
+                    if isinstance(body.get("role_routes"), dict)
+                    else None,
+                    persist=bool(body.get("persist", False)),
+                )
+            else:
+                provider = str(body.get("provider", "") or "").strip()
+                if not provider:
+                    return JSONResponse(
+                        _err(-32700, "缺少必填参数: provider"), status_code=400
+                    )
+                summary = set_runtime_config(
+                    provider=provider,
+                    api_key=str(body.get("api_key", "") or ""),
+                    base_url=str(body.get("base_url", "") or ""),
+                    model=str(body.get("model", "") or ""),
+                )
+        except ValueError as exc:
+            return JSONResponse(_err(-32602, str(exc)), status_code=400)
         return JSONResponse(_ok(summary))
+
+    async def api_llm_config_test(self, request: Request) -> JSONResponse:
+        """Test one provider from the server; never proxy model text or secrets."""
+
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(_err(-32700, "请求体必须是合法 JSON"), status_code=400)
+        provider = str(body.get("provider") or "").strip().lower()
+        try:
+            from dy3_polaris.l3.llm_config import (
+                chat_completion,
+                last_model_call_status,
+                load_provider_config,
+            )
+
+            config = load_provider_config(
+                provider,
+                api_key=str(body.get("api_key") or ""),
+                base_url=str(body.get("base_url") or ""),
+                model=str(body.get("model") or ""),
+            )
+        except ValueError as exc:
+            return JSONResponse(_err(-32602, str(exc)), status_code=400)
+        role = f"connection_test_{provider}"
+        started = time.perf_counter()
+        answer = chat_completion(
+            [
+                {"role": "system", "content": "只执行连接检查。"},
+                {"role": "user", "content": "只回复 OK"},
+            ],
+            temperature=0.0,
+            # Some reasoning models consume a short hidden prefix before the
+            # visible "OK"; keep this bounded but large enough to observe text.
+            max_tokens=128,
+            disable_thinking=True,
+            role=role,
+            config=config,
+        )
+        status = last_model_call_status(role)
+        return JSONResponse(_ok({
+            "provider": provider,
+            "model": config.resolve_model(),
+            "success": bool(answer),
+            "failure_kind": str(status.get("failure_kind") or ""),
+            "http_status": status.get("http_status"),
+            "latency_ms": round((time.perf_counter() - started) * 1000),
+        }))
 
     # ---- 个性化学习资源生成 (3 种形态: 定制化讲解 / 实操指南 / 分阶测试题) ----
 
@@ -3147,6 +3209,13 @@ class UnifiedApp:
         )
         routes.append(
             Route("/api/llm/config", self._handlers.api_llm_config_set, methods=["POST"])
+        )
+        routes.append(
+            Route(
+                "/api/llm/config/test",
+                self._handlers.api_llm_config_test,
+                methods=["POST"],
+            )
         )
         # 个性化学习资源生成 (3 种形态: 定制化讲解/实操指南/分阶测试题)
         routes.append(

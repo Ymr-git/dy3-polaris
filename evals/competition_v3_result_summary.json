@@ -1,0 +1,56 @@
+{
+  "benchmark_id": "dy3-polaris-competition-v3",
+  "benchmark_version": "3.0.0",
+  "generated_at": 1788226981.371051,
+  "elapsed_seconds": 114.672,
+  "official_full_run": true,
+  "overall_pass": false,
+  "sample_volume": {
+    "synthetic_learner_profiles": 3,
+    "paired_adaptation_cases": 24,
+    "real_domain_questions": 50,
+    "out_of_domain_refusal_guards": 1,
+    "job_task_cases": 3,
+    "feedback_loop_cases": 6,
+    "total_measured_behaviors": 84
+  },
+  "metrics": {
+    "benchmark_grounded_cases": "51/51",
+    "unsafe_release_rate": 0.0,
+    "answer_availability_rate": 0.9574,
+    "domain_behavior_accuracy": 0.6078,
+    "learner_resource_fit_accuracy": 1.0,
+    "differentiated_topic_rate": 1.0,
+    "job_task_fit_accuracy": 1.0,
+    "feedback_loop_pass_rate": 1.0,
+    "curriculum_source_candidate_coverage": 0.9375
+  },
+  "failed_scientific_case_ids": [
+    "SQ-01",
+    "SQ-10",
+    "SQ-26",
+    "SQ-27",
+    "SQ-29",
+    "SQ-31",
+    "SQ-33",
+    "SQ-34",
+    "SQ-35",
+    "SQ-36",
+    "SQ-37",
+    "SQ-38",
+    "SQ-39",
+    "SQ-40",
+    "SQ-42",
+    "SQ-44",
+    "SQ-47",
+    "SQ-48",
+    "SQ-50",
+    "SQ-51"
+  ],
+  "limitations": [
+    "Learner profiles are synthetic teaching priors, not real people or observed mastery.",
+    "Domain questions and knowledge bindings are real, but responses are automated system runs.",
+    "Unsafe release rate is an automated gate metric, not expert-certified hallucination rate.",
+    "Concept source coverage indicates DocumentChunk candidates, not direct support for every possible claim."
+  ]
+}

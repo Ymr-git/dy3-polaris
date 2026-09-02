@@ -44,6 +44,13 @@ def test_unknown_learner_can_ask_without_fake_mastery_or_resume() -> None:
     assert data["learner_summary"]["observed_record_count"] == 0
     assert data["learner_summary"]["modelled_kp_count"] == 0
     assert data["resume_action"] is None
+    analysis = data["initial_profile_analysis"]
+    assert analysis["status"] == "DIAGNOSTIC_REQUIRED"
+    assert analysis["evidence_basis"] == "UNKNOWN"
+    assert len(analysis["candidates"]) == 3
+    selected = next(item for item in analysis["candidates"] if item["selected"])
+    assert selected["candidate_id"] == "foundation_scaffold"
+    assert selected["diagnostic_required"] is True
 
 
 def test_capability_eligibility_uses_real_authored_practice_coverage() -> None:

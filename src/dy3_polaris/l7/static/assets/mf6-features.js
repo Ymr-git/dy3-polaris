@@ -199,7 +199,6 @@
     var role = currentRole() || 'Guest';
     var theme = d.documentElement.getAttribute('data-theme') === 'dark' ? '深色' : '浅色';
     var sid = window.S && window.S.lid ? window.S.lid : (localStorage.getItem('dl') || '-');
-    var savedApiModel = localStorage.getItem('dy3_api_model') || 'deepseek-v4-flash';
     // 学习数据紧凑行
     var dataBox = '<div class="callout" style="margin-top:12px;padding:8px 12px"><strong>学习数据</strong> <span id="mf6DataInfo" style="font-size:12px">正在读取画像…</span></div>';
     ct.innerHTML = '<div class="card"><h3>设置</h3>' +
@@ -222,8 +221,8 @@
       // 功能键: API 配置 (点击弹出弹窗, 参照 Trae 设置风格)
       '<div class="section-header" style="margin-top:14px"><span class="section-icon">🔑</span><h4>模型接入</h4><span class="section-line"></span></div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">' +
-      '<button class="btn primary" id="openApiConfig">API 配置</button>' +
-      '<span style="font-size:12px;color:var(--muted)">当前模型: <b>' + esc(savedApiModel) + '</b></span>' +
+      '<button class="btn primary" id="openApiConfig">配置四模型</button>' +
+      '<span id="modelRouteSummary" style="font-size:12px;color:var(--muted)">正在读取模型路由…</span>' +
       '</div>' +
       dataBox + '</div>';
 
@@ -261,6 +260,18 @@
     var oac = g('openApiConfig');
     if (oac) oac.addEventListener('click', function () { openApiConfigModal(); });
 
+    apiReq('GET', '/api/llm/config').then(function (cfg) {
+      var target = g('modelRouteSummary');
+      if (!target) return;
+      var routes = (cfg && cfg.routes) || {};
+      var ready = Object.keys(routes).filter(function (key) { return routes[key] && routes[key].ready; });
+      var providers = {};
+      ready.forEach(function (key) { providers[routes[key].provider] = true; });
+      target.innerHTML = ready.length
+        ? '<b>' + Object.keys(providers).length + ' 家模型已接入</b> · ' + ready.length + ' 个职责路由可用'
+        : '尚未配置真实模型，系统将使用证据约束降级路径';
+    }).catch(function () {});
+
     apiReq('GET', '/l2/profile/' + learnerId()).then(function (p) {
       var di = g('mf6DataInfo');
       if (!di) return;
@@ -279,122 +290,125 @@
     });
   }
 
-  /* ---------- API 配置弹窗 (provider 选择 + 预设地址/模型, 用户只填 Key) ---------- */
+  /* ---------- 四模型配置：密钥只发送到本机后端，不由浏览器直连供应商 ---------- */
   var LLM_PROVIDERS = [
-    { key: 'deepseek', name: 'DeepSeek', url: 'https://api.deepseek.com', model: 'deepseek-v4-flash' },
-    { key: 'qwen', name: '通义千问', url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-max' },
-    { key: 'zhipu', name: '智谱 GLM', url: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-5.1' },
-    { key: 'kimi', name: 'Kimi 月之暗面', url: 'https://api.moonshot.cn/v1', model: 'kimi-k2.6' },
-    { key: 'minimax', name: 'MiniMax', url: 'https://api.minimax.chat/v1', model: 'minimax-m2.7' },
-    { key: 'openai', name: 'OpenAI', url: 'https://api.openai.com/v1', model: 'gpt-4o' },
-    { key: 'ollama', name: 'Ollama 本地', url: 'http://localhost:11434/v1', model: 'qwen2.5:7b' },
-    { key: 'custom', name: '自定义', url: '', model: '' },
+    { key: 'qwen', name: '通义千问', duty: '任务理解 / 常规生成', url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-max' },
+    { key: 'kimi', name: 'Kimi', duty: '长文本 / 文献整合', url: 'https://api.moonshot.cn/v1', model: 'kimi-k2.6' },
+    { key: 'deepseek', name: 'DeepSeek', duty: '机制分析 / 深度推理', url: 'https://api.deepseek.com', model: 'deepseek-v4-pro' },
+    { key: 'zhipu', name: '智谱 GLM', duty: '独立审核 / 风险挑战', url: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-5.1' },
   ];
+  var LLM_ROLE_ROUTES = {
+    semantic_fast: 'qwen', generation_fast: 'qwen', generation_long: 'kimi',
+    generation_deep: 'deepseek', review: 'zhipu'
+  };
 
   function openApiConfigModal() {
-    var savedProv = localStorage.getItem('dy3_api_provider') || 'deepseek';
-    // Provider secrets are request-only. Remove legacy browser-persisted keys.
+    if (g('apiConfigModal')) return;
     localStorage.removeItem('dy3_api_key');
-    var savedKey = '';
-    var provOpts = LLM_PROVIDERS.map(function (p) {
-      return '<option value="' + p.key + '"' + (savedProv === p.key ? ' selected' : '') + '>' + esc(p.name) + '</option>';
-    }).join('');
     var wrap = d.createElement('div');
     wrap.id = 'apiConfigModal';
-    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1200;display:flex;align-items:center;justify-content:center';
-    wrap.innerHTML =
-      '<div style="background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:20px 24px;max-width:520px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.25)">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">' +
-      '<h3 style="margin:0;font-size:16px">🔑 API 配置</h3>' +
-      '<button id="apiCfgClose" class="btn ghost" style="padding:4px 10px">✕</button></div>' +
-      '<p style="font-size:12px;color:var(--muted);margin:0 0 12px">选择服务商后自动带出地址和模型，你只需填写 API Key。</p>' +
-      '<div style="margin-bottom:10px"><label style="font-size:13px;display:block;margin-bottom:4px">服务商</label>' +
-      '<select id="apiProvider" style="width:100%;padding:9px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;box-sizing:border-box">' + provOpts + '</select></div>' +
-      '<div style="margin-bottom:10px"><label style="font-size:13px;display:block;margin-bottom:4px">API 地址</label>' +
-      '<input id="apiUrl" type="text" placeholder="https://api.deepseek.com" style="width:100%;padding:9px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;box-sizing:border-box" /></div>' +
-      '<div style="margin-bottom:10px"><label style="font-size:13px;display:block;margin-bottom:4px">模型名称</label>' +
-      '<input id="apiModel" type="text" placeholder="deepseek-v4-flash" style="width:100%;padding:9px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;box-sizing:border-box" /></div>' +
-      '<div style="margin-bottom:14px"><label style="font-size:13px;display:block;margin-bottom:4px">API Key（必填）</label>' +
-      '<input id="apiKey" type="password" placeholder="sk-..." value="' + escAttr(savedKey) + '" style="width:100%;padding:9px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;box-sizing:border-box" /></div>' +
-      '<div style="display:flex;gap:10px">' +
-      '<button class="btn primary" id="saveApiConfig" style="flex:1">保存配置</button>' +
-      '<button class="btn ghost" id="testApiConfig">测试连接</button></div>' +
-      '<div id="apiConfigStatus" style="font-size:12px;color:var(--muted);margin-top:10px"></div></div>';
+    wrap.className = 'model-config-backdrop';
+    wrap.innerHTML = '<div class="model-config-dialog">' +
+      '<div class="model-config-head"><div><h3>四模型接入</h3><p>分别配置、服务端检测，并进入现有生成—审核大循环。</p></div>' +
+      '<button id="apiCfgClose" class="btn ghost" aria-label="关闭">✕</button></div>' +
+      '<div class="model-route-strip"><span>千问 · 理解与快答</span><b>→</b><span>Kimi · 长文</span><b>→</b><span>DeepSeek · 深度推理</span><b>→</b><span>智谱 · 独立审核</span></div>' +
+      '<div class="model-provider-grid" id="modelProviderGrid"></div>' +
+      '<div class="model-config-foot"><label><input id="persistModelConfig" type="checkbox" checked> 保存到本机安全配置（不会进入 Git）</label>' +
+      '<div><button class="btn ghost" id="testAllApiConfig">逐一检测</button><button class="btn primary" id="saveApiConfig">保存并启用</button></div></div>' +
+      '<div id="apiConfigStatus" class="model-config-status">正在读取当前配置…</div></div>';
     d.body.appendChild(wrap);
 
-    function curProvider() {
-      var sel = g('apiProvider');
-      var k = sel ? sel.value : 'deepseek';
-      for (var i = 0; i < LLM_PROVIDERS.length; i++) if (LLM_PROVIDERS[i].key === k) return LLM_PROVIDERS[i];
-      return LLM_PROVIDERS[0];
+    var knownConfig = {};
+    function providerByKey(key) {
+      for (var i = 0; i < LLM_PROVIDERS.length; i++) if (LLM_PROVIDERS[i].key === key) return LLM_PROVIDERS[i];
+      return null;
     }
-    function fillFromProvider(p) {
-      var u = g('apiUrl'), m = g('apiModel');
-      if (u) u.value = p.url;
-      if (m) m.value = p.model;
+    function renderCards(config) {
+      knownConfig = (config && config.providers) || {};
+      var grid = g('modelProviderGrid');
+      if (!grid) return;
+      grid.innerHTML = LLM_PROVIDERS.map(function (p) {
+        var saved = knownConfig[p.key] || {};
+        var configured = !!saved.configured;
+        return '<section class="model-provider-card" data-provider="' + p.key + '">' +
+          '<div class="model-provider-title"><div><strong>' + esc(p.name) + '</strong><small>' + esc(p.duty) + '</small></div>' +
+          '<span class="model-provider-state ' + (configured ? 'is-ready' : '') + '" id="modelState-' + p.key + '">' + (configured ? '已配置' : '未配置') + '</span></div>' +
+          '<label>模型<input id="model-' + p.key + '" value="' + escAttr(saved.model || p.model) + '"></label>' +
+          '<label>API 地址<input id="url-' + p.key + '" value="' + escAttr(saved.base_url || p.url) + '"></label>' +
+          '<label>API Key<input id="key-' + p.key + '" type="password" autocomplete="new-password" placeholder="' + (configured ? '已保存 ' + escAttr(saved.masked_key || '') + '，留空则保留' : '输入密钥') + '"></label>' +
+          '<button class="btn ghost model-test-one" data-provider="' + p.key + '">检测连接</button></section>';
+      }).join('');
+      grid.querySelectorAll('.model-test-one').forEach(function (button) {
+        button.addEventListener('click', function () { testProvider(this.dataset.provider, this); });
+      });
     }
-    fillFromProvider(curProvider());
-
-    function close() { var w = g('apiConfigModal'); if (w) w.remove(); }
-    var cl = g('apiCfgClose');
-    if (cl) cl.addEventListener('click', close);
-    wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
-
-    var provSel = g('apiProvider');
-    if (provSel) provSel.addEventListener('change', function () { fillFromProvider(curProvider()); });
-
-    function readForm() {
-      var p = curProvider();
+    function readProvider(key) {
+      var p = providerByKey(key);
       return {
-        provider: p.key,
-        api_key: (g('apiKey') || {}).value || '',
-        base_url: (g('apiUrl') || {}).value || p.url,
-        model: (g('apiModel') || {}).value || p.model,
+        provider: key,
+        api_key: (g('key-' + key) || {}).value || '',
+        base_url: (g('url-' + key) || {}).value || (p && p.url) || '',
+        model: (g('model-' + key) || {}).value || (p && p.model) || ''
       };
     }
+    function showStatus(message, kind) {
+      var target = g('apiConfigStatus');
+      if (target) { target.className = 'model-config-status ' + (kind || ''); target.textContent = message; }
+    }
+    function testProvider(key, button) {
+      var form = readProvider(key);
+      if (!form.api_key && !(knownConfig[key] && knownConfig[key].configured)) {
+        showStatus(providerByKey(key).name + ' 尚未填写密钥', 'is-error'); return Promise.resolve(false);
+      }
+      if (button) { button.disabled = true; button.textContent = '检测中…'; }
+      var state = g('modelState-' + key);
+      return apiReq('POST', '/api/llm/config/test', form).then(function (result) {
+        if (state) { state.textContent = result.success ? '连接正常' : ('失败 · ' + (result.failure_kind || '未知')); state.className = 'model-provider-state ' + (result.success ? 'is-ready' : 'is-error'); }
+        showStatus(providerByKey(key).name + (result.success ? ' 连接成功' : ' 连接失败：' + (result.failure_kind || '未知错误')), result.success ? 'is-ok' : 'is-error');
+        return !!result.success;
+      }).catch(function (error) {
+        if (state) { state.textContent = '检测失败'; state.className = 'model-provider-state is-error'; }
+        showStatus(providerByKey(key).name + ' 检测失败：' + error.message, 'is-error');
+        return false;
+      }).finally(function () { if (button) { button.disabled = false; button.textContent = '检测连接'; } });
+    }
+    function close() {
+      var target = g('apiConfigModal');
+      if (target) target.remove();
+      var trigger = g('settingsBtn');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+    g('apiCfgClose').addEventListener('click', close);
+    wrap.addEventListener('click', function (event) { if (event.target === wrap) close(); });
 
-    // 保存 API 配置 → 后端运行时生效
-    var saveApi = g('saveApiConfig');
-    if (saveApi) saveApi.addEventListener('click', function () {
-      var form = readForm();
-      if (!form.api_key) { toast('请输入 API Key'); return; }
-      var st = g('apiConfigStatus');
-      if (st) st.innerHTML = '正在保存…';
-      apiReq('POST', '/api/llm/config', form).then(function (r) {
-        localStorage.setItem('dy3_api_provider', form.provider);
-        localStorage.setItem('dy3_api_model', form.model);
-        localStorage.removeItem('dy3_api_key');
-        if (st) st.innerHTML = '<span style="color:var(--success)">✓ 已保存并生效（' + esc(r.masked_key || '') + '）</span>';
-        toast('API 配置已保存');
-      }).catch(function (e) {
-        if (st) st.innerHTML = '<span style="color:var(--danger)">✗ 保存失败: ' + esc(e.message) + '</span>';
+    g('saveApiConfig').addEventListener('click', function () {
+      var payload = {
+        providers: LLM_PROVIDERS.map(function (p) { return readProvider(p.key); }),
+        role_routes: LLM_ROLE_ROUTES,
+        persist: !!g('persistModelConfig').checked
+      };
+      showStatus('正在保存四模型配置…');
+      apiReq('POST', '/api/llm/config', payload).then(function (result) {
+        renderCards(result);
+        showStatus('配置已保存。密钥仅保留在本机服务端。', 'is-ok');
+        toast('四模型配置已启用');
+      }).catch(function (error) { showStatus('保存失败：' + error.message, 'is-error'); });
+    });
+    g('testAllApiConfig').addEventListener('click', function () {
+      var button = this; button.disabled = true; showStatus('正在逐一检测四家服务…');
+      var chain = Promise.resolve([]);
+      LLM_PROVIDERS.forEach(function (p) {
+        chain = chain.then(function (results) { return testProvider(p.key, null).then(function (ok) { results.push(ok); return results; }); });
       });
+      chain.then(function (results) {
+        var passed = results.filter(Boolean).length;
+        showStatus('连接检测完成：' + passed + ' / ' + results.length + ' 家可用', passed === results.length ? 'is-ok' : 'is-error');
+      }).finally(function () { button.disabled = false; });
     });
 
-    // 测试连接
-    var testApi = g('testApiConfig');
-    if (testApi) testApi.addEventListener('click', function () {
-      var form = readForm();
-      if (!form.api_key) { toast('请先填写 API Key'); return; }
-      var st = g('apiConfigStatus');
-      if (st) st.innerHTML = '正在测试连接…';
-      fetch(form.base_url.replace(/\/$/, '') + '/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + form.api_key },
-        body: JSON.stringify({ model: form.model, messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 })
-      }).then(function (r) {
-        if (r.ok) {
-          if (st) st.innerHTML = '<span style="color:var(--success)">✓ 连接成功，API 响应正常</span>';
-          toast('API 连接成功');
-        } else {
-          r.text().then(function (t) {
-            if (st) st.innerHTML = '<span style="color:var(--danger)">✗ 连接失败: HTTP ' + r.status + ' ' + esc(t.slice(0, 100)) + '</span>';
-          });
-        }
-      }).catch(function (e) {
-        if (st) st.innerHTML = '<span style="color:var(--danger)">✗ 连接失败: ' + esc(e.message) + '</span>';
-      });
-    });
+    apiReq('GET', '/api/llm/config').then(function (config) {
+      renderCards(config); showStatus('密钥不会返回浏览器；已配置项仅显示脱敏状态。');
+    }).catch(function (error) { renderCards({}); showStatus('读取配置失败：' + error.message, 'is-error'); });
   }
 
   /* ---------- 学习对比视图 (管理者) ---------- */
@@ -1655,6 +1669,7 @@
       var sections = Array.isArray(guided.sections) ? guided.sections : [];
       var lessonSequence = Array.isArray(guided.lesson_sequence) ? guided.lesson_sequence : [];
       var guidedQuestions = Array.isArray(payload.guided_questions) ? payload.guided_questions : [];
+      var guidedQuestionMode = String(payload.guided_question_mode || 'relation_backed_fallback');
       var longSourceRefs = Array.isArray(guided.source_references) ? guided.source_references : [];
       var stages = Array.isArray(payload.stages) ? payload.stages : [];
       var provenance = Array.isArray(resource.provenance) ? resource.provenance : [];
@@ -1692,7 +1707,8 @@
         var selected = String(stage.stage || '') === String(payload.stage_selection || '');
         return '<div class="' + (selected ? 'is-selected' : '') + '"><span>' + esc(stage.label || stage.stage) + '</span><strong>' + esc(stagePurposeLabels[stage.attempt_purpose] || '学习任务') + '</strong><small>' + esc(stage.use || '') + '</small></div>';
       }).join('') + '</div>' : '';
-      var questionHtml = guidedQuestions.length ? '<div class="t1-guided-questions"><div><strong>检查理解</strong><span>回答后可继续追问或进入练习</span></div>' + guidedQuestions.map(function (item) {
+      var questionModeLabel = guidedQuestionMode === 'llm_reviewed_socratic' ? '模型生成 · Reviewer通过' : 'Concept关系约束';
+      var questionHtml = guidedQuestions.length ? '<div class="t1-guided-questions"><div><strong>启发式追问</strong><span>' + esc(questionModeLabel) + '</span></div>' + guidedQuestions.map(function (item) {
         return '<button class="t1-guided-question" data-resource-id="' + escAttr(String(resource.resource_id || '')) + '" data-question="' + escAttr(String(item.prompt || '')) + '"><span>' + esc(item.prompt || '') + '</span><small>' + esc(item.purpose || 'GUIDED_FOLLOW_UP') + '</small></button>';
       }).join('') + '</div>' : '';
       var family = String(resource.resource_family || '');
@@ -3254,7 +3270,15 @@
   var OVERRIDE_VIEWS = Object.keys(VIEW_OVERRIDES);
 
   function currentView() {
-    // 以侧栏 active 按钮的 data-view 为准 (最可靠); 兜底 window.S.v (底部按钮无 active 类)
+    // sv() writes the requested view into the pending placeholder before the
+    // legacy sidebar is rebuilt.  The five-canvas shell hides that sidebar,
+    // so the placeholder is the authoritative transition signal for views
+    // such as settings that are intentionally absent from primary navigation.
+    var pending = d.querySelector('#content [data-mf6-pending]');
+    if (pending && pending.getAttribute('data-mf6-pending')) {
+      return pending.getAttribute('data-mf6-pending');
+    }
+    // Otherwise use the current legacy projection, then the exposed app state.
     var active = d.querySelector('.sidebar-child.active');
     if (active && active.dataset && active.dataset.view) return active.dataset.view;
     if (window.S && window.S.v) return window.S.v;
@@ -3699,6 +3723,7 @@
 
   /* ---------- 初始化 ---------- */
   function init() {
+    d.addEventListener('dy3-open-model-config', openApiConfigModal);
     hookViewRendering();
     // 导航注入改为事件驱动: app.js rs() 重建侧边栏后派发 sidebar-rebuilt,
     // 本函数监听该事件注入 practice/对比/时间旅行/溯源链 入口 (消除轮询重复)
@@ -3730,6 +3755,7 @@
 
   // Provider secrets are intentionally not restored from browser storage.
 
+  window.DY3OpenModelConfig = openApiConfigModal;
   window.DY3CanvasInternals = {
     apiReq: apiReq,
     learnerId: learnerId,
