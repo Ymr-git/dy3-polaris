@@ -1,7 +1,7 @@
 [project]
 name = "dy3-polaris"
 version = "0.1.0"
-description = "Dy3+ Polaris 多智能体协同决策系统 - L6 协议基础设施"
+description = "Dy3+ Polaris 面向绿色健康照明场景的稀土发光材料科研证据分析与多智能体协同决策系统"
 requires-python = ">=3.10"
 dependencies = [
     "mcp>=1.28,<2",
@@ -32,8 +32,12 @@ dev = [
 dy3-polaris = "dy3_polaris.main:main"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["dy3_polaris*"]
 
 [tool.ruff]
 target-version = "py311"
