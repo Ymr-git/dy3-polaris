@@ -1,42 +1,33 @@
 {
   "format_version": "1.0",
-  "created_at": 1786722275.520009,
-  "created_at_iso": "2026-08-14T23:44:35",
+  "created_at": 1788417493.2073767,
+  "created_at_iso": "2026-09-03T14:38:13",
   "counts": {
-    "entities": 9313,
+    "entities": 9200,
     "triples": 379,
-    "chunks": 3074,
-    "versions": 3517,
+    "chunks": 2992,
+    "versions": 3404,
     "conflicts": 0,
     "evidence": 0
   },
   "checksums": {
-    "entities.jsonl": "7990e11af96a21329fa7f751c14d112bf4f718ec075c4df41a928ad83dd998ef",
-    "triples.jsonl": "7e6a07297c05e15e9ce993602a27b1a864ba8ced38c640f428c70bfbb5475533",
-    "chunks.jsonl": "bc652b9fc8ec5b327ccd48bbb22326307ca42336cbe350c6578dfdbe600ae00c",
-    "versions.jsonl": "c3fb971d7b7124b967cc10cf89ab595463c36f6c21175617d38865e91456fffe",
+    "entities.jsonl": "09e63cbec865b0741c3f6fb85e407a0ca8b31e31a60c7cfdf9274db79959acf3",
+    "triples.jsonl": "ea74ac1a5bea4af7e4081dc08edd7d5a131706b1b12801d486669542809103b5",
+    "versions.jsonl": "12305d4ed7a25a534e03841ea139a97e4a2a0b70316fdd73a4cb235c24995f93",
     "conflicts.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "evidence.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "stats": {
-    "total_entities": 9313,
-    "total_chunks": 3074,
-    "total_triples": 379,
+    "total_entities": 0,
+    "total_chunks": 2992,
+    "total_triples": 0,
     "total_sources": 0,
-    "entities_by_type": {
-      "concept": 6246,
-      "chemical_compound": 2887,
-      "method": 37,
-      "paper": 108,
-      "material": 16,
-      "textbook": 19
-    },
     "chunks_by_modality": {
-      "text": 3074
+      "text": 2992
     },
     "avg_quality": 0.0,
-    "indexed_vectors": 0,
-    "last_updated": 1786722275.519707
+    "indexed_vectors": 2992,
+    "total_chars": 4695142
   },
-  "manifest_checksum": "9d40307539948407ff28e531eed6fe22ac11dc43ebea4c77a46f144eaa0be0d6"
+  "manifest_checksum": "7e5d65474e64354fe63b4ea866acc35b3773a513919a01d6050782457c595c32"
 }
