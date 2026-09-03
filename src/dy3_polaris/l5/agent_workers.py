@@ -3365,6 +3365,7 @@ def _collect_answer_candidates(
         "References",
         "Fig.",
         "Fig ",
+        "Figure",
         "分光光度计",
         "文章编号",
     )
@@ -3380,6 +3381,33 @@ def _collect_answer_candidates(
         "稀土", "镧系", "元素", "配位", "配合物", "化合物", "分离", "矿物",
         "萃取", "结晶", "催化", "合金", "结构", "价态", "配体", "基团",
         "原子", "电子", "轨道", "溶解", "沉淀", "反应", "氧化物", "金属",
+    )
+    # 英文/拉丁内容线索: 中文查询的 bigram 无法匹配英文机理句, 而这些句子
+    # 恰恰承载机制/公式正文 (如 "critical distance ... Rc = 2(3V/(4πxcN))^(1/3)")。
+    # 命中任一英文科学线索即视为实质知识句, 否则双语语料的答案候选恒为空。
+    _EN_CONTENT_CUES = (
+        "quench", "luminesc", "phosphor", "emission", "excitation", "emitting",
+        "energy transfer", "cross-relaxation", "critical distance",
+        "critical concentration", "concentration quenching", "dexter",
+        "dipole", "multipolar", "multipole", "nonradiative", "radiative",
+        "decay", "lifetime", "wavelength", "spectra", "spectrum", "host",
+        "dopant", "activator", "thermal", "lattice", "symmetry", "synthes",
+        "prepared", "powder", "solid-state", "mol%", "doped", "ions",
+        "transfer", "quenching", "concentration", "intensity", "CIE",
+    )
+    _FORMULA_CUE_RE = re.compile(
+        r"(?:Rc|RC|lg\s*\(|log\s*\(|\^\(?1/3|\b1/3\b|"
+        r"\d+(?:\.\d+)?\s*(?:nm|mol%|wt%|at%|eV|Å|A3|K|℃|°C))",
+        re.IGNORECASE,
+    )
+    # 查询中的拉丁/离子 token ("dy3+", "4f9/2", "yag", "cie") 作为句子命中信号,
+    # 使双语语料中同一实体的英文句与中文查询对齐 (bigram 无法跨语言匹配)。
+    _query_latin_tokens = tuple(
+        dict.fromkeys(
+            token.lower()
+            for token in re.findall(r"[a-zA-Z][a-zA-Z0-9+\-]{1,14}", str(query))
+            if len(token) >= 2
+        )
     )
     for item in items:
         metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
@@ -3420,11 +3448,18 @@ def _collect_answer_candidates(
                 term in sentence_lower for term in normalized_focus_terms
             )
             hit_term = hit_query_term or hit_focus_term
+            hit_en_cue = any(cue in sentence_lower for cue in _EN_CONTENT_CUES)
+            hit_formula = bool(_FORMULA_CUE_RE.search(sentence))
+            hit_latin = any(tok in sentence_lower for tok in _query_latin_tokens)
             hit_content = (
                 any(kw in sentence for kw in _CONTENT_HINTS)
                 or hit_focus_term
+                or hit_en_cue
+                or hit_formula
             )
-            if hit_term and (has_numeric or hit_content):
+            if (hit_term or hit_latin or hit_en_cue or hit_formula) and (
+                has_numeric or hit_content
+            ):
                 if hit_content:
                     trimmed = _trim_fragment(sentence)
                     if len(trimmed) >= 8:
