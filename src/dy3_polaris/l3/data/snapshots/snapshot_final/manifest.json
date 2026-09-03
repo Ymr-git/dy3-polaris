@@ -1,24 +1,24 @@
 {
   "format_version": "1.0",
-  "created_at": 1788419091.4339015,
-  "created_at_iso": "2026-09-03T15:04:51",
+  "created_at": 1788451542.7600174,
+  "created_at_iso": "2026-09-04T00:05:42",
   "counts": {
-    "entities": 9200,
-    "triples": 379,
+    "entities": 9286,
+    "triples": 2882,
     "chunks": 3376,
     "versions": 3404,
     "conflicts": 0,
     "evidence": 0
   },
   "checksums": {
-    "entities.jsonl": "09e63cbec865b0741c3f6fb85e407a0ca8b31e31a60c7cfdf9274db79959acf3",
-    "triples.jsonl": "ea74ac1a5bea4af7e4081dc08edd7d5a131706b1b12801d486669542809103b5",
+    "entities.jsonl": "deaab48c692196de3492f3b7fabf6927e47998b9bd254218328afb6a24d347e8",
+    "triples.jsonl": "6d783b0aaa371dc34abf3fb24715297b9c0d73753ac63ac878f5be175344a494",
     "versions.jsonl": "12305d4ed7a25a534e03841ea139a97e4a2a0b70316fdd73a4cb235c24995f93"
   },
   "stats": {
-    "total_entities": 0,
+    "total_entities": 9286,
     "total_chunks": 3376,
-    "total_triples": 0,
+    "total_triples": 2882,
     "total_sources": 0,
     "chunks_by_modality": {
       "text": 3376
@@ -31,5 +31,5 @@
       "textbook": 384
     }
   },
-  "manifest_checksum": "ed1060787a4b53b4bba8af15c270037c26c3038e1b1184e7903d6b01b467fc9e"
+  "manifest_checksum": "def2e8d55fdf3ce249550d9299e1c29d739da706beaced011f1ca89fae6a78d5"
 }
