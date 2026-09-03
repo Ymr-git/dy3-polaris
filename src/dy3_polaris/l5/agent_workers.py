@@ -2849,6 +2849,9 @@ def _latex_to_plain(text: str) -> str:
 def _split_sentences(text: str) -> list[str]:
     """按中文/英文句号切分句子."""
     flat = str(text or "").replace("\n", " ")
+    # 英文粘连句界: MinerU/清洗后常见 ".An increase"/".The" (句点后无空格紧跟大写),
+    # 原切分把整段当一个句子 → 候选超长且常以切片边界截断 ("…can be"), 审核判幻觉。
+    flat = re.sub(r"(?<=[a-z0-9)\]])\s*\.(?=[A-Z(])", ". ", flat)
     parts = re.split(r"(?<=[。！？；])|(?<=\.)\s+", flat)
     return [part.strip() for part in parts if len(part.strip()) >= 8]
 
@@ -2961,6 +2964,7 @@ _OUT_OF_DOMAIN_BLOCKERS = (
     "打游戏", "足球", "篮球", "羽毛球", "乒乓球", "明星", "电视剧", "电影",
     "股票", "彩票", "房价", "基金定投", "汇率预测", "政治", "总统",
     "怎么学英语", "雅思", "考研英语", "数学题", "物理题",
+    "石墨烯", "量子点led", "化学气相沉积cvd",
 )
 
 
@@ -3440,6 +3444,11 @@ def _collect_answer_candidates(
             # 过滤残留标题/图片噪声 (如 "## 5.4"、".jpg)图 3.5")
             if re.search(r"^#{1,6}\s|https?://|\.jpg|\.png|\.jpeg|\)图\s*\d", sentence):
                 continue
+            # 图注正文噪声: "如图 4(c)所示…" / "…相互作用 图 4 (a) 不同掺杂浓度…" 是
+            # MinerU 把图表说明粘入正文的残留, 句内常夹 图X(…)/;…(…) 列表, 拼入答案
+            # 即产生"表述残缺混乱" (审核实测). 带图注结构的句子整体不作文答候选.
+            if re.search(r"如图\s*\d|图\s*\d+\s*[（(]", sentence):
+                continue
             has_numeric = bool(
                 re.search(r"\d+\s*nm|\d+\s*%|\d{3}", sentence)
             )
@@ -3462,7 +3471,13 @@ def _collect_answer_candidates(
             ):
                 if hit_content:
                     trimmed = _trim_fragment(sentence)
-                    if len(trimmed) >= 8:
+                    # 切片边界残句防护: 以无标点结尾的片段 ("…which causes
+                    # concentration quenching, can be") 多为切片截断, 单列会
+                    # 被审核判"表述残缺/幻觉", 不作文答候选。
+                    if len(trimmed) >= 8 and re.search(
+                        r"[。！？；.!?;:）)\]]$|[\u4e00-\u9fff]$",
+                        trimmed,
+                    ):
                         candidates.append(
                             (trimmed, source_priority, direct_concept_priority)
                         )
@@ -3562,10 +3577,23 @@ def _collect_answer_candidates(
     )
     best_coverage = _sentence_score(*ranked_pairs[0])[1]
     if best_coverage >= 3:
+        # 双语保底: 聚焦过滤若只按中文 bigram 重叠 (score) 裁剪, 会把含公式/英文
+        # 机制正文的低重叠句全部清掉 (中文句 coverage 高 → 公式句被判出局), 实测
+        # "临界距离如何计算" 的 Rc 公式句因此从候选消失。公式/领域线索句无条件保留,
+        # 最终由 compose 排序与审核门决定取舍。
+        def _keep_for_bilingual(value: tuple[str, int, int]) -> bool:
+            s = value[0]
+            return bool(
+                re.search(r"(?i)(\brc\b|blasse|dexter|lg\s*\(|1/3|energy transfer|"
+                          r"cross[- ]?relaxation|quenching|critical distance)",
+                          s)
+                or any(cue in s.lower() for cue in _EN_CONTENT_CUES)
+            )
         focused_pairs = [
             value for value in ranked_pairs
             if _sentence_score(*value)[1] >= 2
             or value[2] > 0
+            or _keep_for_bilingual(value)
         ]
         if focused_pairs:
             ranked_pairs = focused_pairs
@@ -3691,11 +3719,29 @@ def _compose_concise_answer(
             )
         ]
         others = [sentence for sentence in dedup if sentence not in method_sents]
-        # One directly supported method statement is safer and more useful
-        # than padding the answer with nearby mechanism/efficiency prose.  The
-        # old "at least two" rule mixed unrelated paragraphs into procedures
-        # and caused the real Reviewer to block an otherwise grounded answer.
-        lead = method_sents[:4] if method_sents else others[:4]
+        # 公式/计算型方法题: 含公式/计算步骤的句子优先作首条 (审核完整门要求
+        # "临界距离如何计算"必须出现公式; 措施句再补位)。
+        _FORMULA_SENT_RE = re.compile(
+            r"(?i)(\brc\b|blasse|dexter|lg\s*\(|1/3|^\s*[A-Za-z0-9]+\s*=|"
+            r"计算.*公式|公式.*计算|代入|步骤)")
+        _calc_ask = bool(re.search(
+            r"(计算|公式|推导|临界距离|\brc\b|calculate|formula|equation)",
+            str(query), re.IGNORECASE))
+        if _calc_ask:
+            _formula_first = [s for s in dedup if _FORMULA_SENT_RE.search(s)]
+            if _formula_first:
+                lead = _formula_first[:1] + [
+                    s for s in (method_sents or others)
+                    if s not in _formula_first[:1]
+                ][:3]
+            else:
+                lead = method_sents[:4] if method_sents else others[:4]
+        else:
+            # One directly supported method statement is safer and more useful
+            # than padding the answer with nearby mechanism/efficiency prose.  The
+            # old "at least two" rule mixed unrelated paragraphs into procedures
+            # and caused the real Reviewer to block an otherwise grounded answer.
+            lead = method_sents[:4] if method_sents else others[:4]
         lines = "\n".join(
             f"{index}. {sentence}"
             for index, sentence in enumerate(lead[:4], start=1)
@@ -4633,6 +4679,36 @@ def run_generation(
 ) -> dict[str, Any]:
     """知识生成 Agent — 按 mode 分发: 检索合成 / 练习出题 / 针对性考核."""
     mode = str(input_data.get("mode") or input_data.get("task") or "answer").lower()
+    # 域外硬拦截提前到 mode 分发前: guide/practical 等用户实操分支不改写检索而
+    # 直接空答 (实测 "如何做红烧肉/石墨烯CVD工艺" DEGRADED 而非带文案拒答).
+    # 系统生成内容模式 (练习/考核/讲义) 不拦截, 仅拦用户自由文本.
+    _pre_query = str(
+        input_data.get("query")
+        or input_data.get("question")
+        or input_data.get("topic")
+        or ""
+    ).strip()
+    if (
+        mode not in ("practice", "quiz", "assess", "assessment", "exam",
+                     "lecture", "讲义", "notes", "customized", "customized_resource")
+        and _pre_query
+        and _hard_out_of_domain(_pre_query)
+    ):
+        _unavail = (
+            f"当前问题「{_pre_query}」不属于本系统已验证的稀土发光材料与绿色健康照明知识范围。"
+            "系统不会使用相邻词命中的材料文献拼接回答；请改为领域问题，或提供可核验的领域上下文。"
+        )
+        return {
+            "agent_id": GENERATION_AGENT_ID,
+            "status": "completed",
+            "query": _pre_query,
+            "answer": _unavail,
+            "confidence": 0.0,
+            "knowledge_unavailable": True,
+            "honest_unavailable": True,
+            "context_chunks": [],
+            "citations": [],
+        }
     if mode in ("practice", "quiz"):
         return _run_practice_mode(input_data, deps)
     if mode in ("assess", "assessment", "exam"):
@@ -4662,7 +4738,9 @@ def run_generation(
     # 不再以“发光域概念/离子缺失”直接拦截：知识库本身是领域过滤器——
     # 教材类知识（稀土化学基础/分离/配合物等）入库后，化学概念问题在检索
     # 与审核门中自然获得证据或诚实拒答（2026-09-03 双库评测定位）。
-    if isinstance(private_agent_input, AgentInput) and _hard_out_of_domain(query):
+    # 2026-09-03: 去掉 AgentInput 前置条件 - 普通答疑路径("如何做红烧肉"等)
+    # 实测未进该分支而退化为空答 DEGRADED, 应带领域外文案拒答而非静默.
+    if _hard_out_of_domain(query):
         unavailable = (
             f"当前问题「{query}」不属于本系统已验证的稀土发光材料与绿色健康照明知识范围。"
             "系统不会使用相邻词命中的材料文献拼接回答；请改为领域问题，或提供可核验的领域上下文。"
@@ -4754,6 +4832,25 @@ def run_generation(
             retrieval_query = retrieval_query + " " + _extra
     # 自纠修订: 带审核反馈时加宽召回 (设计 CC1 自纠回路: 依据审核意见重新检索)
     review_feedback = str(input_data.get("review_feedback") or "")
+    # 自纠不再空转: 从审核意见中抽取要点词并入检索查询 (原实现仅加宽 top_k,
+    # 检索词不变 → 召回不变 → 同一候选再次被审 → 迭代白费, 实测 4~5 轮全同)。
+    if review_feedback:
+        _FB_STOP = frozenset(
+            "回答 仅 提及 对 为 问题 用户 核心 要求 修订 重新 检索 未 遗漏 关键 信息 缺失 "
+            "表述 残缺 混乱 完全 证据 候选 中 的 了 是 有 与 及 提出 得到 达到 相关 属于 "
+            "内容 现象 机制 原因 且 但 而 从 在 后 前 出 已 再 也 都 该 其 此 你 我 请 需要 "
+            "包括 关于 由 于 让 被 把 向 往".split()
+        )
+        _fb_terms = []
+        for _raw in re.split(r"[，。；、,;:：\s()（）\[\]【】\"'“”‘’「」『』]+",
+                             review_feedback):
+            _tok = _raw.strip().strip("'\"“”‘’「」『』()（）")
+            if 2 <= len(_tok) <= 14 and _tok not in _FB_STOP:
+                _fb_terms.append(_tok)
+        if _fb_terms:
+            _fb_extra = " ".join(dict.fromkeys(_fb_terms))[:160]
+            if not all(term in retrieval_query for term in _fb_terms[:4]):
+                retrieval_query = retrieval_query + " " + _fb_extra
     # 多候选交叉验证(L5 高等级): 允许按候选策略覆盖 top_k(标准/宽召回/精聚焦)
     _top_k = int(
         input_data.get("_candidate_top_k") or (28 if review_feedback else 24)
@@ -4776,6 +4873,38 @@ def run_generation(
             )
         except Exception as exc:  # noqa: BLE001
             logger.warning("知识生成 Agent 检索失败: %s", exc)
+    # 公式/计算类题二次召回: 公式正文是英文 (Rc=2(3V/(4πxcN))^(1/3)、Dexter
+    # lg(I/x) 拟合), 中文长问句的 bigram/BM25 命中被中文文献稀释, 实测 top24
+    # 无任何公式片 → 追加一次公式向检索并并入候选池 (重排器统一排序, 审核门把关)。
+    if (
+        not planned_retrieval
+        and retrieval is not None
+        and qtype == "method"
+        and deps.hybrid_retriever is not None
+        and re.search(r"(计算|公式|推导|临界距离|\brc\b|calculate|formula|equation)",
+                      str(query), re.IGNORECASE)
+    ):
+        try:
+            _formula_q = (
+                "critical distance Rc Blasse equation concentration quenching "
+                "Dy3+ Dexter lg(I/x) slope calculation formula 2(3V/(4πxcN))^(1/3)"
+            )
+            _extra_retrieval = deps.hybrid_retriever.retrieve(
+                _formula_q, top_k=10,
+                query_vector=(
+                    deps.embedding_manager.embed(_formula_q).vector
+                    if deps.embedding_manager is not None else None
+                ),
+            )
+            _have_ids = {str(it.get("chunk_id") or "") for it in
+                         (getattr(retrieval, "results", None) or [])}
+            for _extra_item in (getattr(_extra_retrieval, "results", None) or []):
+                if str(_extra_item.get("chunk_id") or "") not in _have_ids:
+                    getattr(retrieval, "results", []).append(_extra_item)
+                    _have_ids.add(str(_extra_item.get("chunk_id") or ""))
+            retrieval.total = len(list(getattr(retrieval, "results", None) or []))
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("知识生成 Agent 公式二次召回失败: %s", exc)
 
     # 离子门 (防张冠李戴): 问题点名某离子时, 重排检索结果使目标离子证据优先,
     # 只谈其它离子的证据沉底. 这是语义/关键词分数之上的硬约束, 在重排器之前生效,
@@ -4851,6 +4980,13 @@ def run_generation(
                     for keyword in _disc
                     for kw in _DIS_ALIASES.get(keyword, (keyword,))
                 ]
+                # 计算/公式型问题再补英文公式线索 (临界距离/Blasse/Rc 等正文常为
+                # 英文, 且不一定含 "quench/猝灭" 字面词, 需显式入过滤词)
+                if re.search(r"(计算|公式|临界|距离|推导|blasse|dexter|\brc\b|"
+                             r"calculate|formula|critical distance)",
+                             str(query), re.IGNORECASE):
+                    _needles += ["critical distance", "blasse", "dexter",
+                                 "critical concentration", "1/3", "rc", "lg("]
                 _needles = tuple(dict.fromkeys(_needles))
                 _kept = [r for r in clean_results
                          if any(kw in str(r.get("content", "")).lower()
@@ -5170,7 +5306,33 @@ def run_generation(
             doc_topics = [t for t in (q_toks & d_toks) if t in _TOPIC_TERMS]
             if len(doc_topics) * 2 < len(q_topics):
                 return False
-        return _query_overlap(retrieval_query, [text]) >= 0.45
+        if _query_overlap(retrieval_query, [text]) >= 0.45:
+            return True
+        # 双语/公式证据放宽: 英文公式正文 (Rc=2(3V/(4πxcN))^(1/3)、Dexter lg(I/x))
+        # 与中文查询 bigram 重叠为 0, 会被 0.45 门槛整片丢弃 (实测 "临界距离如何
+        # 计算" 证据集内无公式片)。查询含拉丁记号或机理/计算意图时放行含领域线索
+        # 的英文片, 交由候选门与审核门继续把关。
+        _q_lat = tuple(
+            dict.fromkeys(
+                token.lower()
+                for token in re.findall(r"[a-zA-Z][a-zA-Z0-9+\-]{1,14}", str(query))
+                if len(token) >= 2
+            )
+        )
+        low = str(text).lower()
+        _sci_hint = re.compile(
+            r"(?i)(\brc\b|blasse|dexter|critical distance|lg\s*\(|1/3|"
+            r"cross[- ]?relaxation|energy transfer|quenching|concentration)")
+        calc_ask = any(
+            token in str(query)
+            for token in ("计算", "公式", "临界", "距离", "机理", "猝灭", "推导", "方法",
+                          "rc", "blasse", "dexter", "how", "calculate", "formula")
+        )
+        if _sci_hint.search(low) and (
+            any(tok in low for tok in _q_lat) or (calc_ask and qtype in ("mechanism", "method"))
+        ):
+            return True
+        return False
 
     if planned_retrieval:
         # R-03D has already merged bilingual Concept branches, applied the
@@ -5212,6 +5374,37 @@ def run_generation(
         # resources or the public evidence projection on their own.
         if target_filtered_items:
             compose_items = target_filtered_items
+        # 公式/计算类题 (planned 路径同样适用): 计划检索按概念主题排证据, 公式正文
+        # (英文 Rc=2(3V/(4πxcN))^(1/3)、Dexter lg(I/x)) 无中文概念词而缺席 → 补一次
+        # 公式向关键词召回并入候选池 (重排/候选门/审核门继续把关, 不绕过)。
+        if (
+            qtype == "method"
+            and deps.hybrid_retriever is not None
+            and re.search(r"(计算|公式|推导|临界距离|\brc\b|calculate|formula|equation)",
+                          str(query), re.IGNORECASE)
+        ):
+            try:
+                _formula_q = (
+                    "critical distance Rc Blasse equation concentration quenching "
+                    "Dy3+ Dexter lg(I/x) slope calculation formula 2(3V/(4πxcN))^(1/3)"
+                )
+                _extra_retrieval = deps.hybrid_retriever.retrieve(
+                    _formula_q, top_k=10,
+                    query_vector=(
+                        deps.embedding_manager.embed(_formula_q).vector
+                        if deps.embedding_manager is not None else None
+                    ),
+                )
+                _have_ids = {str(it.get("chunk_id") or "") for it in compose_items}
+                _joined_items = list(compose_items)
+                for _extra_item in (getattr(_extra_retrieval, "results", None) or []):
+                    if str(_extra_item.get("chunk_id") or "") not in _have_ids:
+                        _joined_items.append(_extra_item)
+                        _have_ids.add(str(_extra_item.get("chunk_id") or ""))
+                if len(_joined_items) > len(compose_items):
+                    compose_items = _joined_items
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("知识生成 Agent planned 公式二次召回失败: %s", exc)
     else:
         related_items = [it for it in compose_items if _related(it)]
         if related_items:
@@ -5638,6 +5831,20 @@ def run_review(
         or ""
     ).strip()
     context_chunks = list(input_data.get("context_chunks") or [])
+    if os.environ.get("DY3_DEBUG_REVIEW"):
+        try:
+            import json as _json
+
+            _dbg = {
+                "query": str(input_data.get("query") or input_data.get("question") or ""),
+                "content": content[:2000],
+                "n_ctx": len(context_chunks),
+                "ctx_heads": [str(c)[:120] for c in context_chunks[:6]],
+            }
+            with open(r"tmp\review_debug.jsonl", "a", encoding="utf-8") as _f:
+                _f.write(_json.dumps(_dbg, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
     grounding = input_data.get("_claim_evidence_grounding")
     if not content:
         return _attach_review_candidate(
