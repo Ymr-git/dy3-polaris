@@ -1565,6 +1565,23 @@ def _build_quality_release_decision(
         reason in {"review_candidate_missing", "real_reviewer_not_executed"}
         for reason in reasons
     )
+    # 诚实拒答文案：当根因是"生成层判定知识库无直接知识/领域外"(evidence_unavailable)
+    # 时，审核未执行是结果而非原因。此前这里统一回"审核能力不可用"，把"域外/暂无
+    # 知识"错误地表述成系统故障（实测 红烧肉/稀土元素列举 页面误报审核不可用）。
+    if degraded and "evidence_unavailable" in reasons:
+        _honest_message = str(final_result.answer or "").strip()
+        if not _honest_message:
+            _honest_message = (
+                "当前问题不在系统已验证的知识范围内，或知识库暂无直接相关证据，"
+                "系统未编造回答。"
+            )
+        message = _honest_message[:240]
+    else:
+        message = (
+            "审核能力当前不可用，系统没有冒充完整审核结果。"
+            if degraded
+            else "当前结果尚未满足发布条件，未解决的科学回答已被保留而未公开。"
+        )
     return QualityReleaseDecision(
         task_id=context.task_id,
         status=(
@@ -1580,11 +1597,7 @@ def _build_quality_release_decision(
         answer_identity=final_identity,
         evidence_versions=active_versions,
         correction_count=correction_count,
-        message=(
-            "审核能力当前不可用，系统没有冒充完整审核结果。"
-            if degraded
-            else "当前结果尚未满足发布条件，未解决的科学回答已被保留而未公开。"
-        ),
+        message=message,
     )
 
 
