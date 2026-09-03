@@ -5368,25 +5368,61 @@ def run_generation(
             if isinstance(knowledge_context, KnowledgeLearningContext)
             else ()
         )
-        compose_items = _prefer_reviewed_concept_evidence(
-            compose_items,
-            preferred_ids,
+        # 定义/枚举类问题 (Dy是什么 / 稀土元素包括哪些 / 介绍X) 要的是教材里的
+        # 定义句/列表句, 而不是概念关系证据。此前 planned 路径的 concept 证据偏好
+        # (_prefer_reviewed_concept_evidence + _filter_task_answer_evidence) 会把
+        # 教材定义/列表句整片挤掉, 只剩光谱/能级概念证据 → 答非所问/空 (实测)。
+        _is_definitional = bool(
+            qtype == "definition"
+            or re.search(
+                r"(是什么|什么是|包括哪些|有哪些|介绍|定义|含义|哪些元素|哪些方法|哪些种类)",
+                str(query),
+            )
         )
-        target_filtered_items = _filter_task_answer_evidence(
-            query,
-            compose_items,
-            focus_terms=(
-                _concept_retrieval_terms(private_agent_input)
-                if isinstance(private_agent_input, AgentInput)
-                else ()
-            ),
-            preferred_concept_ids=preferred_ids,
-        )
-        # Relation expansion is recall-only.  Once target-bound passages are
-        # available, neighbours cannot enter Generation, Reviewer, claims,
-        # resources or the public evidence projection on their own.
-        if target_filtered_items:
-            compose_items = target_filtered_items
+        if not _is_definitional:
+            compose_items = _prefer_reviewed_concept_evidence(
+                compose_items,
+                preferred_ids,
+            )
+            target_filtered_items = _filter_task_answer_evidence(
+                query,
+                compose_items,
+                focus_terms=(
+                    _concept_retrieval_terms(private_agent_input)
+                    if isinstance(private_agent_input, AgentInput)
+                    else ()
+                ),
+                preferred_concept_ids=preferred_ids,
+            )
+            # Relation expansion is recall-only.  Once target-bound passages are
+            # available, neighbours cannot enter Generation, Reviewer, claims,
+            # resources or the public evidence projection on their own.
+            if target_filtered_items:
+                compose_items = target_filtered_items
+        # 定义/枚举类题: planned 前 8 常被概念证据(光谱/能级)占满, 教材定义/列表句
+        # 缺席 → 补一次教材向关键词召回(只补含 包括/指的是/定义 的定义句片, 后由候选
+        # 门与审核门继续把关)。
+        if _is_definitional and deps.hybrid_retriever is not None:
+            try:
+                _def_q = str(query) + " 稀土元素 镧系 元素 定义 介绍 包括"
+                _extra_retrieval = deps.hybrid_retriever.retrieve(
+                    _def_q, top_k=10,
+                    query_vector=(
+                        deps.embedding_manager.embed(_def_q).vector
+                        if deps.embedding_manager is not None else None
+                    ),
+                )
+                _have_ids = {str(it.get("chunk_id") or "") for it in compose_items}
+                for _ei in (getattr(_extra_retrieval, "results", None) or []):
+                    _txt = str(_ei.get("content") or "")
+                    if str(_ei.get("chunk_id") or "") in _have_ids:
+                        continue
+                    if not re.search(r"(包括|指的是|是指|定义|镧系元素|元素符号)", _txt):
+                        continue
+                    compose_items.append(_ei)
+                    _have_ids.add(str(_ei.get("chunk_id") or ""))
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("知识生成 Agent 定义题二次召回失败: %s", exc)
         # 公式/计算类题 (planned 路径同样适用): 计划检索按概念主题排证据, 公式正文
         # (英文 Rc=2(3V/(4πxcN))^(1/3)、Dexter lg(I/x)) 无中文概念词而缺席 → 补一次
         # 公式向关键词召回并入候选池 (重排/候选门/审核门继续把关, 不绕过)。
