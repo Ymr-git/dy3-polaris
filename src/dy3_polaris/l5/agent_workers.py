@@ -2953,6 +2953,23 @@ def _extract_ions(text: str) -> set[str]:
     return ions
 
 
+# 强领域外意图黑名单: 命中即硬拦截(拒绝作答)。列表刻意保守——
+# 未命中黑名单的问题交给检索与审核门处置(证据不足会诚实拒答),
+# 以免误伤教材库扩展后的稀土化学基础问题 (2026-09-03 双库评测)。
+_OUT_OF_DOMAIN_BLOCKERS = (
+    "红烧肉", "菜谱", "做菜", "怎么煮", "怎么炒", "怎么炖", "美食",
+    "打游戏", "足球", "篮球", "羽毛球", "乒乓球", "明星", "电视剧", "电影",
+    "股票", "彩票", "房价", "基金定投", "汇率预测", "政治", "总统",
+    "怎么学英语", "雅思", "考研英语", "数学题", "物理题",
+)
+
+
+def _hard_out_of_domain(query: str) -> bool:
+    """Return True only for clearly out-of-domain everyday intents."""
+    q = str(query or "")
+    return any(blocker in q for blocker in _OUT_OF_DOMAIN_BLOCKERS)
+
+
 def _count_ions(text: str) -> dict[str, int]:
     """统计文本中稀土离子的出现次数 (英文符号 + 中文名).
 
@@ -4606,11 +4623,11 @@ def run_generation(
         }
 
     private_agent_input = input_data.get("_agent_input")
-    if (
-        isinstance(private_agent_input, AgentInput)
-        and not _concept_retrieval_terms(private_agent_input)
-        and not _extract_ions(query)
-    ):
+    # 领域范围门：只对明确领域外意图做硬拦截（防跑题，如菜谱/股价/娱乐）。
+    # 不再以“发光域概念/离子缺失”直接拦截：知识库本身是领域过滤器——
+    # 教材类知识（稀土化学基础/分离/配合物等）入库后，化学概念问题在检索
+    # 与审核门中自然获得证据或诚实拒答（2026-09-03 双库评测定位）。
+    if isinstance(private_agent_input, AgentInput) and _hard_out_of_domain(query):
         unavailable = (
             f"当前问题「{query}」不属于本系统已验证的稀土发光材料与绿色健康照明知识范围。"
             "系统不会使用相邻词命中的材料文献拼接回答；请改为领域问题，或提供可核验的领域上下文。"
