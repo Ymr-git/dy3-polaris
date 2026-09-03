@@ -1,11 +1,11 @@
 {
   "format_version": "1.0",
-  "created_at": 1788417493.2073767,
-  "created_at_iso": "2026-09-03T14:38:13",
+  "created_at": 1788419091.4339015,
+  "created_at_iso": "2026-09-03T15:04:51",
   "counts": {
     "entities": 9200,
     "triples": 379,
-    "chunks": 2992,
+    "chunks": 3376,
     "versions": 3404,
     "conflicts": 0,
     "evidence": 0
@@ -13,21 +13,23 @@
   "checksums": {
     "entities.jsonl": "09e63cbec865b0741c3f6fb85e407a0ca8b31e31a60c7cfdf9274db79959acf3",
     "triples.jsonl": "ea74ac1a5bea4af7e4081dc08edd7d5a131706b1b12801d486669542809103b5",
-    "versions.jsonl": "12305d4ed7a25a534e03841ea139a97e4a2a0b70316fdd73a4cb235c24995f93",
-    "conflicts.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "evidence.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "versions.jsonl": "12305d4ed7a25a534e03841ea139a97e4a2a0b70316fdd73a4cb235c24995f93"
   },
   "stats": {
     "total_entities": 0,
-    "total_chunks": 2992,
+    "total_chunks": 3376,
     "total_triples": 0,
     "total_sources": 0,
     "chunks_by_modality": {
-      "text": 2992
+      "text": 3376
     },
     "avg_quality": 0.0,
-    "indexed_vectors": 2992,
-    "total_chars": 4695142
+    "indexed_vectors": 3376,
+    "total_chars": 5136771,
+    "corpora": {
+      "papers": 2992,
+      "textbook": 384
+    }
   },
-  "manifest_checksum": "7e5d65474e64354fe63b4ea866acc35b3773a513919a01d6050782457c595c32"
+  "manifest_checksum": "ed1060787a4b53b4bba8af15c270037c26c3038e1b1184e7903d6b01b467fc9e"
 }

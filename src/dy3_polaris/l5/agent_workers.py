@@ -4711,6 +4711,13 @@ def run_generation(
             boost = " 测量条件 样品 仪器 校准 数据分析 标准参照"
         elif re.search(r"(制备|合成|烧结|prepare|synthesi[sz]e)", query, re.IGNORECASE):
             boost = " 原料 步骤 温度 时间 气氛 表征"
+        elif re.search(
+            r"(计算|公式|推导|怎么算|如何得|计算|临界距离|distance|calculate|equation|formula)",
+            query, re.IGNORECASE,
+        ):
+            # 计算/公式推导型问题: 通用"措施/避免"增强词会把检索带到应对性内容,
+            # 反而挤掉含 Rc/Blasse/Dexter 公式正文的切片 (实测 "临界距离如何计算")。
+            boost = " 公式 计算 推导 Rc 临界距离 Blasse Dexter 能量传递 步骤 代入"
         else:
             boost = " 避免 措施 控制 优化 降低 选择"
         retrieval_query = retrieval_query + boost
@@ -4724,6 +4731,27 @@ def run_generation(
         retrieval_query += " 量子效率 发射光谱 热稳定性 寿命 色坐标 掺杂浓度 测试条件"
     if "发光效率" in _rq_compact or "量子效率" in _rq_compact:
         retrieval_query += " 辐射跃迁 非辐射损失 浓度猝灭 热猝灭 缺陷"
+    # 定义/简介类超短实体问句 ("Dy是什么?"): 仅拉丁符号的查询难以命中中文切片,
+    # 追加实体别名/中文名做检索扩展 (元素符号→中文名; 不改变检索器与知识库)
+    if qtype == "definition":
+        _DEF_ALIASES = {
+            "dy": "镝 镝离子 dysprosium 稀土元素 性质", "dy3+": "镝 Dy3+ 发光 能级 跃迁",
+            "eu": "铕 铕离子 europium", "ce": "铈 铈离子 cerium",
+            "tb": "铽 铽离子 terbium", "er": "铒 铒离子 erbium",
+            "nd": "钕 钕离子 neodymium", "sm": "钐 钐离子 samarium",
+            "ho": "钬 钬离子 holmium", "tm": "铥 铥离子 thulium",
+            "yb": "镱 镱离子 ytterbium", "lu": "镥 镥离子 lutetium",
+            "la": "镧 镧离子 lanthanum", "gd": "钆 钆离子 gadolinium",
+            "pr": "镨 镨离子 praseodymium", "pm": "钷 promethium",
+            "sc": "钪 scandium", "y": "钇 yttrium",
+            "yag": "钇铝石榴石 Y3Al5O12 晶体结构",
+        }
+        _q_latin = re.findall(r"[a-zA-Z][a-zA-Z0-9+\-]{1,8}", str(query).lower())
+        _extra = " ".join(
+            _DEF_ALIASES[tok] for tok in _q_latin if tok in _DEF_ALIASES
+        ).strip()
+        if _extra:
+            retrieval_query = retrieval_query + " " + _extra
     # 自纠修订: 带审核反馈时加宽召回 (设计 CC1 自纠回路: 依据审核意见重新检索)
     review_feedback = str(input_data.get("review_feedback") or "")
     # 多候选交叉验证(L5 高等级): 允许按候选策略覆盖 top_k(标准/宽召回/精聚焦)
@@ -4775,7 +4803,11 @@ def run_generation(
     reranked: Any = retrieval
     if not planned_retrieval and retrieval is not None and deps.reranker is not None:
         try:
-            reranked = deps.reranker.rerank_result(retrieval_query, retrieval, top_k=6)
+            # 定义/机理/方法题扩宽重排窗口: 这类题的答句常排在第 6 名之外
+            # (元素列表句/英文公式句), 只有 6 条会把答句挡在证据集外 (实测).
+            _rerank_k = 14 if qtype in ("definition", "mechanism", "method") else 6
+            reranked = deps.reranker.rerank_result(
+                retrieval_query, retrieval, top_k=_rerank_k)
         except Exception as exc:  # noqa: BLE001
             logger.warning("知识生成 Agent 重排失败: %s", exc)
 
@@ -4790,12 +4822,39 @@ def run_generation(
                 if "content" in copy:
                     copy["content"] = _clean_markdown_chunk(copy.get("content", ""))
                 clean_results.append(copy)
-            # 主题词过滤: 只保留含查询核心主题词的文档 (修复"问机理检索到光谱"答非所问)
-            _disc = [kw for kw in ("机理", "机制", "原理", "猝灭", "光谱", "效率", "寿命", "跃迁",
-                                   "能级", "制备", "合成", "掺杂", "表征", "能量传递", "显色",
-                                   "色度", "浓度猝灭", "热猝灭") if kw in str(query)]
+            # 主题词过滤: 只保留含查询核心主题词的文档 (修复"问机理检索到光谱"答非所问)。
+            # 双语对齐: 英文机理/公式正文不含中文字面词 (猝灭→quenching), 原仅按
+            # 中文关键词过滤会把英文答句所在切片整片丢掉 (实测 Q1 候选仅剩中文
+            # 能级/光谱句)。
+            _DIS_ALIASES = {
+                "机理": ("机理", "机制", "mechanism"), "机制": ("机理", "机制", "mechanism"),
+                "猝灭": ("猝灭", "quench"), "光谱": ("光谱", "spectr"),
+                "效率": ("效率", "efficien"), "寿命": ("寿命", "lifetime"),
+                "跃迁": ("跃迁", "transition"), "能级": ("能级", "energy level"),
+                "能量传递": ("能量传递", "energy transfer"), "掺杂": ("掺杂", "dop"),
+                "制备": ("制备", "synthes", "prepar"), "合成": ("合成", "synthes"),
+                "发射": ("发射", "emission"), "激发": ("激发", "excitation"),
+                "显色": ("显色", "color"), "色度": ("色度", "chromatic"),
+                "热猝灭": ("热猝灭", "thermal quench"), "浓度猝灭": ("浓度猝灭", "concentration quench"),
+                "表征": ("表征", "characteri"), "温度": ("温度", "temperature"),
+            }
+            _disc = [
+                kw for kw in (
+                    "机理", "机制", "原理", "猝灭", "光谱", "效率", "寿命", "跃迁",
+                    "能级", "制备", "合成", "掺杂", "表征", "能量传递", "显色",
+                    "色度", "浓度猝灭", "热猝灭", "发射", "激发", "温度",
+                ) if kw in str(query)
+            ]
             if _disc and not planned_retrieval:
-                _kept = [r for r in clean_results if any(kw in str(r.get("content", "")) for kw in _disc)]
+                _needles = [
+                    kw
+                    for keyword in _disc
+                    for kw in _DIS_ALIASES.get(keyword, (keyword,))
+                ]
+                _needles = tuple(dict.fromkeys(_needles))
+                _kept = [r for r in clean_results
+                         if any(kw in str(r.get("content", "")).lower()
+                                for kw in _needles)]
                 if _kept:
                     clean_results = _kept
             clean_items = list(clean_results)
@@ -5232,6 +5291,11 @@ def run_generation(
             for kw in ("组态", "定义", "介绍", "电子结构", "特性", "性质", "电子构型", "构型"):
                 if kw in text:
                     score += 2
+            # 枚举/归类句 ("包括哪些元素"): "镧系元素包括镧(La)…" 这类清单句
+            # 正是定义题的答句主体, 无 组态/性质 词也不应被埋没 (实测定位)
+            for kw in ("包括", "属于", "由", "周期表中", "元素符号"):
+                if kw in text:
+                    score += 2
             for kw in ("离子", "元素", "掺杂离子"):
                 if kw in text:
                     score += 1
@@ -5240,9 +5304,9 @@ def run_generation(
         def_items = sorted(compose_items, key=_def_score, reverse=True)
         top_def = [it for it in def_items if _def_score(it) >= 2]
         if top_def:
-            compose_items = top_def[:3]
+            compose_items = top_def[:4]
         elif def_items:
-            compose_items = def_items[:2]
+            compose_items = def_items[:3]
     # 同步裁剪检索结果 (response_synthesizer 只综合最终保留的相关命中)
     kept_keys = set(
         str(it.get("chunk_id") or it.get("content") or "")[:80]
