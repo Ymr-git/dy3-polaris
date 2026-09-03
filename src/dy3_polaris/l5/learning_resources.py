@@ -720,6 +720,59 @@ def public_resource_projection(plan: LearningResourcePlan) -> list[dict[str, Any
     ]
 
 
+def render_learning_resource_markdown(resource: Mapping[str, Any]) -> str:
+    """Render one learning resource into a downloadable Markdown document.
+
+    Assembles only already-reviewed content (title/goal/reviewed answer/
+    guided_document sections/concepts/gaps/evidence).  It creates no new
+    scientific claim; it only serializes the released resource into long-form
+    Markdown so the front end can present and download it as a document.
+    """
+    title = str(resource.get("title") or "学习讲义").strip()
+    goal = str(resource.get("learning_goal") or "").strip()
+    fit = str(resource.get("learner_fit_reason") or "").strip()
+    depth = str(resource.get("difficulty") or "").strip()
+    review_status = str(resource.get("review_status") or "").strip()
+    concepts = [str(c).strip() for c in (resource.get("target_concepts") or ()) if str(c).strip()]
+    prereqs = [str(c).strip() for c in (resource.get("prerequisite_concepts") or ()) if str(c).strip()]
+    evidence = [str(e).strip() for e in (resource.get("evidence_refs") or ()) if str(e).strip()]
+    payload = resource.get("payload") if isinstance(resource.get("payload"), Mapping) else {}
+    reviewed_summary = str(payload.get("reviewed_summary") or "").strip()
+    gaps = [str(g).strip() for g in (payload.get("knowledge_gap") or ()) if str(g).strip()]
+    guided = payload.get("guided_document") if isinstance(payload.get("guided_document"), Mapping) else {}
+    sections = guided.get("sections") or ()
+
+    lines: list[str] = [f"# {title}", ""]
+    if goal:
+        lines += [f"> **学习目标**：{goal}", ""]
+    if fit:
+        lines += [f"> **适配说明**：{fit}", ""]
+    lines += [f"- 难度：{depth}", f"- 审核状态：{review_status}", ""]
+    if concepts:
+        lines += ["## 目标概念", "", "、".join(concepts), ""]
+    if prereqs:
+        lines += ["## 前置概念", "", "、".join(prereqs), ""]
+    if reviewed_summary:
+        lines += ["## 已审核答案", "", reviewed_summary, ""]
+    if sections:
+        lines += ["## 讲义正文", ""]
+        for section in sections:
+            if not isinstance(section, Mapping):
+                continue
+            section_title = str(section.get("title") or "小节").strip()
+            content = str(section.get("content") or "").strip()
+            if not content:
+                continue
+            lines += [f"### {section_title}", "", content, ""]
+    if gaps:
+        lines += ["## 知识缺口", "", *[f"- {g}" for g in gaps], ""]
+    if evidence:
+        lines += ["## 证据来源", "", *[f"- {e}" for e in evidence], ""]
+    lines += ["---", "", "*本讲义由系统依据已审核证据自动生成，可溯源、可下载。*"]
+    return "\n".join(lines)
+
+
+
 def build_resource_interaction_event(
     *,
     learner_id: str,
