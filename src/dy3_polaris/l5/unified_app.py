@@ -84,7 +84,9 @@ from dy3_polaris.l5.integration_bridge import IntegrationBridge
 from dy3_polaris.l5 import task_state as task_state_runtime
 from dy3_polaris.l5.learning_resources import (
     build_resource_interaction_event,
+    render_learning_resource_docx,
     render_learning_resource_markdown,
+    render_learning_resource_pdf,
 )
 from dy3_polaris.l5.learning_workspace import (
     build_learning_workspace_view,
@@ -1985,16 +1987,24 @@ class _UnifiedHandlers:
         # 文件名用 ASCII 安全的 resource_id (中文标题会触发 HTTP header latin-1
         # 编码失败), 标题保留在文档正文第一行。
         filename_base = re.sub(r"[^\w-]+", "_", str(resource_id or "resource")).strip("_") or "resource"
-        if fmt == "txt":
+        if fmt == "docx":
+            data = render_learning_resource_docx(resource)
+            media = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            filename = f"{filename_base}.docx"
+        elif fmt == "pdf":
+            data = render_learning_resource_pdf(resource)
+            media = "application/pdf"
+            filename = f"{filename_base}.pdf"
+        elif fmt == "txt":
+            data = md.encode("utf-8")
             media = "text/plain; charset=utf-8"
-            data = md
             filename = f"{filename_base}.txt"
         else:
+            data = md.encode("utf-8")
             media = "text/markdown; charset=utf-8"
-            data = md
             filename = f"{filename_base}.md"
         return Response(
-            content=data.encode("utf-8"),
+            content=data,
             media_type=media,
             headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )

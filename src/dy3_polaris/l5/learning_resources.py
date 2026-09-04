@@ -772,6 +772,106 @@ def render_learning_resource_markdown(resource: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_learning_resource_docx(resource: Mapping[str, Any]) -> bytes:
+    """Render a learning resource into a downloadable Word (.docx) document."""
+    import io
+
+    from docx import Document
+
+    md = render_learning_resource_markdown(resource)
+    doc = Document()
+    for raw in md.split("\n"):
+        line = raw.rstrip()
+        if not line:
+            continue
+        if line.startswith("### "):
+            doc.add_heading(line[4:], level=3)
+        elif line.startswith("## "):
+            doc.add_heading(line[3:], level=2)
+        elif line.startswith("# "):
+            doc.add_heading(line[2:], level=1)
+        elif line.startswith("> "):
+            doc.add_paragraph(line[2:], style="Intense Quote")
+        elif line.startswith("- "):
+            doc.add_paragraph(line[2:], style="List Bullet")
+        elif line == "---":
+            doc.add_paragraph("_" * 30)
+        elif line.startswith("*") and line.endswith("*"):
+            doc.add_paragraph(line.strip("*"))
+        else:
+            doc.add_paragraph(line)
+    buf = io.BytesIO()
+    doc.save(buf)
+    return buf.getvalue()
+
+
+def render_learning_resource_pdf(resource: Mapping[str, Any]) -> bytes:
+    """Render a learning resource into a downloadable PDF document."""
+    import io
+    import os
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+
+    # 注册中文字体 (黑体/宋体/微软雅黑 多级回退)
+    _font_candidates = (
+        (r"C:\Windows\Fonts\simhei.ttf", 0),
+        (r"C:\Windows\Fonts\msyh.ttc", 0),
+        (r"C:\Windows\Fonts\simsun.ttc", 0),
+    )
+    _font_name = None
+    for _path, _sub in _font_candidates:
+        if os.path.exists(_path):
+            try:
+                pdfmetrics.registerFont(TTFont("CN", _path, subfontIndex=_sub))
+                _font_name = "CN"
+                break
+            except Exception:  # noqa: BLE001
+                continue
+    if _font_name is None:
+        # 无中文字体时退回内置 Helvetica (中文将显示为方块, 但流程不中断)
+        _font_name = "Helvetica"
+
+    md = render_learning_resource_markdown(resource)
+    body = ParagraphStyle("CN", fontName=_font_name, fontSize=11, leading=18)
+    h1 = ParagraphStyle("H1", parent=body, fontSize=18, leading=24, spaceAfter=8)
+    h2 = ParagraphStyle("H2", parent=body, fontSize=14, leading=20, spaceBefore=8, spaceAfter=4)
+    h3 = ParagraphStyle("H3", parent=body, fontSize=12, leading=18, spaceBefore=6, spaceAfter=3)
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            leftMargin=20 * mm, rightMargin=20 * mm,
+                            topMargin=18 * mm, bottomMargin=18 * mm)
+    story = []
+    for raw in md.split("\n"):
+        line = raw.rstrip()
+        if not line:
+            continue
+        if line.startswith("### "):
+            story.append(Paragraph(line[4:], h3))
+        elif line.startswith("## "):
+            story.append(Paragraph(line[3:], h2))
+        elif line.startswith("# "):
+            story.append(Paragraph(line[2:], h1))
+        elif line.startswith("> "):
+            story.append(Paragraph(line[2:], body))
+        elif line.startswith("- "):
+            story.append(Paragraph("• " + line[2:], body))
+        elif line == "---":
+            story.append(Spacer(1, 10))
+        elif line.startswith("*") and line.endswith("*"):
+            story.append(Paragraph(line.strip("*"), body))
+        else:
+            story.append(Paragraph(line, body))
+    doc.build(story)
+    return buf.getvalue()
+
+
+
 
 def build_resource_interaction_event(
     *,
