@@ -571,7 +571,28 @@ CANONICAL_FACTS: list[dict[str, Any]] = [
             "激发光的吸收能力，与掺杂浓度共同决定吸收效率。"
         ),
     },
+    {
+        "id": "tf-dy-42",
+        "chapter": "第 3 章 · 健康照明应用与猝灭机理",
+        "keywords": ["临界距离", "浓度猝灭", "计算", "公式", "Blasse", "Dexter", "Rc", "拟合", "能量传递", "相互作用"],
+        "core_terms": ["临界距离", "blasse", "dexter", "rc"],
+        "ions": ["dy3+"],
+        "kp_ids": ["A-12"],
+        "content": (
+            "Dy3+ 浓度猝灭临界距离的计算方法：先由 Blasse 公式 Rc = 2(3V/4πxcN)(1/3) "
+            "计算临界距离 Rc，其中 V 为晶胞体积、xc 为临界浓度（摩尔分数）、N 为单位晶胞中"
+            "阳离子（格位）数；不同基质的 V 与 N 不同，故临界浓度与临界距离随具体基质（宿主）"
+            "变化。再用 Dexter 理论判断能量传递机制：以 lg(I/x) 对 lgx 线性拟合，斜率约 -θ/3，"
+            "θ=6、8、10 分别对应电偶极-电偶极、电偶极-电四极、电四极-电四极相互作用。"
+        ),
+        "source": _SRC_TMPL.format(chapter="第 3 章 · 健康照明应用与猝灭机理"),
+    },
 ]
+
+# 临界距离计算题专用兜底事实（不受 DY3_ENABLE_PLACEHOLDER_KNOWLEDGE 门控）：
+# 论文库公式正文常被 MinerU 损坏（π→�）或英文正文跨不进中文查询，导致
+# 「临界距离如何计算」答案缺公式被确定性审核扣留。此事实提供干净的公式正文。
+CRITICAL_DISTANCE_FACT: dict[str, Any] = CANONICAL_FACTS[-1]
 
 
 # 领域全局泛词: 「稀土发光材料」这个学科名 + 全领域通用的「荧光粉/荧光」,
@@ -625,4 +646,4 @@ def query_canonical(query: str, top_k: int = 6) -> list[dict[str, Any]]:
     return out
 
 
-__all__ = ["CANONICAL_FACTS", "query_canonical"]
+__all__ = ["CANONICAL_FACTS", "query_canonical", "CRITICAL_DISTANCE_FACT"]
