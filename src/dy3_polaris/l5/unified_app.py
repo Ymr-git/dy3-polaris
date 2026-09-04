@@ -61,7 +61,7 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
@@ -82,7 +82,10 @@ from dy3_polaris.l5.confirmation import (
 )
 from dy3_polaris.l5.integration_bridge import IntegrationBridge
 from dy3_polaris.l5 import task_state as task_state_runtime
-from dy3_polaris.l5.learning_resources import build_resource_interaction_event
+from dy3_polaris.l5.learning_resources import (
+    build_resource_interaction_event,
+    render_learning_resource_markdown,
+)
 from dy3_polaris.l5.learning_workspace import (
     build_learning_workspace_view,
     public_learning_workspace_projection,
@@ -1949,6 +1952,53 @@ class _UnifiedHandlers:
             )
         return JSONResponse(_ok(response))
 
+    async def api_resource_download(self, request: Request) -> Response | JSONResponse:
+        """GET /api/learning/resources/download — 下载已审核学习资源的 Markdown 文档.
+
+        仅允许下载已通过发布门 (FULL/LIMITED + Reviewer approved) 的任务资源,
+        渲染为 Markdown 长文档并以附件形式返回 (可另存为 .md / .txt)。
+        """
+        import re
+
+        learner_id = request.query_params.get("learner_id", "")
+        task_id = request.query_params.get("task_id", "")
+        resource_id = request.query_params.get("resource_id", "")
+        fmt = (request.query_params.get("format") or "md").lower()
+        if not all((learner_id, task_id, resource_id)):
+            return JSONResponse(
+                _err(-32602, "缺少 learner_id/task_id/resource_id"), status_code=400
+            )
+        plan = self._resource_plan(task_id, learner_id)
+        if not plan:
+            return JSONResponse(
+                _err(-32600, "资源计划不存在、已过期或不属于当前学习者"),
+                status_code=404,
+            )
+        resource = next((
+            item for item in plan.get("resources") or []
+            if isinstance(item, dict)
+            and str(item.get("resource_id") or "") == resource_id
+        ), None)
+        if not isinstance(resource, dict):
+            return JSONResponse(_err(-32600, "资源不存在"), status_code=404)
+        md = render_learning_resource_markdown(resource)
+        # 文件名用 ASCII 安全的 resource_id (中文标题会触发 HTTP header latin-1
+        # 编码失败), 标题保留在文档正文第一行。
+        filename_base = re.sub(r"[^\w-]+", "_", str(resource_id or "resource")).strip("_") or "resource"
+        if fmt == "txt":
+            media = "text/plain; charset=utf-8"
+            data = md
+            filename = f"{filename_base}.txt"
+        else:
+            media = "text/markdown; charset=utf-8"
+            data = md
+            filename = f"{filename_base}.md"
+        return Response(
+            content=data.encode("utf-8"),
+            media_type=media,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
     async def api_personalized_resources(self, request: Request) -> JSONResponse:
         """GET /api/personalized/resources — 个性化学习资源生成.
 
@@ -3226,6 +3276,14 @@ class UnifiedApp:
                 "/api/learning/resources/interact",
                 self._handlers.api_learning_resource_interact,
                 methods=["POST"],
+            )
+        )
+        # 已审核学习资源 Markdown 长文档下载
+        routes.append(
+            Route(
+                "/api/learning/resources/download",
+                self._handlers.api_resource_download,
+                methods=["GET"],
             )
         )
         # 职业方向推荐 (验收硬缺口: 按画像身份+能力匹配产业链岗位)
