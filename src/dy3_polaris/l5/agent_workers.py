@@ -4052,9 +4052,8 @@ def _inject_critical_distance_fact(
     """
     if not _is_critical_distance_calc_query(query):
         return compose_items
-    ev_all = " ".join(str(c.get("content") or "") for c in compose_items).lower()
-    # KB 已实质覆盖完整公式正文则不再注入 (避免与真实证据重复)
-    if "4π" in ev_all.replace(" ", "") and ("1/3" in ev_all and "rc" in ev_all):
+    # 已注入过该事实 (如 placeholder 开启时 query_canonical 已命中) 则跳过, 避免重复
+    if any(str(c.get("chunk_id") or "") == "tf-dy-42" for c in compose_items):
         return compose_items
     try:
         from dy3_polaris.l3.textbook_fallback import CRITICAL_DISTANCE_FACT

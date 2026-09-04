@@ -1555,6 +1555,9 @@
       WITHHOLD: '当前结果未达到发布条件',
       DEGRADED: '完整智能审核链暂不可用'
     };
+    if (status === 'DEGRADED' && /不在系统已验证知识范围|未编造回答|暂无直接相关证据/.test(String(release.message || ''))) {
+      labels.DEGRADED = '诚实拒答：领域外问题未编造';
+    }
     var reasons = Array.isArray(release.reason_codes) ? release.reason_codes : [];
     return '<section class="t1-quality t1-quality-' + escAttr(status.toLowerCase()) + '" aria-label="Quality Release Gate">' +
       '<div><div class="r04-section-kicker">Quality Release Gate</div><h3>' + esc(labels[status] || status) + '</h3>' +
@@ -1943,6 +1946,10 @@
     var verdict = review.verdict || review.status || '未提供';
     var reviewReason = review.reason || review.message || review.summary || '';
     var knowledgeGap = Boolean(data.knowledge_unavailable) || /knowledge_gap/i.test(String(data.action_type || ''));
+    var honestRefusal = '';
+    if (!answer) {
+      honestRefusal = String(quality.message || reviewReason || '');
+    }
     var clarify = data.clarify;
     var publicLearner = (data.learner_context && typeof data.learner_context === 'object') ? data.learner_context : {};
     var diagnosisTrace = (Array.isArray(data.agent_trace) ? data.agent_trace : []).filter(function (event) {
@@ -2007,7 +2014,7 @@
       r08TaskFactFlow(data, learnerLevel, evidence, verdict) +
       '<div class="canvas-task-grid"><main class="canvas-task-main">' +
       '<section class="r04-answer-card"><div class="r04-section-kicker">个性化回答</div><h3>当前解释</h3>' +
-      (answer ? '<div class="r04-answer-body">' + renderSlideDeck(answer) + '</div>' : '<div class="r04-gap">未审核通过的科学草稿不会展示。</div>') + '</section>' +
+      (answer ? '<div class="r04-answer-body">' + renderSlideDeck(answer) + '</div>' : (honestRefusal ? '<div class="r04-gap r04-honest-refusal"><strong>诚实回应</strong><p>' + esc(honestRefusal) + '</p></div>' : '<div class="r04-gap">未审核通过的科学草稿不会展示。</div>')) + '</section>' +
       '<section class="t1-resources"><div class="r04-section-kicker">个性化学习资源</div><h3>讲义、实操指南与分阶测试</h3>' + t1ResourceCards(data) + '</section></main>' +
       '<aside class="canvas-task-rail">' + t1TeachingStrategy(data) + t1QualityBlock(data) +
       '<section class="r04-review-card"><div class="r04-section-heading"><div><div class="r04-section-kicker">科学审核</div><h3>Reviewer 结论</h3></div><span class="r04-review-verdict">' + esc(String(verdict)) + '</span></div>' +
