@@ -4041,6 +4041,27 @@ def _answer_has_critical_distance_formula(answer: str) -> bool:
     )
 
 
+def _critical_distance_fact_item() -> dict[str, Any] | None:
+    """构建临界距离权威事实证据项 (chunk_id=tf-dy-42), 失败返回 None."""
+    try:
+        from dy3_polaris.l3.textbook_fallback import CRITICAL_DISTANCE_FACT
+
+        fact = CRITICAL_DISTANCE_FACT
+    except Exception:  # noqa: BLE001
+        return None
+    return {
+        "chunk_id": fact["id"],
+        "document_id": "textbook-fallback",
+        "section": fact.get("chapter", ""),
+        "content": fact["content"],
+        "metadata": {
+            "entity": (fact.get("ions") or ["dy3+"])[0],
+            "source_type": "textbook_fallback",
+            "source": fact.get("source", ""),
+        },
+    }
+
+
 def _inject_critical_distance_fact(
     query: str, compose_items: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -4055,23 +4076,9 @@ def _inject_critical_distance_fact(
     # 已注入过该事实 (如 placeholder 开启时 query_canonical 已命中) 则跳过, 避免重复
     if any(str(c.get("chunk_id") or "") == "tf-dy-42" for c in compose_items):
         return compose_items
-    try:
-        from dy3_polaris.l3.textbook_fallback import CRITICAL_DISTANCE_FACT
-
-        fact = CRITICAL_DISTANCE_FACT
-    except Exception:  # noqa: BLE001
+    item = _critical_distance_fact_item()
+    if item is None:
         return compose_items
-    item = {
-        "chunk_id": fact["id"],
-        "document_id": "textbook-fallback",
-        "section": fact.get("chapter", ""),
-        "content": fact["content"],
-        "metadata": {
-            "entity": (fact.get("ions") or ["dy3+"])[0],
-            "source_type": "textbook_fallback",
-            "source": fact.get("source", ""),
-        },
-    }
     return [item] + list(compose_items)
 
 
@@ -5661,6 +5668,18 @@ def run_generation(
                 context_chunks.append(_result_text(item))
         except Exception:  # noqa: BLE001
             pass
+
+    # 临界距离计算题: planned_retrieval 的概念证据偏好 (_prefer_reviewed_concept_
+    # evidence / _filter_task_answer_evidence) 可能把注入的兜底事实挤掉, 导致
+    # 公式正文既不进 context_chunks 也不进 compose → 审核完整门持续扣留。此处最终
+    # 兜底一次, 保证 Blasse Rc + Dexter 拟合正文始终随证据一起被消费。
+    if _is_critical_distance_calc_query(query):
+        _cd_item = _critical_distance_fact_item()
+        if _cd_item is not None and not any(
+            str(c.get("chunk_id") or "") == _cd_item["chunk_id"]
+            for c in compose_items
+        ):
+            compose_items = [_cd_item] + list(compose_items)
 
     # 兜底层命中时, 把权威事实正文并入证据切片, 供 reviewer 离子一致性校验
     # (否则「答案提 Dy、证据只含他离子」会误判张冠李戴 → fix_faithfulness, 且问题
